@@ -119,7 +119,11 @@ fun QuizContent(
                 }
                 QuizSurfaceCard {
                     Text(
-                        text = "回答を選んでください",
+                        text = if (state.question is Reorder) {
+                            "上から順に並び替えてください"
+                        } else {
+                            "回答を選んでください"
+                        },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
