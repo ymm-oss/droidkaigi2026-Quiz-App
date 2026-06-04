@@ -88,18 +88,25 @@ flowchart TB
 
 ### 切り替え方
 
-**永続的に変える** — ルートの [gradle.properties](gradle.properties):
+| プラットフォーム | 切り替え |
+|------------------|----------|
+| **Android** | Build Variants で `fakeDebug` / `prodDebug`（productFlavor `runtime`）。IDE の Run 設定 `androidApp[fake]` / `androidApp[prod]` と組み合わせる |
+| **Desktop / スタッフ** | [gradle.properties](gradle.properties) の `quiz.runtime` または `-Pquiz.runtime=prod` |
+
+**永続的に変える（Desktop など）** — ルートの `gradle.properties`:
 
 ```properties
 quiz.runtime=fake
 # quiz.runtime=prod
 ```
 
-**1 回だけ上書き** — Gradle プロパティ:
+**1 回だけ上書き**:
 
 ```bash
 ./gradlew -Pquiz.runtime=prod ...
 ```
+
+Android の Gradle タスク（例: `assembleProdDebug`）から `quiz.runtime` が自動判定されます（[gradle/quiz-runtime.gradle.kts](gradle/quiz-runtime.gradle.kts)）。**Build Variant の prod は `gradle.properties` の `quiz.runtime=fake` より優先**されます。KMP は 1 ビルド 1 ランタイムのため、**fake と prod を同じ Gradle 呼び出しでまとめてビルドしない**でください。Variant 切替後は **Rebuild** を。
 
 `quiz.runtime` を変更したあとは、**必ず再ビルド**してください（選ばれていない側の source set はコンパイルされません）。
 
@@ -216,18 +223,19 @@ service cloud.firestore {
 
 ### ビルド・実行例
 
-Android（fake・既定）:
+Android（fake）:
 
 ```bash
-./gradlew :androidApp:assembleDebug
-# Android Studio から androidApp を Run でも可
+./gradlew :androidApp:assembleFakeDebug
 ```
 
-Android（prod）:
+Android（prod）— `androidApp/src/prod/google-services.json` が必要:
 
 ```bash
-./gradlew :androidApp:assembleDebug -Pquiz.runtime=prod
+./gradlew :androidApp:assembleProdDebug
 ```
+
+Android Studio: **Build Variants** で `fakeDebug` または `prodDebug` を選んで Run。アプリ ID は `com.droidkaigi.quiz.fake`（fake）と `com.droidkaigi.quiz`（prod・`google-services.json` と一致）で共存インストール可。`google-services.json` は `androidApp/src/prod/` に配置（ルートの `androidApp/google-services.json` は Desktop 用ローダー向けに残しても可）。
 
 Desktop（fake）:
 

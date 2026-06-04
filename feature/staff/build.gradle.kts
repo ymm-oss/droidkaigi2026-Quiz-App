@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
+val quizRuntime = rootProject.extra["quizRuntime"] as String
 
 kotlin {
     jvm {

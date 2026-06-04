@@ -14,8 +14,10 @@ quiz.runtime=fake   # dev only: bundled JSON + in-memory ranking (default)
 **開発（fake）**: ネットなしで参加者フロー（Home → Quiz → Result → Ranking）を手動確認できる。
 
 ```bash
-./gradlew :androidApp:assembleDebug -Pquiz.runtime=prod
+./gradlew :androidApp:assembleProdDebug
 ```
+
+Android Studio: Build Variants → `prodDebug`（または `fakeDebug`）。KMP は 1 回の Gradle 実行で 1 ランタイムのみ（`assembleFakeDebug` と `assembleProdDebug` を同時に並べない）。
 
 Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled).
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "355850125699",
+    "project_id": "droidkaigi26",
+    "storage_bucket": "droidkaigi26.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355850125699:android:644a0ccec01fd1a359f6b6",
+        "android_client_info": {
+          "package_name": "com.droidkaigi.quiz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyXQCNu3xCARmt754M7sWP11SvCZBHKBg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

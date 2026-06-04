@@ -1,14 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
-val hasGoogleServices = file("google-services.json").exists()
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
-if (quizRuntime == "prod" && hasGoogleServices) {
+
+val quizRuntime = rootProject.extra["quizRuntime"] as String
+if (quizRuntime == "prod" && file("src/prod/google-services.json").exists()) {
     apply(plugin = libs.plugins.googleServices.get().pluginId)
 }
 
@@ -30,6 +29,20 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    flavorDimensions += "runtime"
+    productFlavors {
+        create("fake") {
+            dimension = "runtime"
+            isDefault = true
+            applicationIdSuffix = ".fake"
+            versionNameSuffix = "-fake"
+        }
+        create("prod") {
+            dimension = "runtime"
+            // applicationId は google-services.json の package_name（com.droidkaigi.quiz）と一致させる
+            versionNameSuffix = "-prod"
+        }
     }
     buildFeatures {
         compose = true

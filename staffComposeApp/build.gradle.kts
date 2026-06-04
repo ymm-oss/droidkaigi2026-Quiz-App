@@ -7,9 +7,9 @@ plugins {
     alias(libs.plugins.metro)
 }
 
-val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
+val quizRuntime = rootProject.extra["quizRuntime"] as String
 check(quizRuntime in setOf("fake", "prod")) {
-    "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime'). Set it in gradle.properties."
+    "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
 }
 val quizRuntimeSourceSetDir = if (quizRuntime == "prod") "prodMain" else "fakeMain"
 

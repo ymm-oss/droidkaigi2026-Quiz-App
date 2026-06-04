@@ -9,3 +9,5 @@ plugins {
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.metro) apply false
 }
+
+apply(from = "gradle/quiz-runtime.gradle.kts")

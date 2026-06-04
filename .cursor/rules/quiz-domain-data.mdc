@@ -9,7 +9,7 @@ alwaysApply: false
 - `core:domain` must not depend on Compose or Android.
 - Scoring only in `QuizScorer`; session steps in `QuizEngine`.
 - Quiz JSON: `core/data/.../quiz_set.json` via `FakeQuizCatalogSeeder` in `fakeMain` (**dev harness only**). prod は `QuizCatalogRepository` のみ（`getDefaultQuizSet` なし）。
-- Runtime: `quiz.runtime` in `gradle.properties` (`fake` | `prod`) adds `src/fakeMain` or `src/prodMain` to `commonMain` via `kotlin.srcDir` + Metro graph (`FakeQuizAppGraph` / `ProdQuizAppGraph`).
+- Runtime: `quiz.runtime` (`fake` | `prod`) adds `src/fakeMain` or `src/prodMain` to `commonMain` via `kotlin.srcDir` + Metro graph (`FakeQuizAppGraph` / `ProdQuizAppGraph`). Resolved in `gradle/quiz-runtime.gradle.kts` (`-Pquiz.runtime`, Android task `assembleProdDebug` / `assembleFakeDebug`, default `fake`). Android app: productFlavor `runtime` (`fake` / `prod`).
 - **prod**: quiz + ranking from remote; network required — no silent fallback to fake/JSON.
 - **fake**: bundled JSON + in-memory ranking for local dev/tests only.
 - Repositories: interface in domain; fake/prod impls in matching source set; wire via Metro `@ContributesBinding` + `AppDependencies.init(graph)`.
