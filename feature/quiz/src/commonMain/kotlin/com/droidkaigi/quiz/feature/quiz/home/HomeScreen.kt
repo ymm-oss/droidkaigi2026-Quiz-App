@@ -42,7 +42,25 @@ fun HomeScreen(
         }
     }
 
-    QuizScreenBackground {
+    HomeContent(
+        nickname = state.nickname,
+        isLoading = state.isLoading,
+        errorMessage = state.errorMessage,
+        onNicknameChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
+        onStartClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
+    )
+}
+
+@Composable
+fun HomeContent(
+    nickname: String,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onNicknameChange: (String) -> Unit,
+    onStartClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,11 +88,11 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
                     QuizTextField(
-                        value = state.nickname,
-                        onValueChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
+                        value = nickname,
+                        onValueChange = onNicknameChange,
                         label = "ニックネーム",
                     )
-                    state.errorMessage?.let { msg ->
+                    errorMessage?.let { msg ->
                         Text(
                             text = msg,
                             color = MaterialTheme.colorScheme.error,
@@ -85,8 +103,8 @@ fun HomeScreen(
                 }
                 QuizPrimaryButton(
                     text = "クイズを始める",
-                    onClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
-                    loading = state.isLoading,
+                    onClick = onStartClick,
+                    loading = isLoading,
                 )
             }
         }
