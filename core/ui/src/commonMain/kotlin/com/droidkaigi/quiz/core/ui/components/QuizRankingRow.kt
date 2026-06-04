@@ -23,7 +23,7 @@ fun QuizRankingRow(
     modifier: Modifier = Modifier,
 ) {
     val containerColor = if (highlighted) {
-        QuizTokens.highlight
+        MaterialTheme.colorScheme.primaryContainer
     } else {
         MaterialTheme.colorScheme.surface
     }

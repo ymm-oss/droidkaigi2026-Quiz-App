@@ -26,7 +26,11 @@ fun ChoiceCard(
 ) {
     val animScale = QuizMotion.animateSelectionScale(selected)
     val containerColor by animateColorAsState(
-        targetValue = if (selected) QuizTokens.highlight else MaterialTheme.colorScheme.surface,
+        targetValue = if (selected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
     )
     Card(
         modifier = modifier
