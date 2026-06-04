@@ -2,7 +2,9 @@
 
 ## 概要
 
-会場向け軽量クイズアプリ。選択式（単一・複数）と並び替え問題に対応し、当日のモックランキングを表示する。
+会場向け軽量クイズアプリ。選択式（単一・複数）と並び替え問題に対応し、当日ランキングを表示する。
+
+**本番**では問題・ランキングともリモート（Firestore 等）必須。**オフライン完走は仕様に含めない**。開発時のみ `quiz.runtime=fake` で同梱 JSON とインメモリランキングを使う。
 
 ## 画面
 
@@ -24,14 +26,24 @@
 - `score = correctCount * 100 + timeBonus`
 - `timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)`
 
-## ランキング
+## データ・ランキング
 
-- `FakeRankingRepository` が当日（端末日付）のエントリをスコア降順で返す。
-- クイズ完了時に `SubmitScoreUseCase` 経由で登録。
+### 本番（`quiz.runtime=prod`）
+
+- **問題**: `QuizCatalogRepository` 経由でリモート（`getActiveFolderId` → `getQuizSet`）。
+- **ランキング**: リモートから当日分を取得。クイズ完了時に `SubmitScoreUseCase` で送信。
+- **ネットワーク必須**。取得・送信失敗時はエラー表示（同梱 JSON やインメモリへのサイレントフォールバックなし）。
+
+### 開発（`quiz.runtime=fake`、Gradle 既定）
+
+- **問題**: 同梱 `quiz_set.json`（`JsonQuizRepository` / `InMemoryQuizCatalog`）。
+- **ランキング**: `FakeRankingRepository`（プロセス内インメモリ、端末日付でフィルタ）。
+- ネットなしで UI・採点・画面遷移を検証する**開発専用ハーネス**。本番の代替実装ではない。
 
 ## 非機能
 
-- オフライン（JSON + ローカルランキング）
+- 本番: 問題・ランキングはオンライン必須（上記）
+- 開発: `fake` ランタイムのみオフライン検証可
 - テーマは `core/ui/.../QuizTokens.kt` のみ編集で差し替え
 - Tablet（幅 >= 600dp）では NavRail
 
@@ -47,5 +59,5 @@
 ## 将来（Phase 2 候補）
 
 - Compose Styles API
-- リモートランキング API
+- ランキング・運用機能の拡張（集計、管理 API など）
 - iOS ターゲット
