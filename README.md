@@ -1,20 +1,64 @@
 # DroidKaigi 2026 Quiz
 
-Compose Multiplatform クイズアプリ（Android + Desktop + Web/Wasm）。選択式・並び替え問題と当日ランキングに対応。本番は Firestore 等のリモート必須。開発時のみ `fake` でオフライン検証可。
+DroidKaigi 2026 向けの **Compose Multiplatform** プロジェクト。会場で参加者が解く **クイズアプリ** と、運営 PC 向けの **管理者（スタッフ）アプリ** の 2 系統で構成する。
 
-## 構成
+## アプリ概要
+
+### クイズアプリ（参加者向け）
+
+Android（`:androidApp`）と Desktop（`:desktopApp`）で配布・実行する。ニックネームを入力してクイズに挑戦し、当日のランキングを確認する。
+
+| 機能 | 内容 |
+|------|------|
+| **三種のクイズ** | **単一選択**・**複数選択**・**並び替え**（ドラッグで順序変更） |
+| **ランキング** | 当日の Top N と自分の行のハイライト（採点は正解数 + 時間ボーナス） |
+
+画面の流れ: Home → Quiz → Result → Ranking（詳細は [docs/SPEC.md](docs/SPEC.md)）。
+
+### 管理者アプリ（スタッフ向け）
+
+Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開状態を管理する。
+
+| 機能 | 内容 |
+|------|------|
+| **クイズの管理** | 問題の追加・編集、解説（Markdown 風プレビュー）、形式ごとの設定 |
+| **フォルダの管理** | フォルダ単位でクイズセットを分ける（**日付**・**難易度（レベル）** など用途に応じたセット）。参加者向けに公開するフォルダ（アクティブフォルダ）の切り替え |
+| **ランキングの参照** | フォルダごとの当日ランキング確認 |
+
+本番では Firebase Authentication のあと **Firestore** に保存する。開発時はインメモリで UI を検証できる（下記 [開発者向け](#開発者向け)）。
+
+### Web（Wasm）について
+
+`:wasmApp` は **ビルドターゲットとして追加済み**だが、**現時点では運用・配布に使っていない**。将来、QR コード経由でのブラウザ参加などを検討する余地用。
+
+### データ（本番と開発）
+
+本番では問題・ランキングとも **Firestore 等のリモート必須**（オフライン完走は想定しない）。開発時のみ `quiz.runtime=fake` で同梱 JSON とインメモリランキングによりオフライン検証できる。
+
+### 関連ドキュメント
+
+| ドキュメント | 内容 |
+|--------------|------|
+| [docs/SPEC.md](docs/SPEC.md) | 画面・問題形式・採点 |
+| [docs/FIRESTORE.md](docs/FIRESTORE.md) | 本番 DB 構成・ルール・シード |
+| [docs/VERIFY.md](docs/VERIFY.md) | 手動確認手順 |
+| [AGENTS.md](AGENTS.md) | モジュール境界・AI 向け |
+
+---
+
+## 開発者向け
+
+### リポジトリ構成
 
 - `composeApp` — 共有 UI（Nav3 + adaptive）
 - `androidApp` — Android エントリ（参加者向け）
 - `desktopApp` — Desktop エントリ（参加者向け）
 - `staffComposeApp` / `staffDesktopApp` — **スタッフ用** Desktop（クイズ内容・ランキング確認、PC 運営向け）
-- `wasmApp` — Web（Wasm）エントリ
+- `wasmApp` — Web（Wasm）エントリ（未運用）
 - `core:domain` / `core:data` / `core:ui`
 - `feature:quiz` / `feature:ranking` / `feature:staff`
 
-仕様: [docs/SPEC.md](docs/SPEC.md) · AI 向け: [AGENTS.md](AGENTS.md)
-
-## ランタイムバリアント（fake / prod）
+### ランタイムバリアント（fake / prod）
 
 データ層は **2 つのランタイム** を持ち、ビルド時にどちらか一方だけがコンパイルされます（`src/fakeMain` または `src/prodMain` を `commonMain` に載せ替え + Metro グラフ切り替え）。
 
@@ -23,7 +67,7 @@ Compose Multiplatform クイズアプリ（Android + Desktop + Web/Wasm）。選
 | **fake**（デフォルト） | `fake` | **開発専用**: 同梱 JSON（`quiz_set.json`）とインメモリランキング。ネット不要で UI・採点を検証。 |
 | **prod** | `prod` | **本番**: 問題・ランキングとも Firestore 必須（`RemoteQuizCatalogRepository` / `RemoteRankingRepository` 等）。`core/data/src/prodMain` に実装。オフライン非対応。 |
 
-### 全体像（fake / prod と Firebase）
+#### 全体像（fake / prod と Firebase）
 
 `quiz.runtime` で **データ層だけ** が切り替わります。UI モジュール（参加者・スタッフ）は共通で、ビルド時に fake 用 / prod 用の Repository が載せ替わります。
 
@@ -86,14 +130,14 @@ flowchart TB
 | **参加者アプリ** | Android / Desktop（ネット不要） | Android / Desktop（Firestore 必須） |
 | **Wasm** | ビルド可能だが本番未採用 | 同上（要検討） |
 
-### 切り替え方
+#### 切り替え方
 
 | プラットフォーム | 切り替え |
 |------------------|----------|
 | **Android** | **Build Variant**（下記 [Android Build Variant](#android-build-variantruntime-flavor)） |
 | **Desktop / スタッフ** | [gradle.properties](gradle.properties) の `quiz.runtime` または `-Pquiz.runtime=prod` |
 
-### Android Build Variant（`runtime` flavor）
+#### Android Build Variant（`runtime` flavor）
 
 参加者 Android（`:androidApp`）だけ **AGP の productFlavor** で fake / prod を切り替えます。KMP ライブラリ（`:composeApp` / `:core:data` など）は [Android-KMP プラグイン](https://developer.android.com/kotlin/multiplatform/plugin)の都合で **flavor を持たない**ため、同じビルド内の `quiz.runtime` は [gradle/quiz-runtime.gradle.kts](gradle/quiz-runtime.gradle.kts) で 1 つに揃えます。
 
@@ -145,7 +189,7 @@ quiz.runtime=fake
 
 Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.properties` または `-Pquiz.runtime` を使います。`quiz.runtime` を変更したあとは、**必ず再ビルド**してください（選ばれていない側の source set はコンパイルされません）。
 
-### prod と Firestore（問題 DB・ランキング）
+#### prod と Firestore（問題 DB・ランキング）
 
 `quiz.runtime=prod` では参加者アプリが **Firestore** からクイズとランキングを読み書きする想定です（実装は `core/data/src/prodMain` の `RemoteQuizCatalogRepository` / `RemoteRankingRepository` など。現状はスタブ）。
 
@@ -156,9 +200,9 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 
 スタッフも参加者と同じ `quiz.runtime` で切り替えます（`staffComposeApp` の Metro グラフと `core:data` の fake/prod が連動）。**fake はあくまで開発用**、会場本番の運営 PC は `prod` を想定しています。
 
-コレクション構成・設計意図・シード・ルール・インデックスは [docs/FIRESTORE.md](docs/FIRESTORE.md) を参照（README では重複記載しない）。
+コレクション構成・設計意図・シード・ルール・インデックスは [docs/FIRESTORE.md](docs/FIRESTORE.md) を参照。
 
-#### Firebase プロジェクトの設定手順
+##### Firebase プロジェクトの設定手順
 
 1. [Firebase Console](https://console.firebase.google.com/) でプロジェクトを作成する。
 2. **Firestore Database** を作成する（本番は **本番モード** で開始し、[docs/FIRESTORE.md](docs/FIRESTORE.md#セキュリティルール) のルールをすぐ適用。テスト用に全開放ルールのままにしない）。
@@ -178,109 +222,55 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 - **結合・会場**: `-Pquiz.runtime=prod` + 検証用 Firebase プロジェクト（本番プロジェクトと分ける）。問題取得・ランキング表示・スコア送信はすべてネット必須。
 - シークレット（`google-services.json`、API キー）は CI では暗号化シークレットや環境変数から生成し、コミットしない。
 
-**実装メモ（コード側）**
+コード上の Repository マッピング・prod 取得経路は [docs/FIRESTORE.md#アプリからのマッピング](docs/FIRESTORE.md#アプリからのマッピング) を参照。
 
-- `RemoteQuizCatalogRepository` が上記 `folders` / `appConfig` をマッピングする。
-- prod では `QuizRepository` / `getDefaultQuizSet` は使わない。参加者・スタッフとも `QuizCatalogRepository` 経由。
-- `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える。
+### ビルド・実行
 
-### ビルド・実行例
+AGP 9.x + Gradle 9.4。Android アプリは `:androidApp` モジュール。
 
-Android（fake）:
+#### 参加者 — Android
 
 ```bash
-./gradlew :androidApp:assembleFakeDebug
+./gradlew :androidApp:assembleFakeDebug    # 開発（fake）
+./gradlew :androidApp:assembleProdDebug    # 本番（prod）— google-services.json が必要
+./gradlew :androidApp:assembleDebug        # 既定 Variant に依存
 ```
 
-Android（prod）— `androidApp/src/prod/google-services.json` が必要:
+Android Studio の Variant 手順は [Android Build Variant](#android-build-variantruntime-flavor) を参照。
+
+#### 参加者 — Desktop
 
 ```bash
-./gradlew :androidApp:assembleProdDebug
+./gradlew :desktopApp:run                                    # fake（既定）
+./gradlew :desktopApp:run -Pquiz.runtime=prod                # prod（JDK 17+）
 ```
 
-Android Studio の詳細は [Android Build Variant](#android-build-variantruntime-flavor) を参照。
-
-Desktop（fake）:
+#### スタッフ — Desktop
 
 ```bash
-./gradlew :desktopApp:run
+./gradlew :staffDesktopApp:run                               # fake（既定）
+./gradlew :staffDesktopApp:run -Pquiz.runtime=prod           # prod（JDK 17+）
 ```
 
-Desktop（prod）— **JDK 17 以上**（GitLive `firebase-java-sdk` の要件）:
+- **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
+- **prod**: `ProdStaffQuizAppGraph` + Firestore。会場では参加者と同じ Firebase プロジェクトを参照。
 
-```bash
-./gradlew :desktopApp:run -Pquiz.runtime=prod
-```
+#### Web（Wasm）
 
-スタッフ用 Desktop（**開発・既定は fake**）:
-
-```bash
-./gradlew :staffDesktopApp:run
-```
-
-`fake` 時は参加者アプリと別プロセスのため、ランキングはプロセス内メモリのみ（デモデータ + そのセッションの操作）。会場本番では `-Pquiz.runtime=prod` で参加者と同じ Firestore を参照。詳細は [docs/VERIFY.md](docs/VERIFY.md)。
-
-テスト（fake 向けの data テストは `quiz.runtime=fake` のときのみ有効）:
-
-```bash
-./gradlew :core:data:jvmTest
-./gradlew :core:data:jvmTest -Pquiz.runtime=prod   # prod では Fake 専用テストは除外
-```
-
-## ビルド
-
-AGP 9.x + Gradle 9.4。Android アプリは `:androidApp` モジュールです。ランタイムの詳細は上記「ランタイムバリアント」を参照。
-
-```bash
-./gradlew :androidApp:assembleDebug
-```
-
-## テスト
-
-```bash
-./gradlew :core:domain:jvmTest :core:data:jvmTest
-./gradlew :androidApp:connectedDebugAndroidTest  # 要エミュレータ
-```
-
-## Desktop
-
-参加者向け:
-
-```bash
-./gradlew :desktopApp:run
-```
-
-## スタッフ用 Desktop
-
-運営 PC 向け。フォルダ（日・難易度など）ごとにクイズとランキングを管理。問題の追加・編集、解説（Markdown 風プレビュー）、「参加者向けに公開」でアクティブフォルダを切り替え。起動時にスタッフ認証画面（fake: デモ用アカウント、prod: Firebase Auth 予定）。
-
-**開発（fake・既定）**
-
-```bash
-./gradlew :staffDesktopApp:run
-```
-
-デモ用ログイン: `staff@droidkaigi.local` / `staff2026`（インメモリのみ）。
-
-**本番（prod）** — **JDK 17 以上**（参加者 Desktop prod と同様）
-
-```bash
-./gradlew :staffDesktopApp:run -Pquiz.runtime=prod
-```
-
-`core/data` の prod 実装（Firestore + `ProdStaffAuthRepository`）と `ProdStaffQuizAppGraph` が有効になります。Firebase プロジェクト・Auth の設定は上記「prod と Firestore」を参照。
-
-## Web (Wasm)
-
-Chrome 119+ など Wasm GC 対応ブラウザが必要です。
-
-> **注釈（Wasm）**  
-> 現在は仮で追加しており、イベント時にいろんな方が QR 経由等でアクセスする等を想定（要検討）。
+Chrome 119+ など Wasm GC 対応ブラウザが必要。本番未採用（要検討）。
 
 ```bash
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun
 ```
 
-## 手動確認
+### テスト
 
-[docs/VERIFY.md](docs/VERIFY.md)
+```bash
+./gradlew :core:domain:jvmTest :core:data:jvmTest
+./gradlew :core:data:jvmTest -Pquiz.runtime=prod   # prod では Fake 専用テストは除外
+./gradlew :androidApp:connectedDebugAndroidTest    # 要エミュレータ
+```
+
+### 手動確認
+
+[docs/VERIFY.md](docs/VERIFY.md)（会場・prod 結合の確認手順を含む）

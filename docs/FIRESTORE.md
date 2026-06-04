@@ -1,6 +1,6 @@
 # Firestore — データベース構造と prod 実装
 
-`quiz.runtime=prod` 時のバックエンド仕様。Firebase の Console 設定手順は [README.md](../README.md) の「Firebase 設定（prod）」を参照。
+`quiz.runtime=prod` 時のバックエンド仕様。Firebase の Console 設定手順は [README.md](../README.md#firebase-プロジェクトの設定手順)（開発者向け）を参照。
 
 ## コレクション構成
 
@@ -107,6 +107,11 @@ firebase deploy --only firestore:indexes
 | `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | 参加者クイズ取得 | `getActiveQuizFolderIdUseCase` → `getQuizSetForFolderUseCase`（`folders/{activeFolderId}`） |
+
+**prod のデータ取得**
+
+- `QuizRepository` / `getDefaultQuizSet` は使わない。参加者・スタッフとも `QuizCatalogRepository` 経由。
+- `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える。
 
 ### prod 実装クラス（`core:data`）
 
