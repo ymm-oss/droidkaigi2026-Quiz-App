@@ -11,5 +11,6 @@ captures/
 *.hprof
 .kotlin/
 
-# Firebase (環境ごとに Console から取得。コミットしない)
+# Firebase
 androidApp/google-services.json
+firebase-debug.log

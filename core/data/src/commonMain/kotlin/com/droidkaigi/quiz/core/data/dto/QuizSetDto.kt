@@ -19,9 +19,9 @@ data class QuizSetDto(
 
 @Serializable
 data class QuestionDto(
-    val type: String,
-    val id: String,
-    val prompt: String,
+    val type: String = "",
+    val id: String = "",
+    val prompt: String = "",
     val explanationMarkdown: String? = null,
     val options: List<ChoiceOptionDto>? = null,
     val correctId: String? = null,
@@ -31,18 +31,18 @@ data class QuestionDto(
 )
 
 @Serializable
-data class ChoiceOptionDto(val id: String, val label: String)
+data class ChoiceOptionDto(val id: String = "", val label: String = "")
 
 @Serializable
-data class ReorderItemDto(val id: String, val label: String)
+data class ReorderItemDto(val id: String = "", val label: String = "")
 
 fun QuizSetDto.toDomain(): QuizSet = QuizSet(
     id = id,
     title = title,
-    questions = questions.map { it.toDomain() },
+    questions = questions.mapNotNull { it.toDomain() },
 )
 
-fun QuestionDto.toDomain(): Question = when (type) {
+fun QuestionDto.toDomain(): Question? = when (type) {
     "single_choice" -> SingleChoice(
         id = id,
         prompt = prompt,
@@ -64,5 +64,5 @@ fun QuestionDto.toDomain(): Question = when (type) {
         items = items.orEmpty().map { ReorderItem(it.id, it.label) },
         correctOrder = correctOrder.orEmpty(),
     )
-    else -> error("Unknown question type: $type")
+    else -> null
 }

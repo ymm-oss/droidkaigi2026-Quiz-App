@@ -49,7 +49,7 @@ folders/{folderId}/rankings/{entryId}
 
 ## 初期データ
 
-[firestore-seed.example.json](firestore-seed.example.json) を参照。Console で次を作成する。
+[firestore-seed.json](firestore-seed.json) を参照。Console で次を作成する。
 
 | パス | 内容 |
 |------|------|
@@ -64,11 +64,36 @@ folders/{folderId}/rankings/{entryId}
 |--------------|------------|
 | `folders/{folderId}/rankings` | `dateKey` 昇順、`score` 降順 |
 
-## セキュリティルール（例）
+## Firebase CLI でデプロイ
 
-会場公開クイズ + 匿名スコア送信 + ログイン済みスタッフのフォルダ編集向け。本番前に必ず見直す。
+リポジトリ直下に [firebase.json](../firebase.json) がある。**初回だけ** CLI でログインとプロジェクト紐付けを行う。
 
-全文: [firestore.rules.example](firestore.rules.example)
+```bash
+npm install -g firebase-tools   # または npx firebase-tools
+firebase login
+# 未設定なら .firebaserc の default を Console のプロジェクト ID に書き換え
+
+firebase deploy --only firestore:rules
+firebase deploy --only firestore:indexes
+# まとめて: firebase deploy --only firestore
+```
+
+| ファイル | 役割 |
+|----------|------|
+| [firebase.json](../firebase.json) | CLI のエントリ（ルール・インデックスのパス） |
+| [firestore.rules](../firestore.rules) | ルール本体（`firebase.json` から参照） |
+| [firestore.indexes.json](../firestore.indexes.json) | ランキング用複合インデックス |
+| [.firebaserc](../.firebaserc) | デプロイ先プロジェクト ID（本番 1 プロジェクト） |
+
+`firebase init` は上記ファイルが無いときの**対話式の初期化**用。すでに `firebase.json` がある場合は `init` し直す必要はなく、`deploy` で足りる。
+
+**ドキュメントデータ**（`folders` / `appConfig`）は `deploy` では入らない。Console、スタッフアプリ（prod）、または Admin SDK スクリプトで投入する（[初期データ](#初期データ)）。
+
+## セキュリティルール
+
+会場公開クイズ + 匿名スコア送信 + ログイン済みスタッフのフォルダ編集向け。
+
+全文: [firestore.rules](../firestore.rules)（`firebase deploy --only firestore:rules` で反映）
 
 要点:
 
@@ -81,14 +106,14 @@ folders/{folderId}/rankings/{entryId}
 |------------|-----------|
 | `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
-| `RemoteQuizRepository` | アクティブフォルダ経由で `folders/{activeFolderId}` |
+| 参加者クイズ取得 | `getActiveQuizFolderIdUseCase` → `getQuizSetForFolderUseCase`（`folders/{activeFolderId}`） |
 
 ### prod 実装クラス（`core:data`）
 
 | クラス | プラットフォーム | 役割 |
 |--------|------------------|------|
-| `GitLiveFirestoreService` | Android | GitLive Firestore SDK |
-| `RestFirestoreService` | Desktop JVM | Firestore REST + Bearer（スタッフ ID トークン） |
+| `GitLiveFirestoreService` | Android / Desktop JVM | GitLive Firestore SDK（`prodGitLive`） |
+| `FirestorePlatform.jvm` | Desktop JVM | `firebase-java-sdk` で `Firebase.initialize` |
 | `ProdStaffAuthRepository` | Android / JVM | Firebase Auth（メール・パスワード） |
 
 `updatedAtEpochMillis` は未設定可。

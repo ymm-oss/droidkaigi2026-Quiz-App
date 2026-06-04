@@ -68,14 +68,33 @@ fun StaffFolderSidebar(
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
-                    items(state.folders, key = { it.id }) { folder ->
-                        StaffFolderRow(
-                            folder = folder,
-                            selected = folder.id == state.selectedFolderId,
-                            isActive = folder.id == state.activeFolderId,
-                            onClick = { onIntent(StaffShellIntent.SelectFolder(folder.id)) },
-                        )
+                if (state.errorMessage != null) {
+                    Text(
+                        text = state.errorMessage,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                if (state.folders.isEmpty()) {
+                    Text(
+                        text = if (state.errorMessage == null) {
+                            "フォルダがありません。＋から追加してください。"
+                        } else {
+                            "フォルダを読み込めませんでした。"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                        items(state.folders, key = { it.id }) { folder ->
+                            StaffFolderRow(
+                                folder = folder,
+                                selected = folder.id == state.selectedFolderId,
+                                isActive = folder.id == state.activeFolderId,
+                                onClick = { onIntent(StaffShellIntent.SelectFolder(folder.id)) },
+                            )
+                        }
                     }
                 }
             }
@@ -93,9 +112,9 @@ fun StaffFolderSidebar(
         StaffConfirmDialog(
             title = "参加者向けに公開",
             message = if (alreadyActive) {
-                "「${folder.name}」はすでに公開中です。再度公開しますか？"
+                "「${folder.displayName}」はすでに公開中です。再度公開しますか？"
             } else {
-                "「${folder.name}」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。"
+                "「${folder.displayName}」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。"
             },
             confirmLabel = "公開",
             onConfirm = {
@@ -162,7 +181,7 @@ private fun StaffFolderRow(
     ) {
         Column(modifier = Modifier.padding(QuizTokens.spacingMedium)) {
             Text(
-                text = folder.name,
+                text = folder.displayName,
                 style = MaterialTheme.typography.titleSmall,
             )
             if (folder.description.isNotBlank()) {

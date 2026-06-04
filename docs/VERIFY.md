@@ -46,6 +46,25 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 - **ランキング**（fake）: 選択フォルダの当日スコア（インメモリ。別プロセスの参加者アプリとは共有されない）
 - **ランキング**（prod）: Firestore `folders/{folderId}/rankings`（参加者アプリと同一データ）
 
+### prod スタッフ — Firestore 診断ログ
+
+`./gradlew :staffDesktopApp:run -Pquiz.runtime=prod` の**ターミナル標準出力**に次のプレフィックスで出る。
+
+| プレフィックス | 内容 |
+|----------------|------|
+| `[StaffShell]` | 画面の refresh / フォルダ作成 |
+| `[Firebase]` | Desktop JVM: GitLive / `firebase-java-sdk` のログ |
+| `[Firestore/QuizCatalog]` | リポジトリ層の結果件数 |
+
+**フォルダが一覧に出ないときの見方**
+
+1. `[Firestore/QuizCatalog] listFolders result count=N` — Console の `folders` 件数と一致するか
+2. `[Firebase]` ログの projectId — Firebase Console のプロジェクト ID と一致するか（`google-services.json`）
+3. ログイン後に作成しても一覧が空 — **別プロジェクト**の `google-services.json` を参照している可能性
+4. 書き込み失敗 — 未ログインまたはルール（`request.auth != null`）。読み取りは `allow read: if true`
+
+ログ無効化: `FirestoreDiagnostics.ENABLED = false`（`core/data/.../FirestoreDiagnostics.kt`）。
+
 ## Prerequisites
 
 - Android SDK and emulator or device

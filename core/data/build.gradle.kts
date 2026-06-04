@@ -62,8 +62,10 @@ kotlin {
         }
     }
     if (quizRuntime == "prod") {
+        val prodGitLiveDir = "src/prodGitLive/kotlin"
         sourceSets.named("androidMain").configure {
             kotlin.srcDir("src/prodAndroid/kotlin")
+            kotlin.srcDir(prodGitLiveDir)
             dependencies {
                 implementation(libs.firebase.common.lib)
                 implementation(libs.firebase.auth.ktx)
@@ -75,6 +77,13 @@ kotlin {
         }
         sourceSets.named("jvmMain").configure {
             kotlin.srcDir("src/prodJvm/kotlin")
+            kotlin.srcDir(prodGitLiveDir)
+            dependencies {
+                implementation(libs.firebase.app)
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+                implementation(libs.firebase.java.sdk)
+            }
         }
         sourceSets.named("wasmJsMain").configure {
             kotlin.srcDir("src/prodWasm/kotlin")

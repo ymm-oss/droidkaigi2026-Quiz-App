@@ -51,14 +51,20 @@ class StaffShellViewModel(
 
     private fun refresh() {
         viewModelScope.launch {
+            staffLog("refresh start")
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching {
-                deps.quizRepository.getDefaultQuizSet()
                 val folders = deps.listQuizFoldersUseCase()
-                val activeId = deps.getActiveQuizFolderIdUseCase()
+                val activeId = runCatching { deps.getActiveQuizFolderIdUseCase() }
+                    .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
+                    .getOrNull()
                 val selected = _uiState.value.selectedFolderId
-                    ?: activeId.takeIf { id -> folders.any { it.id == id } }
+                    ?: activeId?.takeIf { id -> folders.any { it.id == id } }
                     ?: folders.firstOrNull()?.id
+                staffLog(
+                    "refresh ok folders=${folders.size} activeId=$activeId selected=$selected " +
+                        folders.joinToString { "${it.id}:${it.displayName}" },
+                )
                 Triple(folders, activeId, selected)
             }.onSuccess { (folders, activeId, selected) ->
                 _uiState.update {
@@ -70,6 +76,8 @@ class StaffShellViewModel(
                     )
                 }
             }.onFailure { error ->
+                staffLog("refresh failed: ${error.message}")
+                error.printStackTrace()
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = error.message ?: "読み込みに失敗しました")
                 }
@@ -80,18 +88,33 @@ class StaffShellViewModel(
     private fun createFolder(name: String, description: String) {
         if (name.isBlank()) return
         viewModelScope.launch {
+            staffLog("createFolder start name=$name")
             runCatching {
                 val folder = deps.createQuizFolderUseCase(name.trim(), description.trim())
                 folder
             }.onSuccess { folder ->
+                staffLog("createFolder ok id=${folder.id} displayName=${folder.displayName}")
                 _uiState.update {
                     it.copy(
                         showCreateFolderDialog = false,
                         selectedFolderId = folder.id,
+                        errorMessage = null,
                     )
                 }
                 refresh()
+            }.onFailure { error ->
+                staffLog("createFolder failed: ${error.message}")
+                error.printStackTrace()
+                _uiState.update {
+                    it.copy(errorMessage = error.message ?: "フォルダの作成に失敗しました")
+                }
             }
+        }
+    }
+
+    private companion object {
+        fun staffLog(message: String) {
+            println("[StaffShell] $message")
         }
     }
 

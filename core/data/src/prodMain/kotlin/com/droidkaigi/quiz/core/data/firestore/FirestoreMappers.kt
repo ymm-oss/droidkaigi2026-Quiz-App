@@ -7,18 +7,24 @@ import com.droidkaigi.quiz.core.domain.model.QuizFolder
 import com.droidkaigi.quiz.core.domain.model.QuizSet
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
 
-internal fun FolderFirestoreDocument.toQuizFolder(folderId: String): QuizFolder = QuizFolder(
-    id = folderId,
-    name = name,
-    description = description,
-    sortOrder = sortOrder,
-)
+internal fun FolderFirestoreDocument.toQuizFolder(folderId: String): QuizFolder {
+    val doc = withResolvedLabels()
+    return QuizFolder(
+        id = folderId,
+        name = doc.name,
+        description = doc.description,
+        sortOrder = doc.sortOrder,
+    )
+}
 
-internal fun FolderFirestoreDocument.toQuizSet(folderId: String): QuizSet = QuizSetDto(
-    id = folderId,
-    title = title,
-    questions = questions,
-).toDomain()
+internal fun FolderFirestoreDocument.toQuizSet(folderId: String): QuizSet {
+    val doc = withResolvedLabels()
+    return QuizSet(
+        id = folderId,
+        title = doc.title,
+        questions = doc.questions.mapNotNull { it.toDomain() },
+    )
+}
 
 internal fun QuizFolder.toFirestoreDocument(quizSet: QuizSet, updatedAtEpochMillis: Long): FolderFirestoreDocument =
     FolderFirestoreDocument(

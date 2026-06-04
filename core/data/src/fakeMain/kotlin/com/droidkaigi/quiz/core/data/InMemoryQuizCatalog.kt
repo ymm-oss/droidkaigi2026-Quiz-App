@@ -21,7 +21,7 @@ class InMemoryQuizCatalog {
     fun listFolders(): List<QuizFolder> = folders.sortedBy { it.sortOrder }
 
     fun createFolder(name: String, description: String): QuizFolder {
-        val id = "folder-${folders.size + 1}-${name.hashCode().and(0xFFFF)}"
+        val id = newFolderDocumentId()
         val folder = QuizFolder(
             id = id,
             name = name.trim(),

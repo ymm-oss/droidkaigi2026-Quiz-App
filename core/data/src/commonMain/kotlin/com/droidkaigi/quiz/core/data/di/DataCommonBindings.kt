@@ -10,7 +10,6 @@ import com.droidkaigi.quiz.core.domain.time.SystemInstantProvider
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
-import com.droidkaigi.quiz.core.domain.usecase.GetDefaultQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
@@ -54,11 +53,6 @@ object DataCommonBindings {
     fun provideGetTodayRankingsUseCase(
         rankingRepository: RankingRepository,
     ): GetTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository)
-
-    @Provides
-    fun provideGetDefaultQuizSetUseCase(
-        quizCatalogRepository: QuizCatalogRepository,
-    ): GetDefaultQuizSetUseCase = GetDefaultQuizSetUseCase(quizCatalogRepository)
 
     @Provides
     fun provideListQuizFoldersUseCase(

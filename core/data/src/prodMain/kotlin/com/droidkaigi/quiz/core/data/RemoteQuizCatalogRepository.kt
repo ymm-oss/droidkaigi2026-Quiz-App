@@ -2,6 +2,7 @@ package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.data.firestore.AppConfigFirestoreDocument
+import com.droidkaigi.quiz.core.data.firestore.FirestoreDiagnostics
 import com.droidkaigi.quiz.core.data.firestore.FirestoreService
 import com.droidkaigi.quiz.core.data.firestore.FolderFirestoreDocument
 import com.droidkaigi.quiz.core.data.firestore.toQuizFolder
@@ -20,15 +21,22 @@ class RemoteQuizCatalogRepository(
     private val firestore: FirestoreService,
     private val instantProvider: InstantProvider,
 ) : QuizCatalogRepository {
-    override suspend fun listFolders(): List<QuizFolder> =
-        firestore.listFolders()
+    override suspend fun listFolders(): List<QuizFolder> {
+        FirestoreDiagnostics.log("QuizCatalog", "listFolders")
+        val folders = firestore.listFolders()
             .map { (id, doc) -> doc.toQuizFolder(id) }
             .sortedBy { it.sortOrder }
+        FirestoreDiagnostics.log(
+            "QuizCatalog",
+            "listFolders result count=${folders.size} ids=${folders.map { "${it.id}:${it.displayName}" }}",
+        )
+        return folders
+    }
 
     override suspend fun createFolder(name: String, description: String): QuizFolder {
         val trimmedName = name.trim()
         val existing = listFolders()
-        val folderId = "folder-${trimmedName.hashCode().and(0xFFFF)}-${existing.size}"
+        val folderId = newFolderDocumentId()
         val now = instantProvider.nowEpochMillis()
         val document = FolderFirestoreDocument(
             name = trimmedName,
@@ -38,7 +46,9 @@ class RemoteQuizCatalogRepository(
             questions = emptyList(),
             updatedAtEpochMillis = now,
         )
+        FirestoreDiagnostics.log("QuizCatalog", "createFolder writing folderId=$folderId name=$trimmedName")
         firestore.setFolder(folderId, document)
+        FirestoreDiagnostics.log("QuizCatalog", "createFolder wrote folderId=$folderId")
         if (existing.isEmpty()) {
             firestore.setAppConfig(AppConfigFirestoreDocument(activeFolderId = folderId, updatedAtEpochMillis = now))
         }

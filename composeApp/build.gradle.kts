@@ -25,7 +25,13 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget.set(
+                if (quizRuntime == "prod") JvmTarget.JVM_17 else JvmTarget.JVM_11,
+            )
+        }
+    }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()

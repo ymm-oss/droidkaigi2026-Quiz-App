@@ -36,7 +36,7 @@
 
 ### 開発（`quiz.runtime=fake`、Gradle 既定）
 
-- **問題**: 同梱 `quiz_set.json`（`JsonQuizRepository` / `InMemoryQuizCatalog`）。
+- **問題**: 同梱 `quiz_set.json`（`FakeQuizCatalogSeeder` / `InMemoryQuizCatalog`、fake のみ）。
 - **ランキング**: `FakeRankingRepository`（プロセス内インメモリ、端末日付でフィルタ）。
 - ネットなしで UI・採点・画面遷移を検証する**開発専用ハーネス**。本番の代替実装ではない。
 

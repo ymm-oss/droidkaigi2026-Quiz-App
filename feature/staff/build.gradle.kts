@@ -6,10 +6,14 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
+
 kotlin {
     jvm {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(
+                if (quizRuntime == "prod") JvmTarget.JVM_17 else JvmTarget.JVM_11,
+            )
         }
     }
 

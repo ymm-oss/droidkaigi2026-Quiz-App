@@ -35,6 +35,7 @@ private data class ApiKeyEntry(
 internal data class FirebaseProjectConfig(
     val projectId: String,
     val apiKey: String,
+    val applicationId: String,
 )
 
 internal object GoogleServicesLoader {
@@ -50,19 +51,36 @@ internal object GoogleServicesLoader {
         return FirebaseProjectConfig(
             projectId = root.project_info.projectId,
             apiKey = apiKey,
+            applicationId = client.client_info.mobileSdkAppId,
         )
     }
 
     private fun resolveConfigFile(): File {
-        val candidates = listOfNotNull(
-            System.getProperty("droidkaigi.firebase.config")?.let { File(it) },
-            File("google-services.json"),
-            File("androidApp/google-services.json"),
+        System.getProperty("droidkaigi.firebase.config")?.let { path ->
+            val file = File(path)
+            if (file.isFile) return file
+        }
+
+        val relativePaths = listOf(
+            "androidApp/google-services.json",
+            "google-services.json",
         )
-        return candidates.firstOrNull { it.isFile }
-            ?: error(
-                "google-services.json が見つかりません。次のいずれかに配置してください: " +
-                    candidates.joinToString { it.path },
-            )
+        var dir: File? = File(System.getProperty("user.dir") ?: ".").canonicalFile
+        while (dir != null) {
+            for (relative in relativePaths) {
+                val candidate = File(dir, relative)
+                if (candidate.isFile) return candidate
+            }
+            val parent = dir.parentFile ?: break
+            if (parent == dir) break
+            dir = parent
+        }
+
+        error(
+            "google-services.json が見つかりません。" +
+                " リポジトリ直下の androidApp/google-services.json を配置するか、" +
+                " -Ddroidkaigi.firebase.config=/絶対パス/google-services.json を指定してください。" +
+                " (user.dir=${System.getProperty("user.dir")})",
+        )
     }
 }
