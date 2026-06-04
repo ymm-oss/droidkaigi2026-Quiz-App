@@ -5,7 +5,8 @@
     {
       "type": "single_choice",
       "id": "q1",
-      "prompt": "Kotlin Multiplatform で UI を共有する Jetpack ライブラリは？",
+      "prompt": "次のコードの `Text` は **Compose Multiplatform** のコンポーネントです。\n\n```kotlin\n@Composable\nfun Greeting(name: String) {\n    Text(text = \"Hello, $name!\")\n}\n```\n\nUI を Android / Desktop / Web などで**共通化**できる Jetpack ライブラリはどれ？",
+      "explanationMarkdown": "**Compose Multiplatform** は `@Composable` 関数で UI を宣言的に記述し、KMP 経由で複数プラットフォームに共有できます。\n\n- Android: Jetpack Compose\n- Desktop / iOS / Web: Compose Multiplatform",
       "options": [
         { "id": "a", "label": "Compose Multiplatform" },
         { "id": "b", "label": "XML Layout" },
@@ -16,19 +17,21 @@
     {
       "type": "multiple_choice",
       "id": "q2",
-      "prompt": "Compose の利点として正しいものをすべて選んでください",
+      "prompt": "次の **Compose** コードについて、正しい説明を**すべて**選んでください。\n\n```kotlin\nvar count by remember { mutableStateOf(0) }\nButton(onClick = { count++ }) {\n    Text(\"Clicked $count times\")\n}\n```",
+      "explanationMarkdown": "`remember { mutableStateOf(...) }` は Composable 内の**状態**を保持します。`count` が変わると **Recomposition** が走り、`Text` の表示が更新されます。\n\n- `onClick` はユーザー操作のコールバック\n- Compose では XML は不要",
       "options": [
-        { "id": "a", "label": "宣言的 UI" },
-        { "id": "b", "label": "XML 必須" },
-        { "id": "c", "label": "プレビュー可能" },
-        { "id": "d", "label": "状態駆動" }
+        { "id": "a", "label": "count の変更で UI が再 Composition される" },
+        { "id": "b", "label": "remember は必ず ViewModel で宣言する" },
+        { "id": "c", "label": "Button の onClick はユーザー操作で呼ばれる" },
+        { "id": "d", "label": "Text の内容は状態に連動して更新される" }
       ],
       "correctIds": ["a", "c", "d"]
     },
     {
       "type": "reorder",
       "id": "q3",
-      "prompt": "アプリ起動から画面表示までの流れを正しい順に並べ替えてください",
+      "prompt": "## Activity 起動〜描画\n\n**Android + Compose** アプリで、起動から初回描画までの処理を正しい順に並べ替えてください。\n\nヒント: `Activity.onCreate` のなかで `setContent { }` を呼び、その後 **Composition** が走ってからレイアウト & 描画されます。",
+      "explanationMarkdown": "典型的な流れ:\n\n1. `Activity.onCreate` — Activity の生成\n2. `setContent { }` — Compose UI ツリーの開始\n3. **Composition** — Composable の実行\n4. **レイアウト & 描画** — 画面への反映",
       "items": [
         { "id": "1", "label": "Activity.onCreate" },
         { "id": "2", "label": "setContent { }" },
