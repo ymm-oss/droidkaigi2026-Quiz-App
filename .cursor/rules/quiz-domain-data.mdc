@@ -9,7 +9,7 @@ alwaysApply: false
 - `core:domain` must not depend on Compose or Android.
 - Scoring only in `QuizScorer`; session steps in `QuizEngine`.
 - Quiz JSON: `core/data/.../quiz_set.json` via `JsonQuizRepository` in `fakeMain`.
-- Runtime: `quiz.runtime` in `gradle.properties` (`fake` | `prod`) selects `fakeMain` or `prodMain` + Metro graph (`FakeQuizAppGraph` / `ProdQuizAppGraph`).
+- Runtime: `quiz.runtime` in `gradle.properties` (`fake` | `prod`) adds `src/fakeMain` or `src/prodMain` to `commonMain` via `kotlin.srcDir` + Metro graph (`FakeQuizAppGraph` / `ProdQuizAppGraph`).
 - Repositories: interface in domain; fake/prod impls in matching source set; wire via Metro `@ContributesBinding` + `AppDependencies.init(graph)`.
 - “Today” filtering: `InstantProvider` + `isSameDay` — never hardcode dates in UI.
 - Extend `Question` sealed types in domain; map JSON in `QuestionDto.toDomain()`.

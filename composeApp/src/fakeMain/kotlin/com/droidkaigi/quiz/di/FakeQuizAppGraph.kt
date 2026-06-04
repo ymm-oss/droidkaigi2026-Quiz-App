@@ -9,9 +9,9 @@ import dev.zacsweers.metro.createGraph
 @DependencyGraph(AppScope::class)
 interface FakeQuizAppGraph : QuizAppGraph
 
-actual fun createQuizAppGraph(): QuizAppGraph = createGraph<FakeQuizAppGraph>()
+fun createQuizAppGraph(): QuizAppGraph = createGraph<FakeQuizAppGraph>()
 
-actual fun initQuizAppGraph() {
+fun initQuizAppGraph() {
     if (!AppDependencies.isInitialized) {
         AppDependencies.init(createQuizAppGraph())
     }

@@ -14,6 +14,7 @@ val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime'). Set it in gradle.properties."
 }
+val quizRuntimeSourceSetDir = if (quizRuntime == "prod") "prodMain" else "fakeMain"
 
 kotlin {
     android {
@@ -31,13 +32,9 @@ kotlin {
     }
 
     sourceSets {
-        val fakeMain by creating {
-            dependsOn(commonMain.get())
+        commonMain {
+            kotlin.srcDir("src/$quizRuntimeSourceSetDir/kotlin")
         }
-        val prodMain by creating {
-            dependsOn(commonMain.get())
-        }
-
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(project(":core:data"))
@@ -60,27 +57,6 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.metro.runtime)
         }
-        fakeMain.dependencies {
-            implementation(project(":core:data"))
-        }
-        prodMain.dependencies {
-            implementation(project(":core:data"))
-        }
-    }
-
-    val activeRuntimeMain = sourceSets.getByName(if (quizRuntime == "prod") "prodMain" else "fakeMain")
-    val common = sourceSets.getByName("commonMain")
-    sourceSets.named("jvmMain").configure {
-        dependsOn(common)
-        dependsOn(activeRuntimeMain)
-    }
-    sourceSets.named("androidMain").configure {
-        dependsOn(common)
-        dependsOn(activeRuntimeMain)
-    }
-    sourceSets.named("wasmJsMain").configure {
-        dependsOn(common)
-        dependsOn(activeRuntimeMain)
     }
 }
 

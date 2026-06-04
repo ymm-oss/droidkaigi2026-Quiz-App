@@ -15,7 +15,7 @@ Compose Multiplatform クイズアプリ（Android + Desktop + Web/Wasm）。選
 
 ## ランタイムバリアント（fake / prod）
 
-データ層は **2 つのランタイム** を持ち、ビルド時にどちらか一方だけがコンパイルされます（`fakeMain` / `prodMain` の source set 切り替え + Metro の依存グラフ切り替え）。
+データ層は **2 つのランタイム** を持ち、ビルド時にどちらか一方だけがコンパイルされます（`src/fakeMain` または `src/prodMain` を `commonMain` に載せ替え + Metro グラフ切り替え）。
 
 | バリアント | `quiz.runtime` | 内容 |
 |------------|----------------|------|

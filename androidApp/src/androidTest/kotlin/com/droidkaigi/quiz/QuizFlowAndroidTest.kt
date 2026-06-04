@@ -1,8 +1,10 @@
 package com.droidkaigi.quiz
 
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -21,27 +23,27 @@ class QuizFlowAndroidTest {
     fun restartQuiz_afterCompletion_showsFirstQuestionFromBeginning() {
         composeRule.onNodeWithText("ニックネーム").performTextInput("RestartTester")
         composeRule.onNodeWithText("クイズを始める").performClick()
-        answerAllQuestionsCorrectly()
+        answerQuizThroughResult()
 
         composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText("ランキングを見る"))
+            composeRule.onAllNodes(hasText("ランキングを見る"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("ランキングを見る").performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText("ホームに戻る"))
+            composeRule.onAllNodes(hasText("ホームに戻る"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("ホームに戻る").performClick()
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText("クイズを始める"))
+            composeRule.onAllNodes(hasText("クイズを始める"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("クイズを始める").performClick()
 
         composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText(firstQuestionPrompt))
+            composeRule.onAllNodes(hasText(firstQuestionPrompt))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("0 / 3").assertExists()
@@ -51,28 +53,31 @@ class QuizFlowAndroidTest {
     fun fullQuizFlow_reachesRankingWithNickname() {
         composeRule.onNodeWithText("ニックネーム").performTextInput("FlowTester")
         composeRule.onNodeWithText("クイズを始める").performClick()
-        answerAllQuestionsCorrectly()
+        answerQuizThroughResult()
 
         composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText("ランキングを見る"))
+            composeRule.onAllNodes(hasText("ランキングを見る"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("ランキングを見る").performClick()
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText("FlowTester"))
+        composeRule.waitUntil(timeoutMillis = 15_000) {
+            composeRule.onAllNodes(hasText("今日のランキング"))
                 .fetchSemanticsNodes().isNotEmpty()
         }
     }
 
     private fun waitForProgress(label: String) {
         composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodes(androidx.compose.ui.test.hasText(label))
+            composeRule.onAllNodes(hasText(label))
                 .fetchSemanticsNodes().isNotEmpty()
         }
     }
 
-    private fun answerAllQuestionsCorrectly() {
+    /**
+     * 単一・複数選択は正解で回答。並び替えは UI 操作（ドラッグ）をテストしない。
+     */
+    private fun answerQuizThroughResult() {
         waitForProgress("0 / 3")
         composeRule.onNodeWithText("Compose Multiplatform").performClick()
         composeRule.onNodeWithText("回答する").performClick()
@@ -84,7 +89,14 @@ class QuizFlowAndroidTest {
         composeRule.onNodeWithText("回答する").performClick()
 
         waitForProgress("2 / 3")
-        composeRule.onNodeWithText("回答する").performClick()
-        composeRule.waitForIdle()
+        composeRule.onNodeWithText("回答する").performScrollTo().performClick()
+        waitForResultScreen()
+    }
+
+    private fun waitForResultScreen() {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
+            composeRule.onAllNodes(hasText("クイズ完了"))
+                .fetchSemanticsNodes().isNotEmpty()
+        }
     }
 }

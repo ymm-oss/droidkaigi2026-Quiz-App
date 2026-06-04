@@ -14,6 +14,7 @@ val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime'). Set it in gradle.properties."
 }
+val quizRuntimeSourceSetDir = if (quizRuntime == "prod") "prodMain" else "fakeMain"
 
 kotlin {
     android {
@@ -35,11 +36,8 @@ kotlin {
     }
 
     sourceSets {
-        val fakeMain by creating {
-            dependsOn(commonMain.get())
-        }
-        val prodMain by creating {
-            dependsOn(commonMain.get())
+        commonMain {
+            kotlin.srcDir("src/$quizRuntimeSourceSetDir/kotlin")
         }
         commonMain.dependencies {
             implementation(project(":core:domain"))
@@ -50,9 +48,6 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.metro.runtime)
         }
-        fakeMain.dependencies {
-            implementation(libs.compose.components.resources)
-        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
@@ -62,24 +57,8 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
     }
-
-    val activeRuntimeMain = sourceSets.getByName(if (quizRuntime == "prod") "prodMain" else "fakeMain")
-    val common = sourceSets.getByName("commonMain")
-    sourceSets.named("jvmMain").configure {
-        dependsOn(common)
-        dependsOn(activeRuntimeMain)
-    }
-    sourceSets.named("androidMain").configure {
-        dependsOn(common)
-        dependsOn(activeRuntimeMain)
-    }
-    sourceSets.named("wasmJsMain").configure {
-        dependsOn(common)
-        dependsOn(activeRuntimeMain)
-    }
-    sourceSets.named("jvmTest").configure {
-        dependsOn(sourceSets.named("jvmMain").get())
-        if (quizRuntime != "fake") {
+    if (quizRuntime != "fake") {
+        sourceSets.named("jvmTest").configure {
             kotlin.exclude("**/FakeRankingRepositoryTest.kt")
         }
     }
