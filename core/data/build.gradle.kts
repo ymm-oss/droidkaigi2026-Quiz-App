@@ -9,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.droidkaigi.quiz.core.data"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -19,6 +19,7 @@ kotlin {
         androidResources {
             enable = true
         }
+        withHostTest {}
     }
     jvm()
 
