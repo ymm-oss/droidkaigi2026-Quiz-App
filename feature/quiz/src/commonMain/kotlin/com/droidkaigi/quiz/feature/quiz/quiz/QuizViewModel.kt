@@ -30,10 +30,15 @@ class QuizViewModel(
     val events: SharedFlow<QuizEvent> = _events.asSharedFlow()
 
     init {
-        refreshFromSession()
+        syncFromSession()
     }
 
     private fun session() = deps.sessionHolder.currentSession
+
+    /** Re-read [QuizSessionHolder.currentSession] (e.g. after a new quiz starts with a reused ViewModel). */
+    fun syncFromSession() {
+        refreshFromSession()
+    }
 
     private fun refreshFromSession() {
         val session = session() ?: return

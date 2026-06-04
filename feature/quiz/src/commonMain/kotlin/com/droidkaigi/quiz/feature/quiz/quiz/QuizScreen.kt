@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.data.AppDependencies
 import com.droidkaigi.quiz.core.domain.model.MultipleChoice
 import com.droidkaigi.quiz.core.domain.model.Question
 import com.droidkaigi.quiz.core.domain.model.Reorder
@@ -41,9 +42,16 @@ import com.droidkaigi.quiz.core.ui.theme.quizShake
 @Composable
 fun QuizScreen(
     onFinished: () -> Unit,
-    viewModel: QuizViewModel = viewModel { QuizViewModel() },
 ) {
+    val sessionKey = AppDependencies.shared.sessionHolder.currentSession?.startedAtEpochMillis
+    val viewModel: QuizViewModel = viewModel(key = sessionKey?.toString() ?: "no-session") {
+        QuizViewModel()
+    }
     val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(sessionKey) {
+        viewModel.syncFromSession()
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
