@@ -1,23 +1,112 @@
 package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.AppScope
+import com.droidkaigi.quiz.core.data.firestore.AppConfigFirestoreDocument
+import com.droidkaigi.quiz.core.data.firestore.FirestoreService
+import com.droidkaigi.quiz.core.data.firestore.FolderFirestoreDocument
+import com.droidkaigi.quiz.core.data.firestore.toQuizFolder
+import com.droidkaigi.quiz.core.data.firestore.toQuizSet
+import com.droidkaigi.quiz.core.data.firestore.toFirestoreDocument
 import com.droidkaigi.quiz.core.domain.model.QuizFolder
 import com.droidkaigi.quiz.core.domain.model.QuizSet
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
+import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
+@Inject
 @ContributesBinding(AppScope::class)
-class RemoteQuizCatalogRepository : QuizCatalogRepository {
-    override suspend fun listFolders(): List<QuizFolder> = notImplemented()
-    override suspend fun createFolder(name: String, description: String): QuizFolder = notImplemented()
-    override suspend fun updateFolder(folder: QuizFolder) = notImplemented()
-    override suspend fun deleteFolder(folderId: String) = notImplemented()
-    override suspend fun getQuizSet(folderId: String): QuizSet = notImplemented()
-    override suspend fun saveQuizSet(quizSet: QuizSet) = notImplemented()
-    override suspend fun getActiveFolderId(): String = notImplemented()
-    override suspend fun setActiveFolderId(folderId: String) = notImplemented()
+class RemoteQuizCatalogRepository(
+    private val firestore: FirestoreService,
+    private val instantProvider: InstantProvider,
+) : QuizCatalogRepository {
+    override suspend fun listFolders(): List<QuizFolder> =
+        firestore.listFolders()
+            .map { (id, doc) -> doc.toQuizFolder(id) }
+            .sortedBy { it.sortOrder }
 
-    private fun notImplemented(): Nothing = error(
-        "RemoteQuizCatalogRepository is not implemented. Connect your API in :core:data prodMain.",
-    )
+    override suspend fun createFolder(name: String, description: String): QuizFolder {
+        val trimmedName = name.trim()
+        val existing = listFolders()
+        val folderId = "folder-${trimmedName.hashCode().and(0xFFFF)}-${existing.size}"
+        val now = instantProvider.nowEpochMillis()
+        val document = FolderFirestoreDocument(
+            name = trimmedName,
+            description = description.trim(),
+            sortOrder = existing.size,
+            title = trimmedName,
+            questions = emptyList(),
+            updatedAtEpochMillis = now,
+        )
+        firestore.setFolder(folderId, document)
+        if (existing.isEmpty()) {
+            firestore.setAppConfig(AppConfigFirestoreDocument(activeFolderId = folderId, updatedAtEpochMillis = now))
+        }
+        return document.toQuizFolder(folderId)
+    }
+
+    override suspend fun updateFolder(folder: QuizFolder) {
+        val current = firestore.getFolder(folder.id)
+            ?: error("フォルダが見つかりません: ${folder.id}")
+        val now = instantProvider.nowEpochMillis()
+        firestore.setFolder(
+            folder.id,
+            current.copy(
+                name = folder.name,
+                description = folder.description,
+                sortOrder = folder.sortOrder,
+                updatedAtEpochMillis = now,
+            ),
+        )
+    }
+
+    override suspend fun deleteFolder(folderId: String) {
+        firestore.deleteFolder(folderId)
+        val config = firestore.getAppConfig()
+        if (config?.activeFolderId == folderId) {
+            val fallback = listFolders().firstOrNull()?.id.orEmpty()
+            if (fallback.isNotEmpty()) {
+                firestore.setAppConfig(
+                    AppConfigFirestoreDocument(
+                        activeFolderId = fallback,
+                        updatedAtEpochMillis = instantProvider.nowEpochMillis(),
+                    ),
+                )
+            }
+        }
+    }
+
+    override suspend fun getQuizSet(folderId: String): QuizSet {
+        val document = firestore.getFolder(folderId)
+            ?: error("クイズが見つかりません（folderId=$folderId）。Firestore の folders/$folderId を確認してください。")
+        return document.toQuizSet(folderId)
+    }
+
+    override suspend fun saveQuizSet(quizSet: QuizSet) {
+        val folderId = quizSet.id
+        val current = firestore.getFolder(folderId)
+        val now = instantProvider.nowEpochMillis()
+        val baseFolder = current?.toQuizFolder(folderId)
+            ?: QuizFolder(id = folderId, name = quizSet.title, description = "", sortOrder = listFolders().size)
+        firestore.setFolder(folderId, baseFolder.toFirestoreDocument(quizSet, now))
+    }
+
+    override suspend fun getActiveFolderId(): String {
+        val configured = firestore.getAppConfig()?.activeFolderId?.takeIf { it.isNotBlank() }
+        if (configured != null && firestore.getFolder(configured) != null) return configured
+        return listFolders().firstOrNull()?.id
+            ?: error(
+                "アクティブなフォルダがありません。Firestore に folders と appConfig/default を作成してください。",
+            )
+    }
+
+    override suspend fun setActiveFolderId(folderId: String) {
+        require(firestore.getFolder(folderId) != null) { "Unknown folder: $folderId" }
+        firestore.setAppConfig(
+            AppConfigFirestoreDocument(
+                activeFolderId = folderId,
+                updatedAtEpochMillis = instantProvider.nowEpochMillis(),
+            ),
+        )
+    }
 }

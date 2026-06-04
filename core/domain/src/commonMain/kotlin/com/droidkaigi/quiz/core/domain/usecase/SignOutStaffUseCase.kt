@@ -4,6 +4,6 @@ class SignOutStaffUseCase(
     private val sessionStore: StaffAuthSessionStore,
 ) {
     operator fun invoke() {
-        sessionStore.currentSession = null
+        sessionStore.clearSession()
     }
 }

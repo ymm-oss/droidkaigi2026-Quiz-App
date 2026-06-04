@@ -22,14 +22,18 @@ kotlin {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.fromTarget(if (quizRuntime == "prod") "17" else "11"))
         }
         androidResources {
             enable = true
         }
         withHostTest {}
     }
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(if (quizRuntime == "prod") "17" else "11"))
+        }
+    }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
@@ -55,6 +59,25 @@ kotlin {
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
+        }
+    }
+    if (quizRuntime == "prod") {
+        sourceSets.named("androidMain").configure {
+            kotlin.srcDir("src/prodAndroid/kotlin")
+            dependencies {
+                implementation(libs.firebase.common.lib)
+                implementation(libs.firebase.auth.ktx)
+                implementation(libs.firebase.firestore.ktx)
+                implementation(libs.firebase.app)
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+            }
+        }
+        sourceSets.named("jvmMain").configure {
+            kotlin.srcDir("src/prodJvm/kotlin")
+        }
+        sourceSets.named("wasmJsMain").configure {
+            kotlin.srcDir("src/prodWasm/kotlin")
         }
     }
     if (quizRuntime != "fake") {

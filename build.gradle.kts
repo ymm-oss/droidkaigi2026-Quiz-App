@@ -1,4 +1,5 @@
 plugins {
+    alias(libs.plugins.googleServices) apply false
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidKmpLibrary) apply false
     alias(libs.plugins.composeMultiplatform) apply false

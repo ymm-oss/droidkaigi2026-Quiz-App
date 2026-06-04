@@ -5,6 +5,10 @@ import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 
 interface StaffAuthSessionStore {
     var currentSession: StaffSession?
+
+    fun clearSession() {
+        currentSession = null
+    }
 }
 
 class SignInStaffUseCase(

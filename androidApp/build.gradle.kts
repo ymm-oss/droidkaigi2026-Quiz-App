@@ -1,9 +1,15 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
+val hasGoogleServices = file("google-services.json").exists()
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+}
+if (quizRuntime == "prod" && hasGoogleServices) {
+    apply(plugin = libs.plugins.googleServices.get().pluginId)
 }
 
 kotlin {

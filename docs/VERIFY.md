@@ -31,14 +31,16 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 
 - **認証**（fake）: メール `staff@droidkaigi.local`、パスワード `staff2026`（ローカル固定値・開発専用）。成功後にコンソールへ遷移。トップバーの「ログアウト」で認証画面に戻る
 
-**本番（prod・Firebase Auth + Firestore 予定）**
+**本番（prod）**
 
 ```bash
 ./gradlew :staffDesktopApp:run -Pquiz.runtime=prod
 ```
 
-- **認証**: `ProdStaffAuthRepository`（Firebase Authentication 実装予定）
-- **データ**: `RemoteQuizCatalogRepository` 等（参加者 prod と同じ Firestore。スタッフは書き込み権限付き）
+要 [README](../README.md) の Firebase 設定と [docs/FIRESTORE.md](FIRESTORE.md) の初期データ。
+
+- **認証**: Console で作成したスタッフ用メール / パスワード（`ProdStaffAuthRepository`）
+- **データ**: 参加者 prod と同じ Firestore（スタッフは認証後に書き込み可）
 - **フォルダ**: 左ペインで選択・追加。「参加者向けに公開」で参加者アプリのクイズ／ランキング対象を切り替え
 - **クイズ**: 問題の追加・編集・削除、正解と解説（Markdown: `**太字**`, `` `code` ``, `- 箇条書き`, `## 見出し`）
 - **ランキング**（fake）: 選択フォルダの当日スコア（インメモリ。別プロセスの参加者アプリとは共有されない）

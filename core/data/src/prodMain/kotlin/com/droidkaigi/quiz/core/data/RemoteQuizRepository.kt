@@ -2,18 +2,18 @@ package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.domain.model.QuizSet
+import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.repository.QuizRepository
 import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 
-/**
- * Prod quiz source (e.g. Firebase Remote Config / Firestore). Wire the client SDK here.
- */
+@Inject
 @ContributesBinding(AppScope::class)
-class RemoteQuizRepository : QuizRepository {
+class RemoteQuizRepository(
+    private val quizCatalogRepository: QuizCatalogRepository,
+) : QuizRepository {
     override suspend fun getDefaultQuizSet(): QuizSet {
-        error(
-            "RemoteQuizRepository is not implemented. " +
-                "Connect Firebase or your API in :core:data prodMain.",
-        )
+        val folderId = quizCatalogRepository.getActiveFolderId()
+        return quizCatalogRepository.getQuizSet(folderId)
     }
 }

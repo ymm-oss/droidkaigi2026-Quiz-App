@@ -10,3 +10,6 @@ captures/
 .cxx
 *.hprof
 .kotlin/
+
+# Firebase (環境ごとに Console から取得。コミットしない)
+androidApp/google-services.json
