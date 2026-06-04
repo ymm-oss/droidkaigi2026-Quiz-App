@@ -2,12 +2,15 @@ package com.droidkaigi.quiz.feature.quiz.result
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,8 +20,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
+import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
+import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
+import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.theme.QuizMotion
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import kotlin.random.Random
@@ -39,44 +46,81 @@ fun ResultScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .padding(QuizTokens.spacingLarge),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        ConfettiBackground(modifier = Modifier.fillMaxWidth().weight(1f))
-        Text(text = "おつかれさま、${state.nickname} さん！", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            text = "${state.correctCount} / ${state.totalCount} 問正解",
-            modifier = Modifier.padding(vertical = QuizTokens.spacingMedium),
-        )
-        Text(
-            text = "スコア: $animatedScore",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Button(
-            onClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
+    QuizScreenBackground {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = QuizTokens.spacingLarge),
+                .fillMaxSize()
+                .safeContentPadding(),
+            contentAlignment = Alignment.Center,
         ) {
-            Text("ランキングを見る")
+            ConfettiBackground(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 120.dp),
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+                    .padding(horizontal = QuizTokens.spacingLarge),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingExtraLarge),
+            ) {
+                QuizHeroTitle(
+                    title = "クイズ完了",
+                    subtitle = "おつかれさま、${state.nickname} さん！",
+                    badge = "RESULT",
+                )
+                QuizSurfaceCard {
+                    Text(
+                        text = "あなたの結果",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                    Text(
+                        text = "${state.correctCount} / ${state.totalCount} 問正解",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+                    Text(
+                        text = "スコア",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "$animatedScore",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                QuizPrimaryButton(
+                    text = "ランキングを見る",
+                    onClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun ConfettiBackground(modifier: Modifier = Modifier) {
-    val colors = listOf(QuizTokens.primary, QuizTokens.correct, QuizTokens.secondary, QuizTokens.highlight)
+    val colors = listOf(
+        QuizTokens.primary,
+        QuizTokens.correct,
+        QuizTokens.secondary,
+        QuizTokens.highlight,
+    )
     Canvas(modifier = modifier) {
-        repeat(24) { i ->
+        repeat(32) { i ->
             val x = Random(i).nextFloat() * size.width
-            val y = Random(i + 7).nextFloat() * size.height * 0.5f
-            drawCircle(colors[i % colors.size], radius = 6f + (i % 3) * 2f, center = Offset(x, y))
+            val y = Random(i + 7).nextFloat() * size.height
+            drawCircle(
+                color = colors[i % colors.size],
+                radius = 6f + (i % 3) * 2f,
+                center = Offset(x, y),
+            )
         }
     }
 }

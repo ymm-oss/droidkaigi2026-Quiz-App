@@ -38,10 +38,12 @@ class QuizViewModel(
     private fun refreshFromSession() {
         val session = session() ?: return
         val question = session.currentQuestion
+        val total = session.quizSet.questions.size.coerceAtLeast(1)
         _uiState.update {
             QuizUiState(
                 prompt = question?.prompt.orEmpty(),
                 progress = session.progressLabel,
+                progressFraction = session.currentIndex.toFloat() / total,
                 question = question,
                 selectedSingleId = null,
                 selectedMultipleIds = emptySet(),

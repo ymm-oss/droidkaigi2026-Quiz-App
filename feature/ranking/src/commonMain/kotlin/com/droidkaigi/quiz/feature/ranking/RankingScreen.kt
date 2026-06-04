@@ -3,16 +3,18 @@ package com.droidkaigi.quiz.feature.ranking
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,7 +24,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
+import com.droidkaigi.quiz.core.ui.components.QuizRankingRow
+import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
+import com.droidkaigi.quiz.core.ui.components.QuizSecondaryButton
+import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
@@ -40,47 +48,86 @@ fun RankingScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .padding(QuizTokens.spacingMedium),
-    ) {
-        Text(text = "今日のランキング", style = MaterialTheme.typography.headlineMedium)
-        if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                itemsIndexed(state.entries, key = { _, e -> "${e.nickname}-${e.completedAtEpochMillis}" }) { index, entry ->
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = fadeIn() + slideInVertically { it / 2 },
+    QuizScreenBackground {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeContentPadding(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxSize()
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = QuizTokens.spacingLarge),
+            ) {
+                Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                QuizHeroTitle(
+                    title = "今日のランキング",
+                    subtitle = "今日のベストスコア",
+                    badge = "RANKING",
+                )
+                Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
+                if (state.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        val highlighted = entry.nickname == state.highlightNickname
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = QuizTokens.spacingSmall)
-                                .background(
-                                    if (highlighted) QuizTokens.highlight else MaterialTheme.colorScheme.surface,
+                        QuizSurfaceCard {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
-                                .padding(QuizTokens.spacingMedium),
-                        ) {
-                            Text("${index + 1}.", style = MaterialTheme.typography.titleMedium)
-                            Column(modifier = Modifier.padding(start = QuizTokens.spacingMedium).weight(1f)) {
-                                Text(entry.nickname, style = MaterialTheme.typography.bodyLarge)
-                                Text("スコア ${entry.score}")
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
+                    ) {
+                        itemsIndexed(
+                            items = state.entries,
+                            key = { _, e -> "${e.nickname}-${e.completedAtEpochMillis}" },
+                        ) { index, entry ->
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = fadeIn() + slideInVertically { it / 2 },
+                            ) {
+                                QuizRankingRow(
+                                    rank = index + 1,
+                                    nickname = entry.nickname,
+                                    score = entry.score,
+                                    highlighted = entry.nickname == state.highlightNickname,
+                                )
+                            }
+                        }
+                        if (state.entries.isEmpty()) {
+                            item {
+                                QuizSurfaceCard {
+                                    Text(
+                                        text = "まだエントリーがありません",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
                         }
                     }
                 }
+                Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
+                QuizSecondaryButton(
+                    text = "ホームに戻る",
+                    onClick = { viewModel.onIntent(RankingIntent.GoHome) },
+                )
+                Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
             }
-        }
-        Button(
-            onClick = { viewModel.onIntent(RankingIntent.GoHome) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("ホームに戻る")
         }
     }
 }

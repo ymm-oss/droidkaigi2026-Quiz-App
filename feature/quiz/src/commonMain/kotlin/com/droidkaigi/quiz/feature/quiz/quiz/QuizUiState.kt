@@ -5,6 +5,7 @@ import com.droidkaigi.quiz.core.domain.model.Question
 data class QuizUiState(
     val prompt: String = "",
     val progress: String = "",
+    val progressFraction: Float = 0f,
     val question: Question? = null,
     val selectedSingleId: String? = null,
     val selectedMultipleIds: Set<String> = emptySet(),
