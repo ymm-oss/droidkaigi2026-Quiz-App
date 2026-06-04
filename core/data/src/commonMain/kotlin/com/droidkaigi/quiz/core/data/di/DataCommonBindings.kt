@@ -1,6 +1,7 @@
 package com.droidkaigi.quiz.core.data.di
 
 import com.droidkaigi.quiz.core.data.QuizSessionHolder
+import com.droidkaigi.quiz.core.data.StaffAuthHolder
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
@@ -14,9 +15,13 @@ import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
+import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
 import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -28,6 +33,10 @@ object DataCommonBindings {
     @Provides
     @SingleIn(AppScope::class)
     fun provideSessionHolder(): QuizSessionHolder = QuizSessionHolder()
+
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideStaffAuthHolder(): StaffAuthHolder = StaffAuthHolder()
 
     @Provides
     fun provideQuizEngine(): QuizEngine = QuizEngine()
@@ -90,4 +99,20 @@ object DataCommonBindings {
     fun provideSetActiveQuizFolderUseCase(
         quizCatalogRepository: QuizCatalogRepository,
     ): SetActiveQuizFolderUseCase = SetActiveQuizFolderUseCase(quizCatalogRepository)
+
+    @Provides
+    fun provideSignInStaffUseCase(
+        staffAuthRepository: StaffAuthRepository,
+        staffAuthHolder: StaffAuthHolder,
+    ): SignInStaffUseCase = SignInStaffUseCase(staffAuthRepository, staffAuthHolder)
+
+    @Provides
+    fun provideGetStaffAuthStateUseCase(
+        staffAuthHolder: StaffAuthHolder,
+    ): GetStaffAuthStateUseCase = GetStaffAuthStateUseCase(staffAuthHolder)
+
+    @Provides
+    fun provideSignOutStaffUseCase(
+        staffAuthHolder: StaffAuthHolder,
+    ): SignOutStaffUseCase = SignOutStaffUseCase(staffAuthHolder)
 }

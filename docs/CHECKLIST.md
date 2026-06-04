@@ -1,6 +1,6 @@
 # Implementation Checklist
 
-> **進捗:** 32 / 32 完了  
+> **進捗:** 33 / 33 完了  
 > **最終更新:** 2026-06-04
 
 ## 使い方
@@ -23,6 +23,7 @@
 | 6 | Desktop / Web | 3 / 3 |
 | 7 | UI リデザイン（Home 基準） | 6 / 6 |
 | H | Harness iterate | 3 / 3 |
+| 8 | Staff 認証 | 1 / 1 |
 
 ---
 
@@ -79,6 +80,10 @@
 - [x] **P7-04** Quiz 画面へデザイン適用 — 確認: `QuizScreen.kt` が `QuizScreenBackground` + 共通コンポーネントを使用
 - [x] **P7-05** Result 画面へデザイン適用 — 確認: `ResultScreen.kt` が `QuizScreenBackground` + 共通コンポーネントを使用
 - [x] **P7-06** Ranking 画面へデザイン適用 — 確認: `RankingScreen.kt` が `QuizScreenBackground` + 共通コンポーネントを使用
+
+## Phase 8 — Staff 認証
+
+- [x] **P8-01** スタッフ認証画面（スタッフアプリのみ） — 確認: `./gradlew :staffDesktopApp:run` でログイン画面 → `staff@droidkaigi.local` / `staff2026` → コンソール、`feature/staff/.../auth/StaffAuthScreen.kt`
 
 ## Harness iterate（各 Phase 後）
 

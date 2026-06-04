@@ -21,6 +21,7 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 ./gradlew :staffDesktopApp:run
 ```
 
+- **認証**（fake / インメモリ）: メール `staff@droidkaigi.local`、パスワード `staff2026`。成功後にコンソール（フォルダ・クイズ・ランキング）へ遷移。トップバーの「ログアウト」で認証画面に戻る
 - **フォルダ**: 左ペインで選択・追加。「参加者向けに公開」で参加者アプリのクイズ／ランキング対象を切り替え
 - **クイズ**: 問題の追加・編集・削除、正解と解説（Markdown: `**太字**`, `` `code` ``, `- 箇条書き`, `## 見出し`）
 - **ランキング**: 選択フォルダの当日スコア（フォルダごとにインメモリ保持。別プロセスの参加者アプリとは共有されない）

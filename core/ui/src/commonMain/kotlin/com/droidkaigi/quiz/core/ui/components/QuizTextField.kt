@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.VisualTransformation
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
@@ -19,6 +20,10 @@ fun QuizTextField(
     label: String,
     modifier: Modifier = Modifier,
     singleLine: Boolean = true,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        capitalization = KeyboardCapitalization.Words,
+    ),
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     OutlinedTextField(
         value = value,
@@ -27,9 +32,8 @@ fun QuizTextField(
         label = { Text(label) },
         singleLine = singleLine,
         shape = RoundedCornerShape(QuizTokens.cornerMedium),
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Words,
-        ),
+        keyboardOptions = keyboardOptions,
+        visualTransformation = visualTransformation,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,

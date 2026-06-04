@@ -14,7 +14,10 @@ import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
+import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
 import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
 
@@ -37,4 +40,7 @@ interface QuizAppGraph {
     val saveQuizSetUseCase: SaveQuizSetUseCase
     val getActiveQuizFolderIdUseCase: GetActiveQuizFolderIdUseCase
     val setActiveQuizFolderUseCase: SetActiveQuizFolderUseCase
+    val signInStaffUseCase: SignInStaffUseCase
+    val getStaffAuthStateUseCase: GetStaffAuthStateUseCase
+    val signOutStaffUseCase: SignOutStaffUseCase
 }
