@@ -35,6 +35,8 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
+            implementation(libs.multiplatform.markdown.renderer)
+            implementation(libs.multiplatform.markdown.renderer.m3)
         }
         dragReorderMain.dependencies {
             implementation(libs.compose.reorderable)

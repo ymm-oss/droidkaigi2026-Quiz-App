@@ -1,6 +1,7 @@
 package com.droidkaigi.quiz.core.domain.model
 
 data class QuizSession(
+    val folderId: String,
     val quizSet: QuizSet,
     val nickname: String,
     val currentIndex: Int = 0,

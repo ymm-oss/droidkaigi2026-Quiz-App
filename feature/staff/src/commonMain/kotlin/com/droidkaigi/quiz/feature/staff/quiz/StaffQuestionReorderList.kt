@@ -17,7 +17,7 @@ fun StaffQuestionReorderList(
     questions: List<Question>,
     onMove: (fromIndex: Int, toIndex: Int) -> Unit,
     onEdit: (Question) -> Unit,
-    onDelete: (String) -> Unit,
+    onRequestDelete: (Question) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val reorderState = rememberReorderableLazyListState(
@@ -40,7 +40,7 @@ fun StaffQuestionReorderList(
                     isDragging = isDragging,
                     dragHandleModifier = Modifier.detectReorder(reorderState),
                     onEdit = { onEdit(question) },
-                    onDelete = { onDelete(question.id) },
+                    onDelete = { onRequestDelete(question) },
                 )
             }
         }

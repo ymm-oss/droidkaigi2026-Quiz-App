@@ -15,7 +15,12 @@ import kotlin.test.assertTrue
 class QuizScorerTest {
     @Test
     fun singleChoice_correct() {
-        val q = SingleChoice("1", "Pick one", listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B")), "a")
+        val q = SingleChoice(
+            id = "1",
+            prompt = "Pick one",
+            options = listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B")),
+            correctId = "a",
+        )
         assertTrue(QuizScorer.isCorrect(q, SingleChoiceAnswer("1", "a")))
         assertFalse(QuizScorer.isCorrect(q, SingleChoiceAnswer("1", "b")))
     }
@@ -23,10 +28,10 @@ class QuizScorerTest {
     @Test
     fun multipleChoice_requiresExactSet() {
         val q = MultipleChoice(
-            "2",
-            "Pick many",
-            listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B"), ChoiceOption("c", "C")),
-            setOf("a", "c"),
+            id = "2",
+            prompt = "Pick many",
+            options = listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B"), ChoiceOption("c", "C")),
+            correctIds = setOf("a", "c"),
         )
         assertTrue(QuizScorer.isCorrect(q, MultipleChoiceAnswer("2", setOf("a", "c"))))
         assertFalse(QuizScorer.isCorrect(q, MultipleChoiceAnswer("2", setOf("a"))))
@@ -36,10 +41,10 @@ class QuizScorerTest {
     @Test
     fun reorder_requiresExactOrder() {
         val q = Reorder(
-            "3",
-            "Order",
-            listOf(ReorderItem("1", "One"), ReorderItem("2", "Two"), ReorderItem("3", "Three")),
-            listOf("2", "1", "3"),
+            id = "3",
+            prompt = "Order",
+            items = listOf(ReorderItem("1", "One"), ReorderItem("2", "Two"), ReorderItem("3", "Three")),
+            correctOrder = listOf("2", "1", "3"),
         )
         assertTrue(QuizScorer.isCorrect(q, ReorderAnswer("3", listOf("2", "1", "3"))))
         assertFalse(QuizScorer.isCorrect(q, ReorderAnswer("3", listOf("1", "2", "3"))))

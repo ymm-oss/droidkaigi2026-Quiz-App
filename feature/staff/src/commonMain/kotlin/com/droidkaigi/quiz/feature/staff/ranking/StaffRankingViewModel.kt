@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class StaffRankingViewModel(
+    private val folderId: String,
     private val deps: AppDependencies = AppDependencies.shared,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(StaffRankingUiState())
@@ -28,7 +29,7 @@ class StaffRankingViewModel(
     private fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { deps.getTodayRankingsUseCase() }
+            runCatching { deps.getTodayRankingsUseCase(folderId) }
                 .onSuccess { entries ->
                     _uiState.update {
                         it.copy(entries = entries, isLoading = false, errorMessage = null)

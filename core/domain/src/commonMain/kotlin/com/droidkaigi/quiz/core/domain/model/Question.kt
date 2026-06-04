@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 sealed interface Question {
     val id: String
     val prompt: String
+    val explanationMarkdown: String
 }
 
 @Serializable
@@ -14,6 +15,7 @@ sealed interface Question {
 data class SingleChoice(
     override val id: String,
     override val prompt: String,
+    override val explanationMarkdown: String = "",
     val options: List<ChoiceOption>,
     val correctId: String,
 ) : Question
@@ -23,6 +25,7 @@ data class SingleChoice(
 data class MultipleChoice(
     override val id: String,
     override val prompt: String,
+    override val explanationMarkdown: String = "",
     val options: List<ChoiceOption>,
     val correctIds: Set<String>,
 ) : Question
@@ -32,6 +35,7 @@ data class MultipleChoice(
 data class Reorder(
     override val id: String,
     override val prompt: String,
+    override val explanationMarkdown: String = "",
     val items: List<ReorderItem>,
     val correctOrder: List<String>,
 ) : Question

@@ -20,6 +20,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,7 @@ import com.droidkaigi.quiz.core.domain.model.QuizFolder
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizTextField
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.feature.staff.StaffConfirmDialog
 import com.droidkaigi.quiz.feature.staff.StaffShellIntent
 import com.droidkaigi.quiz.feature.staff.StaffShellUiState
 
@@ -40,6 +45,9 @@ fun StaffFolderSidebar(
     onNewFolderDescriptionChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showPublishConfirm by remember { mutableStateOf(false) }
+    val selectedFolder = state.folders.find { it.id == state.selectedFolderId }
+
     Surface(
         modifier = modifier
             .width(260.dp)
@@ -73,10 +81,29 @@ fun StaffFolderSidebar(
             }
             QuizPrimaryButton(
                 text = "参加者向けに公開",
-                onClick = { onIntent(StaffShellIntent.PublishSelectedFolder) },
-                enabled = state.selectedFolderId != null && !state.isLoading,
+                onClick = { showPublishConfirm = true },
+                enabled = selectedFolder != null && !state.isLoading,
             )
         }
+    }
+
+    if (showPublishConfirm && selectedFolder != null) {
+        val folder = selectedFolder
+        val alreadyActive = folder.id == state.activeFolderId
+        StaffConfirmDialog(
+            title = "参加者向けに公開",
+            message = if (alreadyActive) {
+                "「${folder.name}」はすでに公開中です。再度公開しますか？"
+            } else {
+                "「${folder.name}」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。"
+            },
+            confirmLabel = "公開",
+            onConfirm = {
+                showPublishConfirm = false
+                onIntent(StaffShellIntent.PublishSelectedFolder)
+            },
+            onDismiss = { showPublishConfirm = false },
+        )
     }
 
     if (state.showCreateFolderDialog) {

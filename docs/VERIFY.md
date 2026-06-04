@@ -21,8 +21,9 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 ./gradlew :staffDesktopApp:run
 ```
 
-- **クイズ**: bundled JSON の問題一覧と正解（スタッフ向け表示）
-- **ランキング**: `FakeRankingRepository` の当日スコア（デモ3件 + 参加者アプリからの submit は別プロセスのため反映されない）
+- **フォルダ**: 左ペインで選択・追加。「参加者向けに公開」で参加者アプリのクイズ／ランキング対象を切り替え
+- **クイズ**: 問題の追加・編集・削除、正解と解説（Markdown: `**太字**`, `` `code` ``, `- 箇条書き`, `## 見出し`）
+- **ランキング**: 選択フォルダの当日スコア（フォルダごとにインメモリ保持。別プロセスの参加者アプリとは共有されない）
 
 ## Prerequisites
 

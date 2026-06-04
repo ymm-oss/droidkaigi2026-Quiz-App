@@ -25,7 +25,8 @@ import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
 fun StaffRankingScreen(
-    viewModel: StaffRankingViewModel = viewModel { StaffRankingViewModel() },
+    folderId: String,
+    viewModel: StaffRankingViewModel = viewModel(key = folderId) { StaffRankingViewModel(folderId) },
 ) {
     val state by viewModel.uiState.collectAsState()
     StaffRankingContent(

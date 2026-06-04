@@ -37,8 +37,11 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val quizSet = deps.quizRepository.getDefaultQuizSet()
+                val folderId = deps.getActiveQuizFolderIdUseCase()
+                val quizSet = deps.getQuizSetForFolderUseCase(folderId)
+                deps.sessionHolder.playbackFolderId = folderId
                 deps.sessionHolder.currentSession = deps.quizEngine.startSession(
+                    folderId = folderId,
                     quizSet = quizSet,
                     nickname = nickname,
                     startedAtEpochMillis = deps.instantProvider.nowEpochMillis(),

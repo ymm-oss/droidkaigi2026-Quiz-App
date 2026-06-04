@@ -22,6 +22,7 @@ data class QuestionDto(
     val type: String,
     val id: String,
     val prompt: String,
+    val explanationMarkdown: String? = null,
     val options: List<ChoiceOptionDto>? = null,
     val correctId: String? = null,
     val correctIds: List<String>? = null,
@@ -45,18 +46,21 @@ fun QuestionDto.toDomain(): Question = when (type) {
     "single_choice" -> SingleChoice(
         id = id,
         prompt = prompt,
+        explanationMarkdown = explanationMarkdown.orEmpty(),
         options = options.orEmpty().map { ChoiceOption(it.id, it.label) },
         correctId = correctId.orEmpty(),
     )
     "multiple_choice" -> MultipleChoice(
         id = id,
         prompt = prompt,
+        explanationMarkdown = explanationMarkdown.orEmpty(),
         options = options.orEmpty().map { ChoiceOption(it.id, it.label) },
         correctIds = correctIds.orEmpty().toSet(),
     )
     "reorder" -> Reorder(
         id = id,
         prompt = prompt,
+        explanationMarkdown = explanationMarkdown.orEmpty(),
         items = items.orEmpty().map { ReorderItem(it.id, it.label) },
         correctOrder = correctOrder.orEmpty(),
     )

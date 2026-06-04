@@ -5,8 +5,14 @@ import com.droidkaigi.quiz.core.domain.model.QuizSession
 import com.droidkaigi.quiz.core.domain.model.QuizSet
 
 class QuizEngine {
-    fun startSession(quizSet: QuizSet, nickname: String, startedAtEpochMillis: Long): QuizSession =
+    fun startSession(
+        folderId: String,
+        quizSet: QuizSet,
+        nickname: String,
+        startedAtEpochMillis: Long,
+    ): QuizSession =
         QuizSession(
+            folderId = folderId,
             quizSet = quizSet,
             nickname = nickname.trim(),
             startedAtEpochMillis = startedAtEpochMillis,

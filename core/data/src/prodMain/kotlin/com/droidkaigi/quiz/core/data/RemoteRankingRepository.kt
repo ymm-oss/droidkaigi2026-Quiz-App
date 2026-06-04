@@ -11,14 +11,14 @@ import dev.zacsweers.metro.ContributesBinding
  */
 @ContributesBinding(AppScope::class)
 class RemoteRankingRepository : RankingRepository {
-    override suspend fun getTodayRankings(): List<RankingEntry> {
+    override suspend fun getTodayRankings(folderId: String): List<RankingEntry> {
         error(
             "RemoteRankingRepository is not implemented. " +
                 "Connect Firebase or your API in :core:data prodMain.",
         )
     }
 
-    override suspend fun submitScore(result: QuizResult, completedAtEpochMillis: Long) {
+    override suspend fun submitScore(result: QuizResult, completedAtEpochMillis: Long, folderId: String) {
         error(
             "RemoteRankingRepository is not implemented. " +
                 "Connect Firebase or your API in :core:data prodMain.",

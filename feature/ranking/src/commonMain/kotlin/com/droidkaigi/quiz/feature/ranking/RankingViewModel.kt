@@ -35,7 +35,9 @@ class RankingViewModel(
     private fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val entries = deps.rankingRepository.getTodayRankings()
+            val folderId = deps.sessionHolder.playbackFolderId
+                ?: deps.getActiveQuizFolderIdUseCase()
+            val entries = deps.getTodayRankingsUseCase(folderId)
             _uiState.update {
                 it.copy(
                     entries = entries,

@@ -8,38 +8,27 @@ import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.time.isSameDay
 import com.droidkaigi.quiz.core.domain.time.todayLocalDate
 import dev.zacsweers.metro.ContributesBinding
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
+@Inject
 class FakeRankingRepository(
     private val instantProvider: InstantProvider,
+    private val catalog: InMemoryQuizCatalog,
 ) : RankingRepository {
-    private val mutex = Mutex()
-    private val entries = mutableListOf<RankingEntry>()
-
-    init {
-        seedDemoEntries()
-    }
-
-    private fun seedDemoEntries() {
-        val now = instantProvider.nowEpochMillis()
-        entries += listOf(
-            RankingEntry("KotlinFan", 350, now - 3_600_000),
-            RankingEntry("ComposePro", 320, now - 7_200_000),
-            RankingEntry("NavExplorer", 290, now - 10_800_000),
-        )
-    }
-
-    override suspend fun getTodayRankings(): List<RankingEntry> = mutex.withLock {
+    override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = catalog.withLock {
         val today = instantProvider.todayLocalDate()
-        entries
+        rankingsFor(folderId)
             .filter { isSameDay(it.completedAtEpochMillis, today) }
             .sortedByDescending { it.score }
     }
 
-    override suspend fun submitScore(result: QuizResult, completedAtEpochMillis: Long) = mutex.withLock {
-        entries += RankingEntry(
+    override suspend fun submitScore(
+        result: QuizResult,
+        completedAtEpochMillis: Long,
+        folderId: String,
+    ) = catalog.withLock {
+        rankingsFor(folderId) += RankingEntry(
             nickname = result.nickname,
             score = result.score,
             completedAtEpochMillis = completedAtEpochMillis,

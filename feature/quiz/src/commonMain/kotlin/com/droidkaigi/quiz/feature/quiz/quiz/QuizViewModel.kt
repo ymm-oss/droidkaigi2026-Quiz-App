@@ -112,7 +112,7 @@ class QuizViewModel(
         val result = QuizScorer.scoreSession(session, deps.instantProvider.nowEpochMillis())
         deps.sessionHolder.lastResult = result
         viewModelScope.launch {
-            deps.submitScoreUseCase(result)
+            deps.submitScoreUseCase(result, session.folderId)
             _events.emit(QuizEvent.NavigateToResult)
         }
     }

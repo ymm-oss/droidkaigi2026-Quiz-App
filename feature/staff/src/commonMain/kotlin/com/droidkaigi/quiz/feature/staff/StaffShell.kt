@@ -16,12 +16,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
+import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.feature.staff.folders.StaffFolderSidebar
 import com.droidkaigi.quiz.feature.staff.quiz.StaffQuizScreen
 import com.droidkaigi.quiz.feature.staff.ranking.StaffRankingScreen
 
@@ -32,8 +36,13 @@ enum class StaffTab {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaffShell() {
+fun StaffShell(
+    shellViewModel: StaffShellViewModel = viewModel { StaffShellViewModel() },
+) {
+    val shellState by shellViewModel.uiState.collectAsState()
     var selectedTab by rememberSaveable { mutableStateOf(StaffTab.Quiz) }
+    var newFolderName by rememberSaveable { mutableStateOf("") }
+    var newFolderDescription by rememberSaveable { mutableStateOf("") }
 
     QuizScreenBackground {
         Scaffold(
@@ -53,6 +62,14 @@ fun StaffShell() {
                     .fillMaxSize()
                     .padding(padding),
             ) {
+                StaffFolderSidebar(
+                    state = shellState,
+                    onIntent = shellViewModel::onIntent,
+                    newFolderName = newFolderName,
+                    onNewFolderNameChange = { newFolderName = it },
+                    newFolderDescription = newFolderDescription,
+                    onNewFolderDescriptionChange = { newFolderDescription = it },
+                )
                 NavigationRail {
                     NavigationRailItem(
                         selected = selectedTab == StaffTab.Quiz,
@@ -78,9 +95,17 @@ fun StaffShell() {
                     )
                 }
                 Box(modifier = Modifier.weight(1f)) {
-                    when (selectedTab) {
-                        StaffTab.Quiz -> StaffQuizScreen()
-                        StaffTab.Ranking -> StaffRankingScreen()
+                    val folderId = shellState.selectedFolderId
+                    if (folderId == null) {
+                        Text(
+                            text = "フォルダを選択してください",
+                            modifier = Modifier.padding(QuizTokens.spacingLarge),
+                        )
+                    } else {
+                        when (selectedTab) {
+                            StaffTab.Quiz -> StaffQuizScreen(folderId = folderId)
+                            StaffTab.Ranking -> StaffRankingScreen(folderId = folderId)
+                        }
                     }
                 }
             }

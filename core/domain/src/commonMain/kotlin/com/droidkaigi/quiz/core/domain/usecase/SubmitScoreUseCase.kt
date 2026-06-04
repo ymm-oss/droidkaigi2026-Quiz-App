@@ -8,7 +8,7 @@ class SubmitScoreUseCase(
     private val rankingRepository: RankingRepository,
     private val instantProvider: InstantProvider,
 ) {
-    suspend operator fun invoke(result: QuizResult) {
-        rankingRepository.submitScore(result, instantProvider.nowEpochMillis())
+    suspend operator fun invoke(result: QuizResult, folderId: String) {
+        rankingRepository.submitScore(result, instantProvider.nowEpochMillis(), folderId)
     }
 }
