@@ -36,7 +36,6 @@ fun ResultScreen(
     viewModel: ResultViewModel = viewModel { ResultViewModel() },
 ) {
     val state by viewModel.uiState.collectAsState()
-    val animatedScore = QuizMotion.animateScore(state.targetScore)
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -46,7 +45,32 @@ fun ResultScreen(
         }
     }
 
-    QuizScreenBackground {
+    ResultContent(
+        nickname = state.nickname,
+        correctCount = state.correctCount,
+        totalCount = state.totalCount,
+        targetScore = state.targetScore,
+        onGoToRankingClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
+    )
+}
+
+@Composable
+fun ResultContent(
+    nickname: String,
+    correctCount: Int,
+    totalCount: Int,
+    targetScore: Int,
+    onGoToRankingClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    animateScore: Boolean = true,
+) {
+    val displayedScore = if (animateScore) {
+        QuizMotion.animateScore(targetScore)
+    } else {
+        targetScore
+    }
+
+    QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -68,7 +92,7 @@ fun ResultScreen(
             ) {
                 QuizHeroTitle(
                     title = "クイズ完了",
-                    subtitle = "おつかれさま、${state.nickname} さん！",
+                    subtitle = "おつかれさま、${nickname} さん！",
                     badge = "RESULT",
                 )
                 QuizSurfaceCard {
@@ -79,7 +103,7 @@ fun ResultScreen(
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
                     Text(
-                        text = "${state.correctCount} / ${state.totalCount} 問正解",
+                        text = "$correctCount / $totalCount 問正解",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -90,14 +114,14 @@ fun ResultScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "$animatedScore",
+                        text = "$displayedScore",
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
                 QuizPrimaryButton(
                     text = "ランキングを見る",
-                    onClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
+                    onClick = onGoToRankingClick,
                 )
             }
         }

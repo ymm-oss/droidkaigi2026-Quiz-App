@@ -1,5 +1,20 @@
 # Manual verification (Android CLI)
 
+## Runtime (`fake` / `prod`)
+
+Set in `gradle.properties` (or override per build):
+
+```properties
+quiz.runtime=fake   # bundled JSON + local ranking (default)
+# quiz.runtime=prod # RemoteQuizRepository / RemoteRankingRepository (Firebase etc.)
+```
+
+```bash
+./gradlew :androidApp:assembleDebug -Pquiz.runtime=prod
+```
+
+Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled).
+
 ## Prerequisites
 
 - Android SDK and emulator or device

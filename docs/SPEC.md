@@ -17,7 +17,7 @@
 
 - **単一選択**: 1 つ選択して提出。正解 ID と一致で正解。
 - **複数選択**: 複数選択。選択集合が `correctIds` と完全一致で正解。
-- **並び替え**: ↑↓ で順序変更。`orderedIds` が `correctOrder` と完全一致で正解。
+- **並び替え**: 右端のドラッグハンドルで順序変更。`orderedIds` が `correctOrder` と完全一致で正解。
 
 ## 採点
 
@@ -42,6 +42,7 @@
 | `composeApp` | 共有 Compose UI・Nav3 |
 | `androidApp` | Android エントリ（`MainActivity`） |
 | `desktopApp` | Desktop エントリ（`main`） |
+| `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`） |
 
 ## 将来（Phase 2 候補）
 

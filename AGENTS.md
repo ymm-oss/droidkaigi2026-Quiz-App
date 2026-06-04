@@ -8,9 +8,10 @@ Package: `com.droidkaigi.quiz`
 |--------|------|
 | `:androidApp` | Android entry (`MainActivity`) — `com.android.application` |
 | `:desktopApp` | Desktop entry (`main`) — `kotlin.jvm` + Compose Desktop |
-| `:composeApp` | Shared UI + Nav3 (`App`, routes) — `androidKmpLibrary` + `jvm` artifact for desktop |
+| `:wasmApp` | Web entry (`main`) — `wasmJs` + `ComposeViewport` |
+| `:composeApp` | Shared UI + Nav3 (`App`, routes) — `androidKmpLibrary` + `jvm` + `wasmJs` |
 | `:core:domain` | Models, scoring, use cases |
-| `:core:data` | Repositories, JSON, `AppDependencies.shared` |
+| `:core:data` | Repositories, Metro bindings, `fakeMain`/`prodMain`, `AppDependencies.shared` |
 | `:core:ui` | `QuizTheme`, tokens, shared components |
 | `:feature:quiz` | Home, Quiz, Result |
 | `:feature:ranking` | Ranking list |

@@ -15,6 +15,7 @@ kotlin {
 android {
     namespace = "com.droidkaigi.quiz"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+    ndkVersion = libs.versions.android.ndk.get()
 
     defaultConfig {
         applicationId = "com.droidkaigi.quiz"
@@ -30,6 +31,9 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            keepDebugSymbols += "**/libandroidx.graphics.path.so"
         }
     }
     buildTypes {

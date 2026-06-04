@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
 import com.droidkaigi.quiz.core.ui.components.QuizRankingRow
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
@@ -48,7 +49,23 @@ fun RankingScreen(
         }
     }
 
-    QuizScreenBackground {
+    RankingContent(
+        entries = state.entries,
+        highlightNickname = state.highlightNickname,
+        isLoading = state.isLoading,
+        onGoHomeClick = { viewModel.onIntent(RankingIntent.GoHome) },
+    )
+}
+
+@Composable
+fun RankingContent(
+    entries: List<RankingEntry>,
+    highlightNickname: String?,
+    isLoading: Boolean,
+    onGoHomeClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -69,7 +86,7 @@ fun RankingScreen(
                     badge = "RANKING",
                 )
                 Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
-                if (state.isLoading) {
+                if (isLoading) {
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -93,7 +110,7 @@ fun RankingScreen(
                         verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
                     ) {
                         itemsIndexed(
-                            items = state.entries,
+                            items = entries,
                             key = { _, e -> "${e.nickname}-${e.completedAtEpochMillis}" },
                         ) { index, entry ->
                             AnimatedVisibility(
@@ -104,11 +121,11 @@ fun RankingScreen(
                                     rank = index + 1,
                                     nickname = entry.nickname,
                                     score = entry.score,
-                                    highlighted = entry.nickname == state.highlightNickname,
+                                    highlighted = entry.nickname == highlightNickname,
                                 )
                             }
                         }
-                        if (state.entries.isEmpty()) {
+                        if (entries.isEmpty()) {
                             item {
                                 QuizSurfaceCard {
                                     Text(
@@ -124,7 +141,7 @@ fun RankingScreen(
                 Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
                 QuizSecondaryButton(
                     text = "ホームに戻る",
-                    onClick = { viewModel.onIntent(RankingIntent.GoHome) },
+                    onClick = onGoHomeClick,
                 )
                 Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
             }

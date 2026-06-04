@@ -1,14 +1,17 @@
 package com.droidkaigi.quiz.core.data
 
+import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.domain.model.QuizResult
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.time.isSameDay
 import com.droidkaigi.quiz.core.domain.time.todayLocalDate
+import dev.zacsweers.metro.ContributesBinding
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+@ContributesBinding(AppScope::class)
 class FakeRankingRepository(
     private val instantProvider: InstantProvider,
 ) : RankingRepository {

@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -8,7 +9,7 @@ plugins {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "com.droidkaigi.quiz.core.ui"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -17,14 +18,33 @@ kotlin {
         }
     }
     jvm()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
 
     sourceSets {
+        val dragReorderMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
         }
+        dragReorderMain.dependencies {
+            implementation(libs.compose.reorderable)
+        }
+    }
+
+    sourceSets.named("jvmMain").configure {
+        dependsOn(sourceSets.getByName("dragReorderMain"))
+    }
+    sourceSets.named("androidMain").configure {
+        dependsOn(sourceSets.getByName("dragReorderMain"))
     }
 }
