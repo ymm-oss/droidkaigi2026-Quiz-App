@@ -36,6 +36,14 @@
 ## Phase 6 — Desktop
 - [x] jvm() + Main.kt
 
+## Phase 7 — UI リデザイン（Home 基準）
+- [x] QuizTokens / QuizTypography 拡張
+- [x] 共通コンポーネント（Background, Card, Button, TextField, Hero）
+- [x] Home 画面リデザイン
+- [ ] Quiz 画面へデザイン適用
+- [ ] Result 画面へデザイン適用
+- [ ] Ranking 画面へデザイン適用
+
 ## Harness iterate（各 Phase 後）
 - [x] quiz-domain-data.mdc 追記（JSON パス、採点 domain のみ）
 - [x] quiz-feature.mdc / quiz-animation 相当の core ルール

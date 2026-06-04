@@ -1,15 +1,16 @@
 package com.droidkaigi.quiz.feature.quiz.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,7 +18,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
+import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
+import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
+import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
+import com.droidkaigi.quiz.core.ui.components.QuizTextField
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
@@ -35,48 +42,52 @@ fun HomeScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .padding(QuizTokens.spacingLarge),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = "DroidKaigi 2026 Quiz",
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = "ニックネームを入力してクイズを開始",
-            modifier = Modifier.padding(vertical = QuizTokens.spacingMedium),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        OutlinedTextField(
-            value = state.nickname,
-            onValueChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("ニックネーム") },
-            singleLine = true,
-        )
-        state.errorMessage?.let { msg ->
-            Text(
-                text = msg,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = QuizTokens.spacingSmall),
-            )
-        }
-        Button(
-            onClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
+    QuizScreenBackground {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = QuizTokens.spacingLarge),
-            enabled = !state.isLoading,
+                .fillMaxSize()
+                .safeContentPadding(),
+            contentAlignment = Alignment.Center,
         ) {
-            if (state.isLoading) {
-                CircularProgressIndicator()
-            } else {
-                Text("クイズを始める")
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp)
+                    .padding(horizontal = QuizTokens.spacingLarge),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingExtraLarge),
+            ) {
+                QuizHeroTitle(
+                    title = "DroidKaigi 2026 Quiz",
+                    subtitle = "ニックネームを入力してクイズを開始",
+                    badge = "会場クイズ",
+                )
+                QuizSurfaceCard {
+                    Text(
+                        text = "プレイヤー情報",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                    QuizTextField(
+                        value = state.nickname,
+                        onValueChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
+                        label = "ニックネーム",
+                    )
+                    state.errorMessage?.let { msg ->
+                        Text(
+                            text = msg,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = QuizTokens.spacingSmall),
+                        )
+                    }
+                }
+                QuizPrimaryButton(
+                    text = "クイズを始める",
+                    onClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
+                    loading = state.isLoading,
+                )
             }
         }
     }
