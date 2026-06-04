@@ -81,9 +81,13 @@ fun StaffQuestionEditorDialog(
                 QuizTextField(
                     value = draft.prompt,
                     onValueChange = { onDraftChange(draft.copy(prompt = it)) },
-                    label = "問題文",
+                    label = "問題文（Markdown）",
                     singleLine = false,
                 )
+                if (draft.prompt.isNotBlank()) {
+                    Text("問題文プレビュー", style = MaterialTheme.typography.labelLarge)
+                    QuizMarkdownText(draft.prompt)
+                }
                 StaffChoiceListEditor(
                     draft = draft,
                     onDraftChange = onDraftChange,
@@ -95,7 +99,7 @@ fun StaffQuestionEditorDialog(
                     singleLine = false,
                 )
                 if (draft.explanationMarkdown.isNotBlank()) {
-                    Text("プレビュー", style = MaterialTheme.typography.labelLarge)
+                    Text("解説プレビュー", style = MaterialTheme.typography.labelLarge)
                     QuizMarkdownText(draft.explanationMarkdown)
                 }
             }

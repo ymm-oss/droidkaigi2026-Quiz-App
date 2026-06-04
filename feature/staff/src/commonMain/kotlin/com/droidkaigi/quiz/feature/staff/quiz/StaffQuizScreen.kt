@@ -202,10 +202,7 @@ internal fun StaffQuestionCard(
                         TextButton(onClick = onDelete) { Text("削除") }
                     }
                 }
-                Text(
-                    text = question.prompt,
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                QuizMarkdownText(question.prompt)
                 Text(
                     text = "正解: ${correctAnswerText(question)}",
                     style = MaterialTheme.typography.bodyMedium,
