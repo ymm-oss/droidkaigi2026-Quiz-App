@@ -9,6 +9,6 @@ alwaysApply: true
 2. Module boundaries in `AGENTS.md` — no reverse dependencies.
 3. MVI per screen: `XxxUiState`, `XxxIntent`, `XxxEvent`, `XxxViewModel`; business logic in domain use cases.
 4. Shared state: `AppDependencies.shared` only (no duplicate graphs).
-5. Nav routes: `@Serializable sealed interface Route : NavKey` in `composeApp` only. Android APK is `:androidApp` (AGP 9); KMP Android target uses `com.android.kotlin.multiplatform.library`.
+5. Nav routes in `composeApp` only. Entry points: `:androidApp` (Android), `:desktopApp` (Desktop). Do not add `main()` or `MainActivity` to `composeApp`.
 6. Theming: use `QuizTheme { }`; colors from `QuizTokens` / `QuizColors`, not raw `Color(0x…)` in features.
 7. Tests: scoring/date in `commonTest`; UI flows in `androidInstrumentedTest`.

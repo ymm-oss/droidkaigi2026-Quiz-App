@@ -35,6 +35,14 @@
 - テーマは `core/ui/.../QuizTokens.kt` のみ編集で差し替え
 - Tablet（幅 >= 600dp）では NavRail
 
+## モジュール構成（エントリ分離）
+
+| モジュール | 役割 |
+|-----------|------|
+| `composeApp` | 共有 Compose UI・Nav3 |
+| `androidApp` | Android エントリ（`MainActivity`） |
+| `desktopApp` | Desktop エントリ（`main`） |
+
 ## 将来（Phase 2 候補）
 
 - Compose Styles API

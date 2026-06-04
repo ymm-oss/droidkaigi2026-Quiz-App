@@ -6,8 +6,9 @@ Package: `com.droidkaigi.quiz`
 
 | Module | Role |
 |--------|------|
-| `:androidApp` | Android application entry (`MainActivity`) — AGP 9 built-in Kotlin |
-| `:composeApp` | Nav3, adaptive shell, shared UI, Desktop (`jvm`) — `androidKmpLibrary` |
+| `:androidApp` | Android entry (`MainActivity`) — `com.android.application` |
+| `:desktopApp` | Desktop entry (`main`) — `kotlin.jvm` + Compose Desktop |
+| `:composeApp` | Shared UI + Nav3 (`App`, routes) — `androidKmpLibrary` + `jvm` artifact for desktop |
 | `:core:domain` | Models, scoring, use cases |
 | `:core:data` | Repositories, JSON, `AppDependencies.shared` |
 | `:core:ui` | `QuizTheme`, tokens, shared components |
