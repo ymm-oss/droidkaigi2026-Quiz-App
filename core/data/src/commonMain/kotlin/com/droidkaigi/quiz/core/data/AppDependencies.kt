@@ -5,6 +5,8 @@ import com.droidkaigi.quiz.core.domain.repository.QuizRepository
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.GetDefaultQuizSetUseCase
+import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
 
 /**
@@ -17,6 +19,8 @@ class AppDependencies(
     val quizEngine: QuizEngine,
     val sessionHolder: QuizSessionHolder,
     val submitScoreUseCase: SubmitScoreUseCase,
+    val getTodayRankingsUseCase: GetTodayRankingsUseCase,
+    val getDefaultQuizSetUseCase: GetDefaultQuizSetUseCase,
 ) {
     companion object {
         lateinit var shared: AppDependencies
@@ -30,6 +34,8 @@ class AppDependencies(
                 quizEngine = graph.quizEngine,
                 sessionHolder = graph.sessionHolder,
                 submitScoreUseCase = graph.submitScoreUseCase,
+                getTodayRankingsUseCase = graph.getTodayRankingsUseCase,
+                getDefaultQuizSetUseCase = graph.getDefaultQuizSetUseCase,
             )
         }
 

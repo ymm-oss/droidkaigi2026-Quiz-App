@@ -15,6 +15,15 @@ quiz.runtime=fake   # bundled JSON + local ranking (default)
 
 Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled).
 
+## Staff desktop (`fake` in-memory)
+
+```bash
+./gradlew :staffDesktopApp:run
+```
+
+- **クイズ**: bundled JSON の問題一覧と正解（スタッフ向け表示）
+- **ランキング**: `FakeRankingRepository` の当日スコア（デモ3件 + 参加者アプリからの submit は別プロセスのため反映されない）
+
 ## Prerequisites
 
 - Android SDK and emulator or device

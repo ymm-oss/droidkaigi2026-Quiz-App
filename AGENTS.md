@@ -8,6 +8,8 @@ Package: `com.droidkaigi.quiz`
 |--------|------|
 | `:androidApp` | Android entry (`MainActivity`) — `com.android.application` |
 | `:desktopApp` | Desktop entry (`main`) — `kotlin.jvm` + Compose Desktop |
+| `:staffDesktopApp` | Staff desktop entry — `kotlin.jvm` + Compose Desktop (`fake` in-memory) |
+| `:staffComposeApp` | Staff shared UI (`StaffApp`) — JVM only, Metro `fakeMain` graph |
 | `:wasmApp` | Web entry (`main`) — `wasmJs` + `ComposeViewport` |
 | `:composeApp` | Shared UI + Nav3 (`App`, routes) — `androidKmpLibrary` + `jvm` + `wasmJs` |
 | `:core:domain` | Models, scoring, use cases |
@@ -15,8 +17,9 @@ Package: `com.droidkaigi.quiz`
 | `:core:ui` | `QuizTheme`, tokens, shared components |
 | `:feature:quiz` | Home, Quiz, Result |
 | `:feature:ranking` | Ranking list |
+| `:feature:staff` | Staff console (quiz preview + rankings) — JVM only |
 
-Dependency direction: `feature → core:ui, domain` · `data → domain` · `composeApp → feature` (no reverse).
+Dependency direction: `feature → core:ui, domain` · `data → domain` · `composeApp → feature` · `staffComposeApp → feature:staff` (no reverse).
 
 ## Docs & harness
 

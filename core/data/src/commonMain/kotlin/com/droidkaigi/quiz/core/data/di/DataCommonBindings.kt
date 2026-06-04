@@ -5,7 +5,10 @@ import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.time.SystemInstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.GetDefaultQuizSetUseCase
+import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
+import com.droidkaigi.quiz.core.domain.repository.QuizRepository
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
@@ -29,4 +32,14 @@ object DataCommonBindings {
         rankingRepository: RankingRepository,
         instantProvider: InstantProvider,
     ): SubmitScoreUseCase = SubmitScoreUseCase(rankingRepository, instantProvider)
+
+    @Provides
+    fun provideGetTodayRankingsUseCase(
+        rankingRepository: RankingRepository,
+    ): GetTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository)
+
+    @Provides
+    fun provideGetDefaultQuizSetUseCase(
+        quizRepository: QuizRepository,
+    ): GetDefaultQuizSetUseCase = GetDefaultQuizSetUseCase(quizRepository)
 }
