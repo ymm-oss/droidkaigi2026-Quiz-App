@@ -16,7 +16,7 @@ Add tests under `src/commonTest/kotlin/`.
 ## Android UI
 
 ```bash
-./gradlew :composeApp:connectedDebugAndroidTest
+./gradlew :androidApp:connectedDebugAndroidTest
 ```
 
 Use `createAndroidComposeRule<MainActivity>()` and `onNodeWithText`.

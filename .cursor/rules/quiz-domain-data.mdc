@@ -12,3 +12,4 @@ alwaysApply: false
 - Repositories: interface in domain, Fake/default impl in data.
 - “Today” filtering: `InstantProvider` + `isSameDay` — never hardcode dates in UI.
 - Extend `Question` sealed types in domain; map JSON in `QuestionDto.toDomain()`.
+- AGP 9: KMP modules use `androidKmpLibrary` + `kotlin.androidLibrary {}`; never combine `kotlinMultiplatform` with `com.android.library` in the same module.

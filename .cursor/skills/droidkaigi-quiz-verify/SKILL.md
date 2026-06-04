@@ -8,7 +8,7 @@ description: Manual verification for DroidKaigi Quiz using Android CLI and scree
 ## Build
 
 ```bash
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 ```
 
 ## Run

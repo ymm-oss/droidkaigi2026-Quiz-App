@@ -33,6 +33,7 @@ plugins {
 }
 
 include(":composeApp")
+include(":androidApp")
 include(":core:domain")
 include(":core:data")
 include(":core:ui")
