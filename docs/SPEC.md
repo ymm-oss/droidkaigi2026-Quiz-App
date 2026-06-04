@@ -55,9 +55,20 @@
 | `androidApp` | Android エントリ（`MainActivity`） |
 | `desktopApp` | Desktop エントリ（`main`） |
 | `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`） |
+| `staffComposeApp` / `staffDesktopApp` | スタッフ運営コンソール（Desktop） |
+
+## スタッフアプリ（`staffDesktopApp`）
+
+| ランタイム | 認証 | データ |
+|------------|------|--------|
+| **fake**（開発） | ローカル固定アカウント（`FakeStaffAuthRepository`） | インメモリ（`InMemoryQuizCatalog`） |
+| **prod**（本番） | Firebase Authentication（`ProdStaffAuthRepository`・実装予定） | Firestore（参加者 prod と同系統・スタッフは書き込み可） |
+
+`quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。
 
 ## 将来（Phase 2 候補）
 
 - Compose Styles API
 - ランキング・運用機能の拡張（集計、管理 API など）
 - iOS ターゲット
+- `ProdStaffAuthRepository` と Firestore スタッフ書き込みの本実装

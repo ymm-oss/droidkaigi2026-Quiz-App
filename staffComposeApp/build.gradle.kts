@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.metro)
 }
 
+val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
+check(quizRuntime in setOf("fake", "prod")) {
+    "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime'). Set it in gradle.properties."
+}
+val quizRuntimeSourceSetDir = if (quizRuntime == "prod") "prodMain" else "fakeMain"
+
 kotlin {
     jvm {
         compilerOptions {
@@ -16,7 +22,7 @@ kotlin {
 
     sourceSets {
         commonMain {
-            kotlin.srcDir("src/fakeMain/kotlin")
+            kotlin.srcDir("src/$quizRuntimeSourceSetDir/kotlin")
         }
         commonMain.dependencies {
             implementation(project(":core:data"))
