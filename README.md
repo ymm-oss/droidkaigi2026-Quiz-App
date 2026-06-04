@@ -156,53 +156,12 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 
 スタッフも参加者と同じ `quiz.runtime` で切り替えます（`staffComposeApp` の Metro グラフと `core:data` の fake/prod が連動）。**fake はあくまで開発用**、会場本番の運営 PC は `prod` を想定しています。
 
-#### 推奨 Firestore データ形状
-
-ドメイン（`QuizFolder` / `QuizSet` / `Question`）および同梱 JSON（`quiz_set.json`）に合わせ、**フォルダ ID = クイズセット ID** の 1:1 を維持する構成を推奨します。
-
-```
-folders/{folderId}                    # フォルダ + 問題一式（参加者はここを 1 回読む）
-  name: string
-  description: string
-  sortOrder: number
-  title: string                        # QuizSet.title（表示名）
-  questions: array<map>              # 下記フィールド。並びは出題順
-    type: "single_choice" | "multiple_choice" | "reorder"
-    id, prompt, explanationMarkdown?
-    options? / correctId? / correctIds? / items? / correctOrder?
-  updatedAt: timestamp
-
-appConfig/default                     # シングルトン（ドキュメント ID 固定）
-  activeFolderId: string              # 「参加者向けに公開」中のフォルダ
-  updatedAt: timestamp
-
-folders/{folderId}/rankings/{entryId}  # スコア送信（サブコレクション）
-  nickname: string
-  score: number
-  completedAtEpochMillis: number
-  dateKey: string                      # 例 "2026-06-04"（当日 Top N 用。端末 TZ は InstantProvider に合わせる）
-```
-
-**この形を選ぶ理由**
-
-- 参加者起動時は `getActiveQuizFolderIdUseCase` → `getQuizSetForFolderUseCase` の **2 読み取り**（`appConfig` + アクティブ `folders/{id}`）。
-- `questions` は `QuizSetDto` / `quiz_set.json` と同型のため、シードや移行が容易。
-- 問題数は会場想定で数十程度のため、1 ドキュメントに配列を載せても 1 MiB 制限に余裕がある（スタッフが全問まとめて保存する `SaveQuizSetUseCase` とも相性が良い）。
-- ランキングだけサブコレクションに分離し、参加者の `submitScore` でドキュメントが増えてもフォルダ本体を肥大化させない。
-
-**将来、問題単位の差分更新や同時編集が必要になったら**
-
-`folders/{folderId}/questions/{questionId}` サブコレクションへ分割し、`sortOrder` フィールドで並びを管理する。初版は配列のままで十分。
-
-**避けたい形（参考）**
-
-- 全問題を 1 つの巨大 `quizSets/global` にだけ寄せる → フォルダ切替・スタッフ運用と `QuizCatalogRepository` の API がずれる。
-- ランキングをフォルダドキュメント内の配列にのみ保持 → 当日の提出が増えると競合・サイズ増大。
+コレクション構成・設計意図・シード・ルール・インデックスは [docs/FIRESTORE.md](docs/FIRESTORE.md) を参照（README では重複記載しない）。
 
 #### Firebase プロジェクトの設定手順
 
 1. [Firebase Console](https://console.firebase.google.com/) でプロジェクトを作成する。
-2. **Firestore Database** を作成する（本番は **本番モード** で開始し、下記ルールをすぐ適用。テスト用に全開放ルールのままにしない）。
+2. **Firestore Database** を作成する（本番は **本番モード** で開始し、[docs/FIRESTORE.md](docs/FIRESTORE.md#セキュリティルール) のルールをすぐ適用。テスト用に全開放ルールのままにしない）。
 3. **Android アプリを登録**（パッケージ名 `com.droidkaigi.quiz` = `:androidApp` の `applicationId`）。
 4. ダウンロードした `google-services.json` を **`androidApp/google-services.json`** に置く（リポジトリには含めない。`.gitignore` 済み想定）。
 5. Android 側で Firebase / Firestore SDK を有効化する（未導入の場合の例）:
@@ -211,38 +170,7 @@ folders/{folderId}/rankings/{entryId}  # スコア送信（サブコレクショ
 6. **Desktop / Wasm** も prod で Firestore を使う場合は、同じプロジェクトの Web API キーまたは GitLive の各ターゲット設定が必要（プラットフォームごとに `prodMain` でクライアント初期化）。
 7. **ルール・インデックス**を Firebase CLI で反映（推奨）: [docs/FIRESTORE.md](docs/FIRESTORE.md#firebase-cli-でデプロイ) — リポジトリの `firebase.json` / `firestore.rules` / `.firebaserc` を使用し `firebase deploy --only firestore`。
 
-**初期データ例**（`folders/droidkaigi2026-demo` の `questions` は [quiz_set.json](core/data/src/commonMain/composeResources/files/quiz_set.json) をコピー、`appConfig/default` の `activeFolderId` を同じ ID にする）。
-
-**セキュリティルール（例・要調整）**
-
-会場公開クイズ＋匿名スコア送信を想定した出発点です。スタッフ書き込みをアプリから行う段階で **Firebase Authentication**（カスタムクレーム `staff` 等）を足してください。
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /folders/{folderId} {
-      allow read: if true;
-      allow write: if false; // 当面 Console / Admin SDK。将来 request.auth.token.staff == true
-      match /rankings/{entryId} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasAll(
-            ['nickname', 'score', 'completedAtEpochMillis', 'dateKey'])
-          && request.resource.data.nickname is string
-          && request.resource.data.nickname.size() > 0
-          && request.resource.data.nickname.size() <= 32
-          && request.resource.data.score is int
-          && request.resource.data.score >= 0;
-        allow update, delete: if false;
-      }
-    }
-    match /appConfig/{docId} {
-      allow read: if true;
-      allow write: if false;
-    }
-  }
-}
-```
+**初期データ**は [docs/FIRESTORE.md#初期データ](docs/FIRESTORE.md#初期データ)（[firestore-seed.json](docs/firestore-seed.json)）を参照。
 
 **環境の切り分け**
 
