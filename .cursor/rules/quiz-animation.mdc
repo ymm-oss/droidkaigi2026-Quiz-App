@@ -1,0 +1,12 @@
+---
+description: Animation and motion tokens for quiz UI
+globs: core/ui/**/*.kt,feature/**/*.kt
+alwaysApply: false
+---
+
+# Animations
+
+- Use `QuizMotion` for selection scale and score counting.
+- Use `QuizTokens.selectionSpring` / `scoreSpring` for specs — do not invent new spring configs in features.
+- Feedback shake: `Modifier.quizShake()` from `core:ui`.
+- List reveals: `AnimatedVisibility` + `fadeIn` / `slideInVertically` on ranking rows.

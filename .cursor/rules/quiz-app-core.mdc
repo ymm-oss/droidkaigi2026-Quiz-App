@@ -1,0 +1,14 @@
+---
+description: DroidKaigi Quiz core conventions (always apply)
+alwaysApply: true
+---
+
+# Quiz app — core
+
+1. Read `docs/SPEC.md` before feature work; update `docs/CHECKLIST.md` when done.
+2. Module boundaries in `AGENTS.md` — no reverse dependencies.
+3. MVI per screen: `XxxUiState`, `XxxIntent`, `XxxEvent`, `XxxViewModel`; business logic in domain use cases.
+4. Shared state: `AppDependencies.shared` only (no duplicate graphs).
+5. Nav routes: `@Serializable sealed interface Route : NavKey` in `composeApp` only.
+6. Theming: use `QuizTheme { }`; colors from `QuizTokens` / `QuizColors`, not raw `Color(0x…)` in features.
+7. Tests: scoring/date in `commonTest`; UI flows in `androidInstrumentedTest`.

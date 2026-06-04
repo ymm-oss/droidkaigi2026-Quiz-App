@@ -1,0 +1,12 @@
+---
+description: Feature module Compose/MVI rules
+globs: feature/**/*.kt
+alwaysApply: false
+---
+
+# Feature layer
+
+- Screens: `XxxScreen.kt` — stateless, collect `StateFlow`, handle `Event` in `LaunchedEffect`.
+- ViewModels: no `android.*` imports; use `AppDependencies.shared`.
+- Do not call `RankingRepository` directly — use domain use cases.
+- Animations: prefer `QuizMotion` and theme tokens from `core:ui`.

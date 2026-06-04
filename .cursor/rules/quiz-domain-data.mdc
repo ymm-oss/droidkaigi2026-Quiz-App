@@ -1,0 +1,14 @@
+---
+description: Domain and data layer rules
+globs: core/**/*.kt
+alwaysApply: false
+---
+
+# Domain & data
+
+- `core:domain` must not depend on Compose or Android.
+- Scoring only in `QuizScorer`; session steps in `QuizEngine`.
+- Quiz JSON: `core/data/src/commonMain/composeResources/files/quiz_set.json` via `JsonQuizRepository`.
+- Repositories: interface in domain, Fake/default impl in data.
+- “Today” filtering: `InstantProvider` + `isSameDay` — never hardcode dates in UI.
+- Extend `Question` sealed types in domain; map JSON in `QuestionDto.toDomain()`.
