@@ -1,6 +1,6 @@
 # Implementation Checklist
 
-> **進捗:** 31 / 31 完了  
+> **進捗:** 32 / 32 完了  
 > **最終更新:** 2026-06-04
 
 ## 使い方
@@ -20,7 +20,7 @@
 | 3 | Quiz UI | 3 / 3 |
 | 4 | Ranking | 2 / 2 |
 | 5 | Polish | 3 / 3 |
-| 6 | Desktop | 2 / 2 |
+| 6 | Desktop / Web | 3 / 3 |
 | 7 | UI リデザイン（Home 基準） | 6 / 6 |
 | H | Harness iterate | 3 / 3 |
 
@@ -69,6 +69,7 @@
 
 - [x] **P6-01** KMP `jvm()` ターゲット（composeApp / core / feature） — 確認: 各 `build.gradle.kts` に `jvm()`
 - [x] **P6-02** `:desktopApp` エントリ — 確認: `desktopApp/src/main/kotlin/.../Main.kt`
+- [x] **P6-03** `:wasmApp` + 各モジュール `wasmJs()` — 確認: `./gradlew :wasmApp:compileKotlinWasmJs`、`:wasmApp:wasmJsBrowserDevelopmentRun`
 
 ## Phase 7 — UI リデザイン（Home 基準）
 

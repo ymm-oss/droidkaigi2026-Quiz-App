@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -17,8 +18,16 @@ kotlin {
         }
     }
     jvm()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
 
     sourceSets {
+        val dragReorderMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(libs.compose.runtime)
@@ -26,7 +35,16 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
+        }
+        dragReorderMain.dependencies {
             implementation(libs.compose.reorderable)
         }
+    }
+
+    sourceSets.named("jvmMain").configure {
+        dependsOn(sourceSets.getByName("dragReorderMain"))
+    }
+    sourceSets.named("androidMain").configure {
+        dependsOn(sourceSets.getByName("dragReorderMain"))
     }
 }

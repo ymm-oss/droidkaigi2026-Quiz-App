@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -6,6 +7,12 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.metro)
+}
+
+val quizRuntime = providers.gradleProperty("quiz.runtime").orElse("fake").get()
+check(quizRuntime in setOf("fake", "prod")) {
+    "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime'). Set it in gradle.properties."
 }
 
 kotlin {
@@ -18,8 +25,19 @@ kotlin {
         }
     }
     jvm()
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+    }
 
     sourceSets {
+        val fakeMain by creating {
+            dependsOn(commonMain.get())
+        }
+        val prodMain by creating {
+            dependsOn(commonMain.get())
+        }
+
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(project(":core:data"))
@@ -35,12 +53,34 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.navigation3.runtime)
-            implementation(libs.androidx.navigation3.ui)
-            implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.metro.runtime)
         }
+        fakeMain.dependencies {
+            implementation(project(":core:data"))
+        }
+        prodMain.dependencies {
+            implementation(project(":core:data"))
+        }
+    }
+
+    val activeRuntimeMain = sourceSets.getByName(if (quizRuntime == "prod") "prodMain" else "fakeMain")
+    val common = sourceSets.getByName("commonMain")
+    sourceSets.named("jvmMain").configure {
+        dependsOn(common)
+        dependsOn(activeRuntimeMain)
+    }
+    sourceSets.named("androidMain").configure {
+        dependsOn(common)
+        dependsOn(activeRuntimeMain)
+    }
+    sourceSets.named("wasmJsMain").configure {
+        dependsOn(common)
+        dependsOn(activeRuntimeMain)
     }
 }
 

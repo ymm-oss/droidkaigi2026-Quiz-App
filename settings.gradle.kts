@@ -35,6 +35,7 @@ plugins {
 include(":composeApp")
 include(":androidApp")
 include(":desktopApp")
+include(":wasmApp")
 include(":core:domain")
 include(":core:data")
 include(":core:ui")

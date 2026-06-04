@@ -42,6 +42,7 @@
 | `composeApp` | 共有 Compose UI・Nav3 |
 | `androidApp` | Android エントリ（`MainActivity`） |
 | `desktopApp` | Desktop エントリ（`main`） |
+| `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`） |
 
 ## 将来（Phase 2 候補）
 

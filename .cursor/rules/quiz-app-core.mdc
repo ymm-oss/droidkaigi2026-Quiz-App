@@ -8,8 +8,8 @@ alwaysApply: true
 1. Read `docs/SPEC.md` before feature work; update `docs/CHECKLIST.md` when done (see checklist rules below).
 2. Module boundaries in `AGENTS.md` — no reverse dependencies.
 3. MVI per screen: `XxxUiState`, `XxxIntent`, `XxxEvent`, `XxxViewModel`; business logic in domain use cases.
-4. Shared state: `AppDependencies.shared` only (no duplicate graphs).
-5. Nav routes in `composeApp` only. Entry points: `:androidApp` (Android), `:desktopApp` (Desktop). Do not add `main()` or `MainActivity` to `composeApp`.
+4. Shared state: `AppDependencies.shared` only — initialize once with `initQuizAppGraph()` (Metro); no duplicate graphs.
+5. Nav routes in `composeApp` only. Entry points: `:androidApp` (Android), `:desktopApp` (Desktop), `:wasmApp` (Web/Wasm). Do not add `main()` or `MainActivity` to `composeApp`.
 6. Theming: use `QuizTheme { }`; colors from `QuizTokens` / `QuizColors`, not raw `Color(0x…)` in features.
 7. Tests: scoring/date in `commonTest`; UI flows in `androidInstrumentedTest`.
 

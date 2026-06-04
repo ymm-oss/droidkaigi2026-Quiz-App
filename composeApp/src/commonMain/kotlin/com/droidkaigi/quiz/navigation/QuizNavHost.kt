@@ -3,7 +3,7 @@ package com.droidkaigi.quiz.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.droidkaigi.quiz.feature.quiz.home.HomeScreen
 import com.droidkaigi.quiz.feature.quiz.quiz.QuizScreen
@@ -24,18 +24,20 @@ fun QuizNavHost() {
         backStack.add(Route.Home)
     }
 
-    val provider = entryProvider {
-        entry<Route.Home> {
-            HomeScreen(onStartQuiz = { navigate(Route.Quiz) })
-        }
-        entry<Route.Quiz> {
-            QuizScreen(onFinished = { navigate(Route.Result) })
-        }
-        entry<Route.Result> {
-            ResultScreen(onGoToRanking = { navigate(Route.Ranking) })
-        }
-        entry<Route.Ranking> {
-            RankingScreen(onGoHome = { popToHome() })
+    val provider: (Route) -> NavEntry<Route> = { key ->
+        when (key) {
+            Route.Home -> NavEntry(key) {
+                HomeScreen(onStartQuiz = { navigate(Route.Quiz) })
+            }
+            Route.Quiz -> NavEntry(key) {
+                QuizScreen(onFinished = { navigate(Route.Result) })
+            }
+            Route.Result -> NavEntry(key) {
+                ResultScreen(onGoToRanking = { navigate(Route.Ranking) })
+            }
+            Route.Ranking -> NavEntry(key) {
+                RankingScreen(onGoHome = { popToHome() })
+            }
         }
     }
 
