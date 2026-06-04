@@ -90,8 +90,45 @@ flowchart TB
 
 | プラットフォーム | 切り替え |
 |------------------|----------|
-| **Android** | Build Variants で `fakeDebug` / `prodDebug`（productFlavor `runtime`）。IDE の Run 設定 `androidApp[fake]` / `androidApp[prod]` と組み合わせる |
+| **Android** | **Build Variant**（下記 [Android Build Variant](#android-build-variantruntime-flavor)） |
 | **Desktop / スタッフ** | [gradle.properties](gradle.properties) の `quiz.runtime` または `-Pquiz.runtime=prod` |
+
+### Android Build Variant（`runtime` flavor）
+
+参加者 Android（`:androidApp`）だけ **AGP の productFlavor** で fake / prod を切り替えます。KMP ライブラリ（`:composeApp` / `:core:data` など）は [Android-KMP プラグイン](https://developer.android.com/kotlin/multiplatform/plugin)の都合で **flavor を持たない**ため、同じビルド内の `quiz.runtime` は [gradle/quiz-runtime.gradle.kts](gradle/quiz-runtime.gradle.kts) で 1 つに揃えます。
+
+| Build Variant | productFlavor | `quiz.runtime`（KMP） | データ源 | パッケージ名（例） |
+|---------------|---------------|----------------------|----------|-------------------|
+| **fakeDebug**（既定） | `fake` | `fake` | 同梱 JSON + インメモリ | `com.droidkaigi.quiz.fake` |
+| **prodDebug** | `prod` | `prod` | Firestore | `com.droidkaigi.quiz` |
+| fakeRelease / prodRelease | 同上 | 同上 | 同上 | 同上 |
+
+`quiz.runtime` の決まり方（優先順）:
+
+1. Gradle タスク名に含まれる flavor（`assembleProdDebug` → `prod`）
+2. `-Pquiz.runtime=…` または [gradle.properties](gradle.properties)
+3. 既定 `fake`
+
+そのため **`gradle.properties` が `quiz.runtime=fake` のままでも、`prodDebug` をビルドすれば KMP は prod** になります（逆に、Variant を prod にしても Gradle Sync だけでは KMP が fake のまま、ということはありません。**インストールする APK を prodDebug でビルドしたか**が重要です）。
+
+**Android Studio の手順**
+
+1. **View → Tool Windows → Build Variants**
+2. モジュール `:androidApp` を **fakeDebug** または **prodDebug** に変更
+3. **Build → Rebuild Project**（Variant 切替後は必須）
+4. Run 設定 [`.run/androidApp.run.xml`](.run/androidApp.run.xml) などで `:androidApp` を実行
+
+**Firebase（prod のみ）**
+
+- `google-services` プラグインは **prod ビルド時のみ** 適用（`quiz.runtime=prod`）
+- 設定ファイル: [`androidApp/src/prod/google-services.json`](androidApp/src/prod/google-services.json)（`package_name` は `com.droidkaigi.quiz` と一致）
+- ルートの [`androidApp/google-services.json`](androidApp/google-services.json) は Desktop JVM の設定読み込み用として残してよい
+
+**注意**
+
+- fake と prod の APK は **別アプリ**として端末に共存可能（applicationId が異なる）
+- `./gradlew :androidApp:assembleFakeDebug :androidApp:assembleProdDebug` のように **1 コマンドで両 flavor を並べると KMP は fake にフォールバック**する。片方ずつビルドする
+- prod なのにデモ問題が出る → **fakeDebug の APK が入っている**か、Rebuild 不足。ログに `quiz.runtime resolved to 'prod'` が出るか確認
 
 **永続的に変える（Desktop など）** — ルートの `gradle.properties`:
 
@@ -106,9 +143,7 @@ quiz.runtime=fake
 ./gradlew -Pquiz.runtime=prod ...
 ```
 
-Android の Gradle タスク（例: `assembleProdDebug`）から `quiz.runtime` が自動判定されます（[gradle/quiz-runtime.gradle.kts](gradle/quiz-runtime.gradle.kts)）。**Build Variant の prod は `gradle.properties` の `quiz.runtime=fake` より優先**されます。KMP は 1 ビルド 1 ランタイムのため、**fake と prod を同じ Gradle 呼び出しでまとめてビルドしない**でください。Variant 切替後は **Rebuild** を。
-
-`quiz.runtime` を変更したあとは、**必ず再ビルド**してください（選ばれていない側の source set はコンパイルされません）。
+Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.properties` または `-Pquiz.runtime` を使います。`quiz.runtime` を変更したあとは、**必ず再ビルド**してください（選ばれていない側の source set はコンパイルされません）。
 
 ### prod と Firestore（問題 DB・ランキング）
 
@@ -235,7 +270,7 @@ Android（prod）— `androidApp/src/prod/google-services.json` が必要:
 ./gradlew :androidApp:assembleProdDebug
 ```
 
-Android Studio: **Build Variants** で `fakeDebug` または `prodDebug` を選んで Run。アプリ ID は `com.droidkaigi.quiz.fake`（fake）と `com.droidkaigi.quiz`（prod・`google-services.json` と一致）で共存インストール可。`google-services.json` は `androidApp/src/prod/` に配置（ルートの `androidApp/google-services.json` は Desktop 用ローダー向けに残しても可）。
+Android Studio の詳細は [Android Build Variant](#android-build-variantruntime-flavor) を参照。
 
 Desktop（fake）:
 
