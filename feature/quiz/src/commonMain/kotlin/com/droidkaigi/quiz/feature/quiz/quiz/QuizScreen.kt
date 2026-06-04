@@ -25,13 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.domain.model.MultipleChoice
+import com.droidkaigi.quiz.core.domain.model.Question
 import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.ui.components.ChoiceCard
 import com.droidkaigi.quiz.core.ui.components.QuizFeedbackText
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizProgressHeader
-import com.droidkaigi.quiz.core.ui.components.QuizReorderRow
+import com.droidkaigi.quiz.core.ui.components.QuizReorderList
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
@@ -52,12 +53,30 @@ fun QuizScreen(
         }
     }
 
+    QuizContent(
+        state = state,
+        onSelectSingle = { viewModel.onIntent(QuizIntent.SelectSingle(it)) },
+        onToggleMultiple = { viewModel.onIntent(QuizIntent.ToggleMultiple(it)) },
+        onMoveReorder = { from, to -> viewModel.onIntent(QuizIntent.MoveReorder(from, to)) },
+        onSubmitAnswer = { viewModel.onIntent(QuizIntent.SubmitAnswer) },
+    )
+}
+
+@Composable
+fun QuizContent(
+    state: QuizUiState,
+    onSelectSingle: (String) -> Unit,
+    onToggleMultiple: (String) -> Unit,
+    onMoveReorder: (Int, Int) -> Unit,
+    onSubmitAnswer: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val shakeOffset by animateFloatAsState(
         targetValue = if (state.showFeedback && state.lastAnswerCorrect == false) 8f else 0f,
         label = "shake",
     )
 
-    QuizScreenBackground {
+    QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,43 +116,16 @@ fun QuizScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                    when (val q = state.question) {
-                        is SingleChoice -> q.options.forEach { option ->
-                            ChoiceCard(
-                                label = option.label,
-                                selected = state.selectedSingleId == option.id,
-                                onClick = { viewModel.onIntent(QuizIntent.SelectSingle(option.id)) },
-                                enabled = !state.showFeedback,
-                            )
-                        }
-                        is MultipleChoice -> q.options.forEach { option ->
-                            ChoiceCard(
-                                label = option.label,
-                                selected = option.id in state.selectedMultipleIds,
-                                onClick = { viewModel.onIntent(QuizIntent.ToggleMultiple(option.id)) },
-                                enabled = !state.showFeedback,
-                            )
-                        }
-                        is Reorder -> {
-                            state.reorderIds.forEachIndexed { index, id ->
-                                val label = q.items.first { it.id == id }.label
-                                QuizReorderRow(
-                                    index = index,
-                                    label = label,
-                                    canMoveUp = index > 0,
-                                    canMoveDown = index < state.reorderIds.lastIndex,
-                                    onMoveUp = {
-                                        viewModel.onIntent(QuizIntent.MoveReorder(index, index - 1))
-                                    },
-                                    onMoveDown = {
-                                        viewModel.onIntent(QuizIntent.MoveReorder(index, index + 1))
-                                    },
-                                    enabled = !state.showFeedback,
-                                )
-                            }
-                        }
-                        null -> Text("問題がありません")
-                    }
+                    QuestionAnswerArea(
+                        question = state.question,
+                        selectedSingleId = state.selectedSingleId,
+                        selectedMultipleIds = state.selectedMultipleIds,
+                        reorderIds = state.reorderIds,
+                        showFeedback = state.showFeedback,
+                        onSelectSingle = onSelectSingle,
+                        onToggleMultiple = onToggleMultiple,
+                        onMoveReorder = onMoveReorder,
+                    )
                 }
                 AnimatedVisibility(visible = state.showFeedback && state.lastAnswerCorrect != null) {
                     state.lastAnswerCorrect?.let { correct ->
@@ -142,11 +134,51 @@ fun QuizScreen(
                 }
                 QuizPrimaryButton(
                     text = "回答する",
-                    onClick = { viewModel.onIntent(QuizIntent.SubmitAnswer) },
+                    onClick = onSubmitAnswer,
                     enabled = state.canSubmit && !state.showFeedback,
                 )
                 Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
             }
         }
+    }
+}
+
+@Composable
+private fun QuestionAnswerArea(
+    question: Question?,
+    selectedSingleId: String?,
+    selectedMultipleIds: Set<String>,
+    reorderIds: List<String>,
+    showFeedback: Boolean,
+    onSelectSingle: (String) -> Unit,
+    onToggleMultiple: (String) -> Unit,
+    onMoveReorder: (Int, Int) -> Unit,
+) {
+    when (val q = question) {
+        is SingleChoice -> q.options.forEach { option ->
+            ChoiceCard(
+                label = option.label,
+                selected = selectedSingleId == option.id,
+                onClick = { onSelectSingle(option.id) },
+                enabled = !showFeedback,
+            )
+        }
+        is MultipleChoice -> q.options.forEach { option ->
+            ChoiceCard(
+                label = option.label,
+                selected = option.id in selectedMultipleIds,
+                onClick = { onToggleMultiple(option.id) },
+                enabled = !showFeedback,
+            )
+        }
+        is Reorder -> {
+            QuizReorderList(
+                itemIds = reorderIds,
+                labelForId = { id -> q.items.first { it.id == id }.label },
+                onMove = onMoveReorder,
+                enabled = !showFeedback,
+            )
+        }
+        null -> Text("問題がありません")
     }
 }

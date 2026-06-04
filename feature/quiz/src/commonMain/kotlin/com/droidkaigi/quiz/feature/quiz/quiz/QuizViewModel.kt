@@ -48,7 +48,7 @@ class QuizViewModel(
                 selectedSingleId = null,
                 selectedMultipleIds = emptySet(),
                 reorderIds = (question as? Reorder)?.items?.map { it.id }.orEmpty(),
-                canSubmit = false,
+                canSubmit = (question as? Reorder)?.items?.isNotEmpty() == true,
                 showFeedback = false,
                 lastAnswerCorrect = null,
             )
