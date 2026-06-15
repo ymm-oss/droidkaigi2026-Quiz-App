@@ -1,7 +1,7 @@
 # Implementation Checklist
 
-> **進捗:** 33 / 33 完了  
-> **最終更新:** 2026-06-04
+> **進捗:** 34 / 34 完了  
+> **最終更新:** 2026-06-15
 
 ## 使い方
 
@@ -21,7 +21,7 @@
 | 4 | Ranking | 2 / 2 |
 | 5 | Polish | 3 / 3 |
 | 6 | Desktop / Web | 3 / 3 |
-| 7 | UI リデザイン（Home 基準） | 6 / 6 |
+| 7 | UI リデザイン（Home 基準） | 7 / 7 |
 | H | Harness iterate | 3 / 3 |
 | 8 | Staff 認証 | 1 / 1 |
 
@@ -80,6 +80,7 @@
 - [x] **P7-04** Quiz 画面へデザイン適用 — 確認: `QuizScreen.kt` が `QuizScreenBackground` + 共通コンポーネントを使用
 - [x] **P7-05** Result 画面へデザイン適用 — 確認: `ResultScreen.kt` が `QuizScreenBackground` + 共通コンポーネントを使用
 - [x] **P7-06** Ranking 画面へデザイン適用 — 確認: `RankingScreen.kt` が `QuizScreenBackground` + 共通コンポーネントを使用
+- [x] **P7-07** Home キーボード表示時の入力欄レイアウト — 確認: `QuizCenteredScrollableColumn` + IME 表示時 `NavigationBar` 非表示、Home でニックネーム欄・クイズを始めるボタンが潰れず水色ギャップなし
 
 ## Phase 8 — Staff 認証
 

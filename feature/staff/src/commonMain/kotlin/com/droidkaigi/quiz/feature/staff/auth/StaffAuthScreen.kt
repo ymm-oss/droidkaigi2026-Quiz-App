@@ -1,14 +1,11 @@
 package com.droidkaigi.quiz.feature.staff.auth
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.ui.components.QuizCenteredScrollableColumn
 import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
@@ -58,12 +56,7 @@ fun StaffAuthContent(
     modifier: Modifier = Modifier,
 ) {
     QuizScreenBackground(modifier = modifier) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeContentPadding(),
-            contentAlignment = Alignment.Center,
-        ) {
+        QuizCenteredScrollableColumn {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

@@ -68,6 +68,7 @@ android {
 
 dependencies {
     implementation(projects.composeApp)
+    implementation(projects.core.ui)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.compose.ui.tooling.preview)

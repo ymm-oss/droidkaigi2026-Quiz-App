@@ -2,8 +2,10 @@ package com.droidkaigi.quiz.shell
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -19,7 +21,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.navigation.Route
 
@@ -66,9 +70,15 @@ fun QuizAdaptiveScaffold(
                 }
             }
         } else {
+            val density = LocalDensity.current
+            val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+            val showBottomBar =
+                !isImeVisible && (currentRoute == Route.Home || currentRoute == Route.Ranking)
             Scaffold(
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
                 bottomBar = {
-                    if (currentRoute == Route.Home || currentRoute == Route.Ranking) {
+                    if (showBottomBar) {
                         NavigationBar {
                             navItems.forEach { item ->
                                 val selected = currentRoute == item.route
