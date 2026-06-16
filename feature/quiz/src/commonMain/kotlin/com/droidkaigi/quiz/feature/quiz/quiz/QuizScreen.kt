@@ -31,6 +31,7 @@ import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.ui.components.ChoiceCard
 import com.droidkaigi.quiz.core.ui.components.QuizFeedbackText
+import com.droidkaigi.quiz.core.ui.components.QuizMarkdownText
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizProgressHeader
 import com.droidkaigi.quiz.core.ui.components.QuizReorderList
@@ -112,10 +113,7 @@ fun QuizContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
-                    Text(
-                        text = state.prompt,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                    QuizMarkdownText(state.prompt)
                 }
                 QuizSurfaceCard {
                     Text(
