@@ -20,10 +20,13 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.navigation.Route
 
@@ -70,8 +73,8 @@ fun QuizAdaptiveScaffold(
                 }
             }
         } else {
-            val density = LocalDensity.current
-            val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+            val imeInsets = WindowInsets.ime
+            val isImeVisible by remember { derivedStateOf { imeInsets.getBottom(Density(1f)) > 0 } }
             val showBottomBar =
                 !isImeVisible && (currentRoute == Route.Home || currentRoute == Route.Ranking)
             Scaffold(
