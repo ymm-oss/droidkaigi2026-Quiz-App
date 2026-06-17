@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz.shell
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -30,6 +31,21 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.navigation.Route
 
+private val navItems = listOf(
+    NavItem(
+        route = Route.Home,
+        label = "ホーム",
+        selectedIcon = Icons.Filled.Home,
+        unselectedIcon = Icons.Outlined.Home,
+    ),
+    NavItem(
+        route = Route.Ranking,
+        label = "ランキング",
+        selectedIcon = Icons.Filled.Leaderboard,
+        unselectedIcon = Icons.Outlined.Leaderboard,
+    ),
+)
+
 @Composable
 fun QuizAdaptiveScaffold(
     currentRoute: Route,
@@ -38,20 +54,6 @@ fun QuizAdaptiveScaffold(
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val useRail = maxWidth >= 600.dp
-        val navItems = listOf(
-            NavItem(
-                route = Route.Home,
-                label = "ホーム",
-                selectedIcon = Icons.Filled.Home,
-                unselectedIcon = Icons.Outlined.Home,
-            ),
-            NavItem(
-                route = Route.Ranking,
-                label = "ランキング",
-                selectedIcon = Icons.Filled.Leaderboard,
-                unselectedIcon = Icons.Outlined.Leaderboard,
-            ),
-        )
 
         if (useRail) {
             Row(modifier = Modifier.fillMaxSize()) {
@@ -74,7 +76,10 @@ fun QuizAdaptiveScaffold(
             }
         } else {
             val imeInsets = WindowInsets.ime
-            val isImeVisible by remember { derivedStateOf { imeInsets.getBottom(Density(1f)) > 0 } }
+            val isImeVisible by remember {
+                val pixelDensity = Density(1f)
+                derivedStateOf { imeInsets.getBottom(pixelDensity) > 0 }
+            }
             val showBottomBar =
                 !isImeVisible && (currentRoute == Route.Home || currentRoute == Route.Ranking)
             Scaffold(
@@ -96,7 +101,7 @@ fun QuizAdaptiveScaffold(
                     }
                 },
             ) { padding ->
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
