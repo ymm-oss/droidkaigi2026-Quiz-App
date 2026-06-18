@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,15 +65,16 @@ fun HomeContent(
     QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .safeContentPadding(),
+                .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .widthIn(max = 480.dp)
-                    .padding(horizontal = QuizTokens.spacingLarge),
+                    .padding(horizontal = QuizTokens.spacingLarge)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingExtraLarge),
             ) {

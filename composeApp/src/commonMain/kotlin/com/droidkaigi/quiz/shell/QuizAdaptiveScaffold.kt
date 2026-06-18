@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz.shell
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -61,7 +62,7 @@ fun QuizAdaptiveScaffold(
                         )
                     }
                 }
-                BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                     content()
                 }
             }
@@ -83,7 +84,7 @@ fun QuizAdaptiveScaffold(
                     }
                 },
             ) { padding ->
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
