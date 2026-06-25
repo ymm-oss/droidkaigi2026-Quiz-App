@@ -39,33 +39,7 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 ./gradlew :staffDesktopApp:run -Pquiz.runtime=prod
 ```
 
-要 [README](../README.md) の Firebase 設定と [docs/FIRESTORE.md](FIRESTORE.md) の初期データ。
-
-- **認証**: Console で作成したスタッフ用メール / パスワード（`ProdStaffAuthRepository`）
-- **データ**: 参加者 prod と同じ Firestore（スタッフは認証後に書き込み可）
-- **フォルダ**: 左ペインで選択・追加。「参加者向けに公開」で参加者アプリのクイズ／ランキング対象を切り替え
-- **クイズ**: 問題の追加・編集・削除、正解と解説（Markdown: `**太字**`, `` `code` ``, `- 箇条書き`, `## 見出し`）
-- **ランキング**（fake）: 選択フォルダの当日スコア（インメモリ。別プロセスの参加者アプリとは共有されない）
-- **ランキング**（prod）: Firestore `folders/{folderId}/rankings`（参加者アプリと同一データ）
-
-### prod スタッフ — Firestore 診断ログ
-
-`./gradlew :staffDesktopApp:run -Pquiz.runtime=prod` の**ターミナル標準出力**に次のプレフィックスで出る。
-
-| プレフィックス | 内容 |
-|----------------|------|
-| `[StaffShell]` | 画面の refresh / フォルダ作成 |
-| `[Firebase]` | Desktop JVM: GitLive / `firebase-java-sdk` のログ |
-| `[Firestore/QuizCatalog]` | リポジトリ層の結果件数 |
-
-**フォルダが一覧に出ないときの見方**
-
-1. `[Firestore/QuizCatalog] listFolders result count=N` — Console の `folders` 件数と一致するか
-2. `[Firebase]` ログの projectId — Firebase Console のプロジェクト ID と一致するか（`google-services.json`）
-3. ログイン後に作成しても一覧が空 — **別プロジェクト**の `google-services.json` を参照している可能性
-4. 書き込み失敗 — 未ログインまたはルール（`request.auth != null`）。読み取りは `allow read: if true`
-
-ログ無効化: `FirestoreDiagnostics.ENABLED = false`（`core/data/.../FirestoreDiagnostics.kt`）。
+Firebase プロジェクトは**準備中**。
 
 ## Prerequisites
 

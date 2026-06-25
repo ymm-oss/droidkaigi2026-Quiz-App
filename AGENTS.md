@@ -23,6 +23,8 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 
 ## Docs & harness
 
+- Contributing: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+- Development (build, fake/prod): [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - Spec: [docs/SPEC.md](docs/SPEC.md)
 - Firestore (prod DB): [docs/FIRESTORE.md](docs/FIRESTORE.md) · CLI: [firebase.json](firebase.json)
 - Checklist: [docs/CHECKLIST.md](docs/CHECKLIST.md)
