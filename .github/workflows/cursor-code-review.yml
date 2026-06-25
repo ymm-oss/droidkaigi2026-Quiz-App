@@ -1,0 +1,104 @@
+name: Cursor Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: cursor-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  code-review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
+          cursor-agent --version
+
+      - name: Verify Cursor CLI authentication
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: cursor-agent status
+
+      - name: Perform code review
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          PROMPT="$(cat <<EOF
+          You are operating in a GitHub Actions runner performing automated code review for the DroidKaigi 2026 Quiz repository (Kotlin Multiplatform + Compose).
+
+          The gh CLI is available and authenticated via GH_TOKEN. You may comment on pull requests. Do NOT modify files, create branches, commit, or push.
+
+          Context:
+          - Repo: ${REPOSITORY}
+          - PR Number: ${PR_NUMBER}
+          - PR Head SHA: ${PR_HEAD_SHA}
+          - PR Base SHA: ${PR_BASE_SHA}
+
+          Read project conventions before reviewing:
+          - AGENTS.md (module boundaries)
+          - .cursor/rules/*.mdc (MVI, domain/data, feature layer)
+          - .github/cursor-review-instructions.md (review focus for this repo)
+
+          Procedure:
+          1. Read the PR title, body, and linked context: gh pr view ${PR_NUMBER} --json title,body,comments,reviews
+          2. Read the diff: gh pr diff ${PR_NUMBER}
+          3. For severe issues only, post inline review comments (max 10 total)
+          4. If a prior review comment appears fixed by nearby changes, reply on that thread: "✅ この指摘は直近の変更で解消されているようです"
+          5. Post one summary review comment on the PR (Japanese)
+
+          Review focus (highest priority first):
+          1. Correctness bugs, crashes, race conditions, broken quiz scoring or ranking logic
+          2. Architecture violations (reverse module deps, business logic in ViewModels, direct repository calls from features)
+          3. prod/fake runtime mistakes (silent fallback to fake data in prod, missing Firestore wiring)
+          4. Security (secrets in repo, unsafe Firestore rules assumptions, auth bypass)
+          5. Missing tests for domain/scoring changes
+
+          Skip: formatting nits, naming preferences, minor style unless they hide a real bug.
+
+          Inline comment format (line-specific; use gh api — gh pr comment/review do NOT support --path/--line):
+          gh api repos/${REPOSITORY}/pulls/${PR_NUMBER}/comments \
+            -f body="<emoji> <1-2 sentence finding in Japanese>" \
+            -f commit_id="${PR_HEAD_SHA}" \
+            -f path="<file>" \
+            -F line=<line> \
+            -f side="RIGHT"
+
+          For multiple inline comments in one review, use POST .../pulls/${PR_NUMBER}/reviews with a JSON "comments" array (heredoc + --input -).
+
+          Emojis: 🚨 critical bug, ⚠️ likely bug or arch issue, 🔒 security, ✅ resolved
+
+          Summary comment (PR timeline, not line-specific):
+          gh pr comment ${PR_NUMBER} --body "## Cursor 自動レビュー\n\n<short Japanese summary: what was checked, issue count, merge blockers if any>"
+
+          If no severe issues: still post the summary with "重大な問題は見つかりませんでした".
+          EOF
+          )"
+
+          cursor-agent \
+            --force \
+            --model auto \
+            --output-format text \
+            --print "$PROMPT"
