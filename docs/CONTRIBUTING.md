@@ -56,12 +56,33 @@ Slack は **Accenture Enterprise Slack** のワークスペース参加が必要
 | [.cursor/skills/droidkaigi-quiz/](../.cursor/skills/droidkaigi-quiz/) | 実装ワークフロー（SPEC → CHECKLIST → domain → data → feature → nav → test） |
 | [.cursor/skills/droidkaigi-quiz-test/](../.cursor/skills/droidkaigi-quiz-test/) | テスト追加手順 |
 | [.cursor/skills/droidkaigi-quiz-verify/](../.cursor/skills/droidkaigi-quiz-verify/) | 手動確認手順 |
+| [.cursor/skills/droidkaigi-quiz-review/](../.cursor/skills/droidkaigi-quiz-review/) | PR レビュー（ローカルは Agent + スキル、CI と同観点） |
 
 ### おすすめの進め方
 
 1. **Plan モード** — 仕様・影響範囲を整理してから実装に入る
 2. **Agent モード** — `docs/SPEC.md` と `AGENTS.md` を前提に、CHECKLIST の 1 項目ずつ着手
 3. **PR 前** — `jvmTest` と必要に応じて `connectedDebugAndroidTest` / [VERIFY.md](VERIFY.md) を実行
+
+### CI 自動レビュー（Cursor CLI）
+
+PR 作成・更新時に [`.github/workflows/cursor-code-review.yml`](../.github/workflows/cursor-code-review.yml) が **Cursor CLI** で diff をレビューし、GitHub にコメントします（ドラフト PR は対象外）。
+
+**初回セットアップ（リポジトリ管理者）**
+
+1. [Cursor Dashboard → Integrations](https://cursor.com/dashboard/integrations) で API キーを発行
+2. GitHub リポジトリの **Settings → Secrets and variables → Actions** に `CURSOR_API_KEY` を登録
+
+```bash
+gh secret set CURSOR_API_KEY --repo OWNER/REPO --body "$CURSOR_API_KEY"
+```
+
+レビュー観点は [`.github/cursor-review-instructions.md`](../.github/cursor-review-instructions.md) と `.cursor/rules/` に準拠します。CLI の権限は [`.cursor/cli.json`](../.cursor/cli.json) で読み取り + `gh` コメントのみに制限しています。
+
+**動作確認の推奨順序**
+
+1. **ローカル（Cursor Agent + スキル）** — CLI 不要。Agent に例えば「`droidkaigi-quiz-review` で branch changes をレビューして」と依頼。詳細は [`.cursor/skills/droidkaigi-quiz-review/`](../.cursor/skills/droidkaigi-quiz-review/SKILL.md)。
+2. **テスト PR + CI** — `CURSOR_API_KEY` 登録後、非ドラフト PR を作成し Actions ログと PR コメントを確認。
 
 ## コーディング規約
 

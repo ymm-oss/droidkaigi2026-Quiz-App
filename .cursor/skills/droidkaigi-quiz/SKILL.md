@@ -20,6 +20,7 @@ description: Master workflow for DroidKaigi 2026 Quiz — new screens, features,
 5. **Nav** — register route in `composeApp/.../QuizNavHost.kt`
 6. **Test** — see `.cursor/skills/droidkaigi-quiz-test/SKILL.md`
 7. **Verify** — see `.cursor/skills/droidkaigi-quiz-verify/SKILL.md`
+8. **Review** — see `.cursor/skills/droidkaigi-quiz-review/SKILL.md`（PR 前）
 
 ## External skills
 
