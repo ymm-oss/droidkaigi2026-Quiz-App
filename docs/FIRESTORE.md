@@ -1,6 +1,6 @@
 # Firestore — データベース構造と prod 実装
 
-`quiz.runtime=prod` 時のバックエンド仕様。Firebase の Console 設定手順は [README.md](../README.md#firebase-プロジェクトの設定手順)（開発者向け）を参照。
+`quiz.runtime=prod` 時のバックエンド仕様。**Firebase プロジェクトは準備中。**
 
 ## コレクション構成
 
@@ -49,12 +49,7 @@ folders/{folderId}/rankings/{entryId}
 
 ## 初期データ
 
-[firestore-seed.json](firestore-seed.json) を参照。Console で次を作成する。
-
-| パス | 内容 |
-|------|------|
-| `folders/droidkaigi2026-demo` | サンプル JSON の `folders.droidkaigi2026-demo` |
-| `appConfig/default` | `activeFolderId: "droidkaigi2026-demo"` |
+**準備中。**
 
 ## インデックス
 
@@ -66,34 +61,13 @@ folders/{folderId}/rankings/{entryId}
 
 ## Firebase CLI でデプロイ
 
-リポジトリ直下に [firebase.json](../firebase.json) がある。**初回だけ** CLI でログインとプロジェクト紐付けを行う。
-
-```bash
-npm install -g firebase-tools   # または npx firebase-tools
-firebase login
-# 未設定なら .firebaserc の default を Console のプロジェクト ID に書き換え
-
-firebase deploy --only firestore:rules
-firebase deploy --only firestore:indexes
-# まとめて: firebase deploy --only firestore
-```
-
-| ファイル | 役割 |
-|----------|------|
-| [firebase.json](../firebase.json) | CLI のエントリ（ルール・インデックスのパス） |
-| [firestore.rules](../firestore.rules) | ルール本体（`firebase.json` から参照） |
-| [firestore.indexes.json](../firestore.indexes.json) | ランキング用複合インデックス |
-| [.firebaserc](../.firebaserc) | デプロイ先プロジェクト ID（本番 1 プロジェクト） |
-
-`firebase init` は上記ファイルが無いときの**対話式の初期化**用。すでに `firebase.json` がある場合は `init` し直す必要はなく、`deploy` で足りる。
-
-**ドキュメントデータ**（`folders` / `appConfig`）は `deploy` では入らない。Console、スタッフアプリ（prod）、または Admin SDK スクリプトで投入する（[初期データ](#初期データ)）。
+**準備中。**
 
 ## セキュリティルール
 
 会場公開クイズ + 匿名スコア送信 + ログイン済みスタッフのフォルダ編集向け。
 
-全文: [firestore.rules](../firestore.rules)（`firebase deploy --only firestore:rules` で反映）
+全文: [firestore.rules](../firestore.rules)
 
 要点:
 
