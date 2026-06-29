@@ -71,6 +71,7 @@ fun StaffRankingContent(
                     CircularProgressIndicator()
                 }
             }
+
             errorMessage != null -> {
                 Text(
                     text = errorMessage,
@@ -78,6 +79,7 @@ fun StaffRankingContent(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
+
             entries.isEmpty() -> {
                 Text(
                     text = "本日のスコアはまだありません",
@@ -85,6 +87,7 @@ fun StaffRankingContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+
             else -> {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),

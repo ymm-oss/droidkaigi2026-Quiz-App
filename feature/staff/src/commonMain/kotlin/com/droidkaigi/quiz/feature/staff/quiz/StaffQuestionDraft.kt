@@ -13,10 +13,7 @@ enum class StaffQuestionType(val label: String) {
     Reorder("並び替え"),
 }
 
-data class StaffListItem(
-    val id: String,
-    val label: String,
-)
+data class StaffListItem(val id: String, val label: String)
 
 data class StaffQuestionDraft(
     val id: String = "",
@@ -63,6 +60,7 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         items = options.map { StaffListItem(it.id, it.label) },
         correctSingleId = correctId,
     )
+
     is MultipleChoice -> StaffQuestionDraft(
         id = id,
         prompt = prompt,
@@ -71,6 +69,7 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         items = options.map { StaffListItem(it.id, it.label) },
         correctMultipleIds = correctIds,
     )
+
     is Reorder -> StaffQuestionDraft(
         id = id,
         prompt = prompt,
@@ -96,6 +95,7 @@ fun StaffQuestionDraft.toQuestion(): Question {
                 correctIds = correctMultipleIds,
             )
         }
+
         StaffQuestionType.Reorder -> Reorder(
             id = id.trim(),
             prompt = prompt.trim(),
@@ -103,6 +103,7 @@ fun StaffQuestionDraft.toQuestion(): Question {
             items = trimmedItems.map { ReorderItem(it.id, it.label) },
             correctOrder = trimmedItems.map { it.id },
         )
+
         StaffQuestionType.SingleChoice -> {
             val correctId = correctSingleId.takeIf { it.isNotEmpty() }
                 ?: trimmedItems.first().id
@@ -129,12 +130,14 @@ fun StaffQuestionDraft.withTypeChanged(newType: StaffQuestionType): StaffQuestio
                 ?: normalizedItems.firstOrNull()?.id.orEmpty(),
             correctMultipleIds = emptySet(),
         )
+
         StaffQuestionType.MultipleChoice -> copy(
             type = newType,
             items = normalizedItems,
             correctMultipleIds = correctMultipleIds.filter { id -> normalizedItems.any { it.id == id } }.toSet(),
             correctSingleId = "",
         )
+
         StaffQuestionType.Reorder -> copy(
             type = newType,
             items = normalizedItems,
@@ -167,9 +170,8 @@ fun StaffQuestionDraft.moveItemDown(itemId: String): StaffQuestionDraft = reorde
 
 private fun StaffQuestionDraft.reorderItem(itemId: String, delta: Int): StaffQuestionDraft {
     val index = items.indexOfFirst { it.id == itemId }
-    if (index < 0) return this
     val target = index + delta
-    if (target !in items.indices) return this
+    if (index < 0 || target !in items.indices) return this
     val mutable = items.toMutableList()
     val item = mutable.removeAt(index)
     mutable.add(target, item)

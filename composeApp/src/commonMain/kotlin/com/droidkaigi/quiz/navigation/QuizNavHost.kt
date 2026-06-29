@@ -29,12 +29,15 @@ fun QuizNavHost() {
             Route.Home -> NavEntry(key) {
                 HomeScreen(onStartQuiz = { navigate(Route.Quiz) })
             }
+
             Route.Quiz -> NavEntry(key) {
                 QuizScreen(onFinished = { navigate(Route.Result) })
             }
+
             Route.Result -> NavEntry(key) {
                 ResultScreen(onGoToRanking = { navigate(Route.Ranking) })
             }
+
             Route.Ranking -> NavEntry(key) {
                 RankingScreen(onGoHome = { popToHome() })
             }
@@ -46,6 +49,7 @@ fun QuizNavHost() {
         onNavigate = { route ->
             when (route) {
                 Route.Home -> popToHome()
+
                 else -> {
                     if (backStack.lastOrNull() != route) {
                         if (route == Route.Home) popToHome() else navigate(route)

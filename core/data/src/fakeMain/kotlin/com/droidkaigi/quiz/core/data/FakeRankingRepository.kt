@@ -12,10 +12,8 @@ import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
 @Inject
-class FakeRankingRepository(
-    private val instantProvider: InstantProvider,
-    private val catalog: InMemoryQuizCatalog,
-) : RankingRepository {
+class FakeRankingRepository(private val instantProvider: InstantProvider, private val catalog: InMemoryQuizCatalog) :
+    RankingRepository {
     override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = catalog.withLock {
         val today = instantProvider.todayLocalDate()
         rankingsFor(folderId)
@@ -23,15 +21,12 @@ class FakeRankingRepository(
             .sortedByDescending { it.score }
     }
 
-    override suspend fun submitScore(
-        result: QuizResult,
-        completedAtEpochMillis: Long,
-        folderId: String,
-    ) = catalog.withLock {
-        rankingsFor(folderId) += RankingEntry(
-            nickname = result.nickname,
-            score = result.score,
-            completedAtEpochMillis = completedAtEpochMillis,
-        )
-    }
+    override suspend fun submitScore(result: QuizResult, completedAtEpochMillis: Long, folderId: String) =
+        catalog.withLock {
+            rankingsFor(folderId) += RankingEntry(
+                nickname = result.nickname,
+                score = result.score,
+                completedAtEpochMillis = completedAtEpochMillis,
+            )
+        }
 }

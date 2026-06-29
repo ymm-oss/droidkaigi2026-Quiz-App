@@ -7,10 +7,7 @@ import androidx.compose.ui.Modifier
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizFeedbackText(
-    isCorrect: Boolean,
-    modifier: Modifier = Modifier,
-) {
+fun QuizFeedbackText(isCorrect: Boolean, modifier: Modifier = Modifier) {
     Text(
         text = if (isCorrect) "正解！" else "不正解",
         modifier = modifier,

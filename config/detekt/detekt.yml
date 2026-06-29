@@ -1,0 +1,75 @@
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  LongMethod:
+    active: true
+    ignoreAnnotated:
+      - Composable
+  LongParameterList:
+    active: true
+    allowedFunctionParameters: 14
+    allowedConstructorParameters: 20
+    ignoreAnnotated:
+      - Composable
+  TooManyFunctions:
+    active: true
+    allowedFunctionsPerFile: 20
+    allowedFunctionsPerClass: 20
+    allowedFunctionsPerInterface: 20
+    allowedFunctionsPerObject: 20
+    allowedFunctionsPerEnum: 20
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - Composable
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Za-z][_A-Za-z0-9]*'
+    propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
+    privatePropertyPattern: '(_)?[A-Za-z][_A-Za-z0-9]*'
+  MatchingDeclarationName:
+    active: true
+    mustBeFirst: true
+
+style:
+  MagicNumber:
+    active: false
+  WildcardImport:
+    active: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+  UnusedPrivateFunction:
+    active: true
+    ignoreAnnotated:
+      - Preview
+  UnusedParameter:
+    active: true
+    allowedNames: '_|ignored|expected|totalCount'
+  ReturnCount:
+    active: true
+    max: 3
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames:
+      - Error
+      - Exception
+      - NullPointerException
+      - RuntimeException
+      - Throwable
+    allowedExceptionNameRegex: '_|(ignore|expected).*'
+
+ktlint:
+  MaximumLineLength:
+    active: true
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true

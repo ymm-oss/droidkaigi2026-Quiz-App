@@ -16,11 +16,13 @@ internal fun correctAnswerText(question: Question): String = when (question) {
         question.options.firstOrNull { it.id == question.correctId }?.label
             ?: question.correctId
     }
+
     is MultipleChoice -> {
         question.correctIds
             .map { id -> question.options.firstOrNull { it.id == id }?.label ?: id }
             .joinToString(", ")
     }
+
     is Reorder -> {
         question.correctOrder
             .map { id -> question.items.firstOrNull { it.id == id }?.label ?: id }

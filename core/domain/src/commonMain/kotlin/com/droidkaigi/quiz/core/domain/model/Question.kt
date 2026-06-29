@@ -41,13 +41,7 @@ data class Reorder(
 ) : Question
 
 @Serializable
-data class ChoiceOption(
-    val id: String,
-    val label: String,
-)
+data class ChoiceOption(val id: String, val label: String)
 
 @Serializable
-data class ReorderItem(
-    val id: String,
-    val label: String,
-)
+data class ReorderItem(val id: String, val label: String)

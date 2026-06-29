@@ -47,11 +47,12 @@ internal object FakeQuizCatalogSeeder {
                                 if (question.explanationMarkdown.isBlank()) {
                                     question.copy(
                                         explanationMarkdown =
-                                            "**Compose Multiplatform** で UI を共有できます。\n- Android / Desktop / iOS など",
+                                        "**Compose Multiplatform** で UI を共有できます。\n- Android / Desktop / iOS など",
                                     )
                                 } else {
                                     question
                                 }
+
                             else -> question
                         }
                     },

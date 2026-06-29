@@ -30,10 +30,7 @@ import com.droidkaigi.quiz.core.ui.components.QuizTextField
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun HomeScreen(
-    onStartQuiz: () -> Unit,
-    viewModel: HomeViewModel = viewModel { HomeViewModel() },
-) {
+fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { HomeViewModel() }) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel) {

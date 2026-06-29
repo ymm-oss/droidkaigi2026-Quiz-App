@@ -13,12 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizSecondaryButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-) {
+fun QuizSecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier

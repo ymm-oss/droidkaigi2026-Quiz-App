@@ -9,10 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class StaffRankingViewModel(
-    private val folderId: String,
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class StaffRankingViewModel(private val folderId: String, private val deps: AppDependencies = AppDependencies.shared) :
+    ViewModel() {
     private val _uiState = MutableStateFlow(StaffRankingUiState())
     val uiState: StateFlow<StaffRankingUiState> = _uiState.asStateFlow()
 

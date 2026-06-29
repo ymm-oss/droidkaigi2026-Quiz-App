@@ -20,9 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class QuizViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
@@ -52,7 +50,7 @@ class QuizViewModel(
                 question = question,
                 selectedSingleId = null,
                 selectedMultipleIds = emptySet(),
-                reorderIds = (question as? Reorder)?.items?.map { it.id }.orEmpty(),
+                reorderIds = (question as? Reorder)?.items?.map { item -> item.id }.orEmpty(),
                 canSubmit = (question as? Reorder)?.items?.isNotEmpty() == true,
                 showFeedback = false,
                 lastAnswerCorrect = null,
@@ -65,6 +63,7 @@ class QuizViewModel(
             is QuizIntent.SelectSingle -> _uiState.update {
                 it.copy(selectedSingleId = intent.id, canSubmit = true)
             }
+
             is QuizIntent.ToggleMultiple -> _uiState.update {
                 val next = if (intent.id in it.selectedMultipleIds) {
                     it.selectedMultipleIds - intent.id
@@ -73,6 +72,7 @@ class QuizViewModel(
                 }
                 it.copy(selectedMultipleIds = next, canSubmit = next.isNotEmpty())
             }
+
             is QuizIntent.MoveReorder -> {
                 val ids = _uiState.value.reorderIds.toMutableList()
                 if (intent.fromIndex in ids.indices && intent.toIndex in ids.indices) {
@@ -81,6 +81,7 @@ class QuizViewModel(
                     _uiState.update { it.copy(reorderIds = ids, canSubmit = true) }
                 }
             }
+
             QuizIntent.SubmitAnswer -> submitAnswer()
         }
     }

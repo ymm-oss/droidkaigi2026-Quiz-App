@@ -12,9 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ResultViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class ResultViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(ResultUiState())
     val uiState: StateFlow<ResultUiState> = _uiState.asStateFlow()
 

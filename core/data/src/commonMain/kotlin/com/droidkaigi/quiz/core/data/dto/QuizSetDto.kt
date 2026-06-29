@@ -7,15 +7,10 @@ import com.droidkaigi.quiz.core.domain.model.QuizSet
 import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.ReorderItem
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class QuizSetDto(
-    val id: String,
-    val title: String,
-    val questions: List<QuestionDto>,
-)
+data class QuizSetDto(val id: String, val title: String, val questions: List<QuestionDto>)
 
 @Serializable
 data class QuestionDto(
@@ -50,6 +45,7 @@ fun QuestionDto.toDomain(): Question? = when (type) {
         options = options.orEmpty().map { ChoiceOption(it.id, it.label) },
         correctId = correctId.orEmpty(),
     )
+
     "multiple_choice" -> MultipleChoice(
         id = id,
         prompt = prompt,
@@ -57,6 +53,7 @@ fun QuestionDto.toDomain(): Question? = when (type) {
         options = options.orEmpty().map { ChoiceOption(it.id, it.label) },
         correctIds = correctIds.orEmpty().toSet(),
     )
+
     "reorder" -> Reorder(
         id = id,
         prompt = prompt,
@@ -64,5 +61,6 @@ fun QuestionDto.toDomain(): Question? = when (type) {
         items = items.orEmpty().map { ReorderItem(it.id, it.label) },
         correctOrder = correctOrder.orEmpty(),
     )
+
     else -> null
 }
