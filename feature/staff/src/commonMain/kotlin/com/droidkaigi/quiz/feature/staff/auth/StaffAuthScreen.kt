@@ -30,9 +30,7 @@ import com.droidkaigi.quiz.core.ui.components.QuizTextField
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun StaffAuthScreen(
-    viewModel: StaffAuthViewModel = viewModel { StaffAuthViewModel() },
-) {
+fun StaffAuthScreen(viewModel: StaffAuthViewModel = viewModel { StaffAuthViewModel() }) {
     val state by viewModel.uiState.collectAsState()
 
     StaffAuthContent(

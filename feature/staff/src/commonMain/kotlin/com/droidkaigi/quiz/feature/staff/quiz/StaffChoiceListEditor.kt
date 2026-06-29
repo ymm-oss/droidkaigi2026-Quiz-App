@@ -107,10 +107,12 @@ private fun StaffChoiceRow(
                 selected = isCorrectSingle,
                 onClick = onSelectSingle,
             )
+
             StaffQuestionType.MultipleChoice -> Checkbox(
                 checked = isCorrectMultiple,
                 onCheckedChange = onToggleMultiple,
             )
+
             StaffQuestionType.Reorder -> Text(
                 text = "${index + 1}.",
                 style = MaterialTheme.typography.labelLarge,

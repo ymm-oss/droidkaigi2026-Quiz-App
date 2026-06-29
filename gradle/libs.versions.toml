@@ -28,6 +28,7 @@ firebase-firestore-ktx = "25.1.1"
 firebase-auth-ktx = "23.1.0"
 firebase-java-sdk = "0.6.2"
 googleServices = "4.4.4"
+detekt = "2.0.0-alpha.3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -71,6 +72,9 @@ firebase-common-lib = { module = "com.google.firebase:firebase-common", version.
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "firebase-firestore-ktx" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth-ktx" }
 firebase-java-sdk = { module = "dev.gitlive:firebase-java-sdk", version.ref = "firebase-java-sdk" }
+detekt-formatting = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref = "detekt" }
+detekt-gradle-plugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -82,3 +86,4 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }

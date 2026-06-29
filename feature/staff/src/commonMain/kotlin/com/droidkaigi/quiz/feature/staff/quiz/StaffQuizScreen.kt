@@ -28,12 +28,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.domain.model.Question
-import com.droidkaigi.quiz.feature.staff.StaffConfirmDialog
-import com.droidkaigi.quiz.feature.staff.truncateForDialog
 import com.droidkaigi.quiz.core.ui.components.QuizMarkdownText
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.feature.staff.StaffConfirmDialog
+import com.droidkaigi.quiz.feature.staff.truncateForDialog
 
 @Composable
 fun StaffQuizScreen(
@@ -129,6 +129,7 @@ fun StaffQuizContent(
                     CircularProgressIndicator()
                 }
             }
+
             errorMessage != null -> {
                 Text(
                     text = errorMessage,
@@ -136,6 +137,7 @@ fun StaffQuizContent(
                     style = MaterialTheme.typography.bodyLarge,
                 )
             }
+
             questions.isEmpty() -> {
                 Text(
                     text = "問題がありません",
@@ -143,6 +145,7 @@ fun StaffQuizContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+
             else -> {
                 StaffQuestionReorderList(
                     questions = questions,

@@ -35,10 +35,7 @@ import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun RankingScreen(
-    onGoHome: () -> Unit,
-    viewModel: RankingViewModel = viewModel { RankingViewModel() },
-) {
+fun RankingScreen(onGoHome: () -> Unit, viewModel: RankingViewModel = viewModel { RankingViewModel() }) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel) {

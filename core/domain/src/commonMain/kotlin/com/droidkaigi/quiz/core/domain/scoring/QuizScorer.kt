@@ -23,18 +23,9 @@ object QuizScorer {
     fun isCorrect(question: Question, answer: Answer?): Boolean {
         if (answer == null || answer.questionId != question.id) return false
         return when (question) {
-            is SingleChoice -> {
-                val a = answer as? SingleChoiceAnswer ?: return false
-                a.selectedId == question.correctId
-            }
-            is MultipleChoice -> {
-                val a = answer as? MultipleChoiceAnswer ?: return false
-                a.selectedIds == question.correctIds
-            }
-            is Reorder -> {
-                val a = answer as? ReorderAnswer ?: return false
-                a.orderedIds == question.correctOrder
-            }
+            is SingleChoice -> (answer as? SingleChoiceAnswer)?.selectedId == question.correctId
+            is MultipleChoice -> (answer as? MultipleChoiceAnswer)?.selectedIds == question.correctIds
+            is Reorder -> (answer as? ReorderAnswer)?.orderedIds == question.correctOrder
         }
     }
 

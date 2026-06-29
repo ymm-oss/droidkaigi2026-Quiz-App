@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.droidkaigi.quiz.core.domain.model.Question
-import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState

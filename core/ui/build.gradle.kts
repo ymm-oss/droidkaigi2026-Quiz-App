@@ -23,6 +23,8 @@ kotlin {
         browser()
     }
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
         val dragReorderMain by creating {
             dependsOn(commonMain.get())
@@ -41,12 +43,11 @@ kotlin {
         dragReorderMain.dependencies {
             implementation(libs.compose.reorderable)
         }
-    }
-
-    sourceSets.named("jvmMain").configure {
-        dependsOn(sourceSets.getByName("dragReorderMain"))
-    }
-    sourceSets.named("androidMain").configure {
-        dependsOn(sourceSets.getByName("dragReorderMain"))
+        jvmMain {
+            dependsOn(dragReorderMain)
+        }
+        androidMain {
+            dependsOn(dragReorderMain)
+        }
     }
 }

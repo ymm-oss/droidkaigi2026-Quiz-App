@@ -30,17 +30,9 @@ import com.droidkaigi.quiz.feature.staff.folders.StaffFolderSidebar
 import com.droidkaigi.quiz.feature.staff.quiz.StaffQuizScreen
 import com.droidkaigi.quiz.feature.staff.ranking.StaffRankingScreen
 
-enum class StaffTab {
-    Quiz,
-    Ranking,
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaffShell(
-    onSignOut: () -> Unit,
-    shellViewModel: StaffShellViewModel = viewModel { StaffShellViewModel() },
-) {
+fun StaffShell(onSignOut: () -> Unit, shellViewModel: StaffShellViewModel = viewModel { StaffShellViewModel() }) {
     val shellState by shellViewModel.uiState.collectAsState()
     var selectedTab by rememberSaveable { mutableStateOf(StaffTab.Quiz) }
     var newFolderName by rememberSaveable { mutableStateOf("") }

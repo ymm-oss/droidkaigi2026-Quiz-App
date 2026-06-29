@@ -9,10 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class StaffQuizViewModel(
-    private val folderId: String,
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class StaffQuizViewModel(private val folderId: String, private val deps: AppDependencies = AppDependencies.shared) :
+    ViewModel() {
     private val _uiState = MutableStateFlow(StaffQuizUiState())
     val uiState: StateFlow<StaffQuizUiState> = _uiState.asStateFlow()
 
@@ -23,14 +21,21 @@ class StaffQuizViewModel(
     fun onIntent(intent: StaffQuizIntent) {
         when (intent) {
             StaffQuizIntent.Refresh -> refresh()
+
             StaffQuizIntent.AddQuestion -> openNewEditor()
+
             is StaffQuizIntent.EditQuestion -> _uiState.update {
                 it.copy(editorDraft = intent.question.toDraft(), isNewQuestion = false)
             }
+
             is StaffQuizIntent.DeleteQuestion -> deleteQuestion(intent.questionId)
+
             StaffQuizIntent.DismissEditor -> _uiState.update { it.copy(editorDraft = null) }
+
             is StaffQuizIntent.UpdateEditorDraft -> _uiState.update { it.copy(editorDraft = intent.draft) }
+
             StaffQuizIntent.SaveEditor -> saveEditor()
+
             is StaffQuizIntent.ReorderQuestions -> reorderQuestions(intent.fromIndex, intent.toIndex)
         }
     }
@@ -76,8 +81,12 @@ class StaffQuizViewModel(
 
     private fun reorderQuestions(fromIndex: Int, toIndex: Int) {
         val quizSet = _uiState.value.quizSet ?: return
-        if (fromIndex !in quizSet.questions.indices || toIndex !in quizSet.questions.indices) return
-        if (fromIndex == toIndex) return
+        if (fromIndex !in quizSet.questions.indices ||
+            toIndex !in quizSet.questions.indices ||
+            fromIndex == toIndex
+        ) {
+            return
+        }
         val mutable = quizSet.questions.toMutableList()
         val item = mutable.removeAt(fromIndex)
         mutable.add(toIndex, item)
@@ -92,8 +101,8 @@ class StaffQuizViewModel(
         } else {
             draft
         }
-        val question = runCatching { resolvedDraft.toQuestion() }.getOrElse {
-            _uiState.update { state -> state.copy(errorMessage = it.message) }
+        val question = runCatching { resolvedDraft.toQuestion() }.getOrElse { error ->
+            _uiState.update { state -> state.copy(errorMessage = error.message) }
             return
         }
         val questions = if (_uiState.value.isNewQuestion) {
@@ -102,7 +111,7 @@ class StaffQuizViewModel(
             quizSet.questions.map { if (it.id == question.id) question else it }
         }
         persist(quizSet.copy(questions = questions)) {
-            _uiState.update { it.copy(editorDraft = null) }
+            _uiState.update { state -> state.copy(editorDraft = null) }
         }
     }
 
@@ -115,11 +124,11 @@ class StaffQuizViewModel(
         viewModelScope.launch {
             runCatching { deps.saveQuizSetUseCase(quizSet) }
                 .onSuccess {
-                    _uiState.update { it.copy(quizSet = quizSet, errorMessage = null) }
+                    _uiState.update { state -> state.copy(quizSet = quizSet, errorMessage = null) }
                     onSuccess()
                 }
                 .onFailure { error ->
-                    _uiState.update { it.copy(errorMessage = error.message) }
+                    _uiState.update { state -> state.copy(errorMessage = error.message) }
                 }
         }
     }

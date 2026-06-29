@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class StaffAuthViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(StaffAuthUiState())
     val uiState: StateFlow<StaffAuthUiState> = _uiState.asStateFlow()
 
@@ -32,9 +30,11 @@ class StaffAuthViewModel(
             is StaffAuthIntent.EmailChanged -> _uiState.update {
                 it.copy(email = intent.value, errorMessage = null)
             }
+
             is StaffAuthIntent.PasswordChanged -> _uiState.update {
                 it.copy(password = intent.value, errorMessage = null)
             }
+
             StaffAuthIntent.SignIn -> signIn()
         }
     }

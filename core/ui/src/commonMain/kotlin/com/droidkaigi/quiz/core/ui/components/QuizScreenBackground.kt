@@ -15,10 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizScreenBackground(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
+fun QuizScreenBackground(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val darkTheme = isSystemInDarkTheme()
     val gradientStart = if (darkTheme) QuizTokens.gradientStartDark else QuizTokens.gradientStartLight
     val gradientEnd = if (darkTheme) QuizTokens.gradientEndDark else QuizTokens.gradientEndLight
