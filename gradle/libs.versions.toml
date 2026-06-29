@@ -87,3 +87,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
+droidkaigiDetekt = { id = "droidkaigi.detekt" }

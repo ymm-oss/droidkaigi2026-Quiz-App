@@ -9,13 +9,13 @@ plugins {
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.metro) apply false
     alias(libs.plugins.detekt) apply false
-    id("droidkaigi.detekt") apply false
+    alias(libs.plugins.droidkaigiDetekt) apply false
 }
 
 apply(from = "gradle/quiz-runtime.gradle.kts")
 
 subprojects {
-    pluginManager.apply("droidkaigi.detekt")
+    pluginManager.apply(rootProject.libs.plugins.droidkaigiDetekt.get().pluginId)
 }
 
 tasks.register("detektAll") {

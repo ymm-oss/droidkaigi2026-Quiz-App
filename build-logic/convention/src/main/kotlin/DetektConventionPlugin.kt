@@ -3,17 +3,19 @@ import dev.detekt.gradle.DetektCreateBaselineTask
 import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-
-private const val DETEKT_KTLINT = "dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.3"
 
 class DetektConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply("dev.detekt")
+
+            val libs = rootProject.extensions.getByType<VersionCatalogsExtension>().named("libs")
 
             extensions.configure<DetektExtension> {
                 buildUponDefaultConfig.set(true)
@@ -24,7 +26,7 @@ class DetektConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                add("detektPlugins", DETEKT_KTLINT)
+                add("detektPlugins", libs.findLibrary("detekt-formatting").get())
             }
 
             val autoCorrectToggle = objects.property(Boolean::class.java).convention(false)
