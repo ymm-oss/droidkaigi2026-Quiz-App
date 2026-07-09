@@ -1,7 +1,7 @@
 # Implementation Checklist
 
-> **進捗:** 33 / 33 完了  
-> **最終更新:** 2026-06-04
+> **進捗:** 34 / 34 完了  
+> **最終更新:** 2026-07-09
 
 ## 使い方
 
@@ -16,7 +16,7 @@
 |-------|------|------|
 | 0 | 基盤 | 5 / 5 |
 | 1 | Domain + Data | 5 / 5 |
-| 2 | UI + Nav | 3 / 3 |
+| 2 | UI + Nav | 4 / 4 |
 | 3 | Quiz UI | 3 / 3 |
 | 4 | Ranking | 2 / 2 |
 | 5 | Polish | 3 / 3 |
@@ -48,6 +48,7 @@
 - [x] **P2-01** QuizTheme / QuizTokens — 確認: `core/ui/.../theme/QuizTheme.kt`
 - [x] **P2-02** Nav3 + adaptive shell — 確認: `composeApp/.../QuizNavHost.kt`
 - [x] **P2-03** Home smoke androidTest — 確認: `androidApp/.../HomeScreenTest.kt`
+- [x] **P2-04** 回答完了後は Quiz に戻れない — 確認: `QuizNavHost.navigateToResult` が Quiz を replace、回答中の Quiz からは `onBack` で Home へ戻れる
 
 ## Phase 3 — Quiz UI
 

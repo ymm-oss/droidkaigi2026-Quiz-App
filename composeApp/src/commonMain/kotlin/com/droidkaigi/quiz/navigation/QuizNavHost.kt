@@ -19,9 +19,22 @@ fun QuizNavHost() {
         backStack.add(route)
     }
 
+    /** Quiz → Result replaces Quiz so system back cannot return to answered questions. */
+    fun navigateToResult() {
+        if (backStack.lastOrNull() == Route.Quiz) {
+            backStack.removeLastOrNull()
+        }
+        backStack.add(Route.Result)
+    }
+
     fun popToHome() {
         backStack.clear()
         backStack.add(Route.Home)
+    }
+
+    fun onBack() {
+        if (backStack.size <= 1) return
+        backStack.removeLastOrNull()
     }
 
     val provider: (Route) -> NavEntry<Route> = { key ->
@@ -31,7 +44,7 @@ fun QuizNavHost() {
             }
 
             Route.Quiz -> NavEntry(key) {
-                QuizScreen(onFinished = { navigate(Route.Result) })
+                QuizScreen(onFinished = { navigateToResult() })
             }
 
             Route.Result -> NavEntry(key) {
@@ -60,6 +73,7 @@ fun QuizNavHost() {
     ) {
         NavDisplay(
             backStack = backStack,
+            onBack = { onBack() },
             entryProvider = provider,
         )
     }
