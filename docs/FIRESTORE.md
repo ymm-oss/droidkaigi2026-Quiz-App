@@ -1,6 +1,6 @@
 # Firestore — データベース構造と prod 実装
 
-`quiz.runtime=prod` 時のバックエンド仕様。**Firebase プロジェクトは準備中。**
+`quiz.runtime=prod` 時のバックエンド仕様。Firebase プロジェクトの初回セットアップは [DEVELOPMENT.md#firebase-セットアップ](DEVELOPMENT.md#firebase-セットアップ) を先に完了すること。
 
 ## コレクション構成
 
@@ -49,7 +49,21 @@ folders/{folderId}/rankings/{entryId}
 
 ## 初期データ
 
-**準備中。**
+[firestore-seed.json](firestore-seed.json) にデモ用フォルダ `droidkaigi2026-demo` と `appConfig/default` のサンプルがある。投入方法は次のいずれか。
+
+### A. Firebase Console で手動投入（推奨・初回）
+
+1. [Firebase Console](https://console.firebase.google.com/) → Firestore → **データ** を開く
+2. コレクション `folders` → ドキュメント ID `droidkaigi2026-demo` を作成し、[firestore-seed.json](firestore-seed.json) の `folders.droidkaigi2026-demo` のフィールドを入力
+3. コレクション `appConfig` → ドキュメント ID `default` を作成し、`activeFolderId: "droidkaigi2026-demo"` を設定
+
+### B. スタッフアプリから作成
+
+[Firebase セットアップ](DEVELOPMENT.md#firebase-セットアップ) とルールデプロイ後、`staffDesktopApp`（prod）でログインし、UI からフォルダ・問題を登録する。`appConfig/default` の `activeFolderId` は Console またはスタッフアプリの公開切替で設定する。
+
+### 確認
+
+参加者アプリ（prod）起動時にデモ問題が表示され、スコア送信後にランキングに反映されれば OK（[VERIFY.md](VERIFY.md)）。
 
 ## インデックス
 
@@ -61,7 +75,26 @@ folders/{folderId}/rankings/{entryId}
 
 ## Firebase CLI でデプロイ
 
-**準備中。**
+前提: [DEVELOPMENT.md#firebase-セットアップ](DEVELOPMENT.md#firebase-セットアップ) の CLI ログインと `.firebaserc` のプロジェクト紐づけ。
+
+### ルールとインデックス
+
+```bash
+# リポジトリルートで実行
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+| ファイル | 内容 |
+|----------|------|
+| [firestore.rules](../firestore.rules) | セキュリティルール |
+| [firestore.indexes.json](../firestore.indexes.json) | `rankings` の `dateKey` + `score` 複合インデックス |
+
+デプロイ後、Console の Firestore → **ルール** / **インデックス** タブで反映を確認する。インデックス構築には数分かかることがある。
+
+### Hosting / Functions
+
+- **Hosting**: Wasm 向け設定は [firebase.json](../firebase.json) にあるが **未デプロイ**（手順は [DEVELOPMENT.md#7-wasm-hosting将来用任意](DEVELOPMENT.md#7-wasm-hosting将来用任意)）
+- **Functions**: [functions/](../functions/) は雛形のみで **`firebase.json` 未登録**。デプロイ不要
 
 ## セキュリティルール
 
