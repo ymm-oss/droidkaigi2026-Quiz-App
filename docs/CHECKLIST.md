@@ -1,7 +1,7 @@
 # Implementation Checklist
 
-> **進捗:** 33 / 33 完了  
-> **最終更新:** 2026-06-04
+> **進捗:** 34 / 34 完了  
+> **最終更新:** 2026-07-09
 
 ## 使い方
 
@@ -17,7 +17,7 @@
 | 0 | 基盤 | 5 / 5 |
 | 1 | Domain + Data | 5 / 5 |
 | 2 | UI + Nav | 3 / 3 |
-| 3 | Quiz UI | 3 / 3 |
+| 3 | Quiz UI | 4 / 4 |
 | 4 | Ranking | 2 / 2 |
 | 5 | Polish | 3 / 3 |
 | 6 | Desktop / Web | 3 / 3 |
@@ -54,6 +54,7 @@
 - [x] **P3-01** Single / Multiple / Reorder UI — 確認: `feature/quiz/.../QuizScreen.kt`
 - [x] **P3-02** Quiz → Result フロー — 確認: Nav 上でクイズ完了後に Result へ遷移
 - [x] **P3-03** QuizFlowAndroidTest — 確認: `androidApp/.../QuizFlowAndroidTest.kt`
+- [x] **P3-04** クイズ開始の二重押し防止 — 確認: `HomeViewModel.startQuiz` が成功時も `isLoading` を維持、`isLoading` 中は再入しない
 
 ## Phase 4 — Ranking
 
