@@ -18,7 +18,7 @@
 
 | バリアント | `quiz.runtime` | 内容 |
 |------------|----------------|------|
-| **fake**（デフォルト） | `fake` | **開発専用**: 同梱 JSON（`quiz_set.json`）とインメモリランキング。ネット不要で UI・採点を検証。 |
+| **fake**（デフォルト） | `fake` | **開発専用**: 同梱 [quiz_set.json](../core/data/src/commonMain/composeResources/files/quiz_set.json) とインメモリランキング。ネット不要で UI・採点を検証。 |
 | **prod** | `prod` | **本番**: 問題・ランキングとも Firestore 必須（`RemoteQuizCatalogRepository` / `RemoteRankingRepository` 等）。`core/data/src/prodMain` に実装。オフライン非対応。 |
 
 ### 全体像（fake / prod と Firebase）
@@ -83,6 +83,12 @@ flowchart TB
 | **問題の編集** | スタッフアプリ → インメモリ（再起動で消える） | **スタッフアプリ** → Firebase Auth 後に Firestore へ保存 |
 | **参加者アプリ** | Android / Desktop（ネット不要） | Android / Desktop（Firestore 必須） |
 | **Wasm** | ビルド可能だが本番未採用 | 同上（要検討） |
+
+### 初期データ（fake）
+
+`quiz.runtime=fake` で使う問題データは、同梱の [quiz_set.json](../core/data/src/commonMain/composeResources/files/quiz_set.json) のみ。`FakeQuizCatalogSeeder` が起動時にインメモリ catalog へ投入する。ランキングもインメモリ（再起動で消える）。
+
+[firestore-seed.json](firestore-seed.json) は、同じデモ問題を **Firestore ドキュメント形式**で示した参考 JSON（fake 実行時には読み込まない。prod の Firestore 仕様を理解するための対応表）。
 
 ### 切り替え方
 
@@ -155,74 +161,37 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 
 ## Firebase セットアップ
 
-`quiz.runtime=prod` で Firestore・Firebase Authentication を使うための手順。データ構造・ルール・シードの詳細は [FIRESTORE.md](FIRESTORE.md) を参照。
+`quiz.runtime=prod` でビルド・実行するときに、**開発者が手元で用意するもの**。Firestore の仕様は [FIRESTORE.md](FIRESTORE.md)。
+
+### 用意するもの
+
+| 項目 | 内容 |
+|------|------|
+| **Firebase プロジェクトへのアクセス** | [.firebaserc](../.firebaserc) のプロジェクト（本番: `droidkaigi26`）への権限 |
+| **`google-services.json`** | 下記パスに配置（Android `prod`・Desktop / スタッフ Desktop 共通） |
+| **スタッフ用ログイン** | prod 用メール / パスワード（運営から共有。fake の `staff@droidkaigi.local` は使えない） |
+
+### `google-services.json`
+
+配置先は **1 か所のみ**:
+
+```
+androidApp/src/prod/google-services.json
+```
+
+[Firebase Console](https://console.firebase.google.com/) の **プロジェクト設定 → マイアプリ → Android（`com.droidkaigi.quiz`）** から **google-services.json** をダウンロードし、上記パスに置く。リポジトリに同梱されている場合はそのまま使える。フィールド構成の参考: [google-services.json.example](../androidApp/src/prod/google-services.json.example)。
 
 ### リポジトリ内の Firebase ファイル
 
-| パス | 内容 | 状態 |
-|------|------|------|
-| [.firebaserc](../.firebaserc) | CLI のデフォルトプロジェクト ID（`droidkaigi26`） | 本番プロジェクトに合わせて更新可 |
-| [firebase.json](../firebase.json) | Firestore ルール・インデックス、Wasm 向け Hosting | Hosting は将来用（未デプロイ） |
-| [firestore.rules](../firestore.rules) | Firestore セキュリティルール | `firebase deploy --only firestore` で反映 |
-| [firestore.indexes.json](../firestore.indexes.json) | 複合インデックス定義 | 同上 |
-| [functions/](../functions/) | Cloud Functions（Python）の雛形 | **未使用**（`firebase.json` 未登録・デプロイ不要） |
-| [androidApp/google-services.json.example](../androidApp/google-services.json.example) | Android / Desktop 用設定のテンプレート | 各自のプロジェクト用にコピーして編集 |
-| [androidApp/src/prod/google-services.json](../androidApp/src/prod/google-services.json) | Android `prod` flavor 用（リポジトリ同梱） | `com.droidkaigi.quiz` 向け |
-| [docs/firestore-seed.json](firestore-seed.json) | 初期データのサンプル | Console 投入またはスタッフアプリで再現 |
+| パス | 内容 |
+|------|------|
+| [.firebaserc](../.firebaserc) | CLI のデフォルトプロジェクト ID |
+| [firebase.json](../firebase.json) | Firestore ルール・インデックス、Wasm 向け Hosting（Hosting は未デプロイ） |
+| [firestore.rules](../firestore.rules) / [firestore.indexes.json](../firestore.indexes.json) | ルール・インデックス定義 |
+| [functions/](../functions/) | Cloud Functions 雛形（**未使用**・`firebase.json` 登録済み） |
+| [docs/firestore-seed.json](firestore-seed.json) | fake 問題データの Firestore 形式参考（実行時は未使用） |
 
-### 1. 前提ツール
-
-- [Firebase CLI](https://firebase.google.com/docs/cli)（`npm install -g firebase-tools`）
-- Firebase プロジェクトへの編集権限（本番は `droidkaigi26`。別プロジェクトを使う場合は [.firebaserc](../.firebaserc) を更新）
-
-```bash
-firebase login
-firebase projects:list   # 権限確認
-```
-
-### 2. Firebase Console で有効化
-
-[Firebase Console](https://console.firebase.google.com/) で対象プロジェクトを開き、次を有効にする。
-
-| サービス | 設定 |
-|----------|------|
-| **Firestore** | 本番モードで作成（リージョンは運用方針に合わせる） |
-| **Authentication** | サインイン方法 → **メール / パスワード** を有効化 |
-
-参加者アプリは匿名で Firestore を読み書きする（ルールは [firestore.rules](../firestore.rules) 参照）。スタッフアプリだけ Firebase Auth でログインする。
-
-### 3. `google-services.json` の配置
-
-| 用途 | 配置先 | 備考 |
-|------|--------|------|
-| Android `prodDebug` / `prodRelease` | `androidApp/src/prod/google-services.json` | パッケージ名は **`com.droidkaigi.quiz`**（`prod` flavor の applicationId と一致） |
-| Desktop / スタッフ Desktop（`run`） | `androidApp/google-services.json` | **gitignore 対象**。ローカルでコピーして使う |
-
-Console から Android アプリ（`com.droidkaigi.quiz`）を登録し、JSON をダウンロードする。テンプレートは [google-services.json.example](../androidApp/google-services.json.example) を参照。
-
-Desktop 向けは、リポジトリ同梱の prod 用ファイルをコピーするのが手早い:
-
-```bash
-cp androidApp/src/prod/google-services.json androidApp/google-services.json
-```
-
-別パスを使う場合は JVM 起動時に `-Ddroidkaigi.firebase.config=/絶対パス/google-services.json` を指定できる（[GoogleServicesLoader](../core/data/src/prodJvm/kotlin/com/droidkaigi/quiz/core/data/firestore/GoogleServicesLoader.kt) が解決）。
-
-### 4. スタッフ用アカウント
-
-Firebase Console → **Authentication** → **ユーザーを追加** でスタッフ用メール・パスワードを作成する。`staffDesktopApp` の prod 実行時にこのアカウントでログインする（fake の `staff@droidkaigi.local` / `staff2026` は prod では使えない）。
-
-### 5. Firestore のデプロイと初期データ
-
-ルール・インデックスのデプロイ、シード投入は [FIRESTORE.md#firebase-cli-でデプロイ](FIRESTORE.md#firebase-cli-でデプロイ) を参照。
-
-```bash
-firebase deploy --only firestore:rules,firestore:indexes
-```
-
-### 6. prod アプリの起動確認
-
-セットアップ後、次で結合確認する（手順の詳細は [VERIFY.md](VERIFY.md)）。
+### prod の起動
 
 ```bash
 ./gradlew :androidApp:assembleProdDebug
@@ -230,29 +199,14 @@ firebase deploy --only firestore:rules,firestore:indexes
 ./gradlew :desktopApp:run -Pquiz.runtime=prod
 ```
 
-ログに `quiz.runtime resolved to 'prod'` が出ること、スタッフアプリで Firebase Auth ログイン後にフォルダ編集が Firestore に反映されることを確認する。
-
-### 7. Wasm Hosting（将来用・任意）
-
-現時点では未運用。将来ブラウザ配布する場合の参考:
-
-```bash
-./gradlew :wasmApp:wasmJsBrowserProductionWebpack
-firebase deploy --only hosting
-```
-
-`firebase.json` の `hosting.public` は `wasmApp/build/dist/wasmJs/productionExecutable` を指す。
-
-### 8. Cloud Functions（未使用）
-
-[functions/](../functions/) は Python の雛形のみ。**`firebase.json` に未登録**で、利用予定もない。将来使う場合は `firebase init functions` 相当の設定を追加してからデプロイする。
+結合確認: [VERIFY.md](VERIFY.md)
 
 **環境の切り分け**
 
-- **開発**: `quiz.runtime=fake`（既定）— 同梱 JSON + インメモリランキングでオフライン検証。本番仕様の代替ではない。
-- **結合・会場（prod）**: 上記セットアップ完了後、Firestore + Firebase Auth を使用
+- **開発**: `quiz.runtime=fake`（既定）— 同梱 JSON + インメモリランキングでオフライン検証。Firebase 不要。
+- **結合・会場（prod）**: 上記を用意したうえで Firestore + Firebase Auth を使用
 
-コード上の Repository マッピング・prod 取得経路は [FIRESTORE.md#アプリからのマッピング](FIRESTORE.md#アプリからのマッピング) を参照。
+Repository マッピング: [FIRESTORE.md#アプリからのマッピング](FIRESTORE.md#アプリからのマッピング)
 
 ## ビルド・実行
 
@@ -285,7 +239,7 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDesktop[Prod]`** の切り替えでも fake / prod を選べる（[JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ)）。
 
 - **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
-- **prod**: [Firebase セットアップ](#firebase-セットアップ) 後、Console で作成したスタッフアカウントでログイン
+- **prod**: [Firebase セットアップ](#firebase-セットアップ) のスタッフ用ログインで認証
 
 ### Web（Wasm）
 
