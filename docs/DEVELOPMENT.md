@@ -188,7 +188,7 @@ firebase emulators:export ./emulator-data --force
 ./gradlew :desktopApp:run -Pquiz.runtime=local
 ```
 
-初期データが無い場合はクイズを開始できない（prod でも同梱 JSON へのフォールバックはしない）。
+初期データが無い／読めない場合、Home はクラッシュせず UI に「公開中の問題がありません」とだけ表示する。手順などの詳細はデバッグログ（`[Home/debug]` / `[Firestore/QuizCatalog]`）に出す（prod でも同梱 JSON へのフォールバックはしない）。
 
 Android エミュレータから接続する場合、Firestore / Auth ホストは `10.0.2.2`（ホスト PC）。実機の場合は `adb reverse tcp:8080 tcp:8080` と `adb reverse tcp:9099 tcp:9099` を検討（ホストは `127.0.0.1` 側に合わせる必要あり）。
 
