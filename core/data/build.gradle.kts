@@ -22,7 +22,7 @@ kotlin {
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(if (quizRuntime == "prod") "17" else "11"))
+            jvmTarget.set(JvmTarget.JVM_17)
         }
         androidResources {
             enable = true
@@ -31,7 +31,7 @@ kotlin {
     }
     jvm {
         compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(if (quizRuntime == "prod") "17" else "11"))
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
     @OptIn(ExperimentalWasmDsl::class)
