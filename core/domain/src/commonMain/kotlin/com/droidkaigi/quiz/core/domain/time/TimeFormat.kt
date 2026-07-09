@@ -14,3 +14,15 @@ fun formatClockHm(
     val minute = local.minute.toString().padStart(2, '0')
     return "$hour:$minute"
 }
+
+/**
+ * Ranking row label for completion time.
+ * Missing / invalid records (`<= 0`, e.g. Firestore default) show as 「不明」.
+ */
+fun formatCompletedAtLabel(
+    epochMillis: Long,
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+): String {
+    if (epochMillis <= 0L) return "不明"
+    return formatClockHm(epochMillis, timeZone)
+}

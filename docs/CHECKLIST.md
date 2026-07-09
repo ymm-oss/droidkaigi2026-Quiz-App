@@ -1,6 +1,6 @@
 # Implementation Checklist
 
-> **進捗:** 34 / 34 完了  
+> **進捗:** 35 / 35 完了  
 > **最終更新:** 2026-07-09
 
 ## 使い方
@@ -18,7 +18,7 @@
 | 1 | Domain + Data | 5 / 5 |
 | 2 | UI + Nav | 3 / 3 |
 | 3 | Quiz UI | 3 / 3 |
-| 4 | Ranking | 3 / 3 |
+| 4 | Ranking | 4 / 4 |
 | 5 | Polish | 3 / 3 |
 | 6 | Desktop / Web | 3 / 3 |
 | 7 | UI リデザイン（Home 基準） | 6 / 6 |
@@ -60,6 +60,7 @@
 - [x] **P4-01** Ranking 画面 + ハイライト — 確認: `feature/ranking/.../RankingScreen.kt`
 - [x] **P4-02** RankingAndroidTest — 確認: `androidApp/.../RankingAndroidTest.kt`
 - [x] **P4-03** ランキング行に回答完了時刻（`HH:mm`）— 確認: `QuizRankingRow` + `formatClockHm`、`./gradlew :core:domain:cleanJvmTest :core:domain:jvmTest --tests '*TimeFormatTest'`
+- [x] **P4-04** 完了時刻欠落時は「不明」— 確認: `formatCompletedAtLabel`、`./gradlew :core:domain:cleanJvmTest :core:domain:jvmTest --tests '*TimeFormatTest'`
 
 ## Phase 5 — Polish
 

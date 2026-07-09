@@ -18,4 +18,17 @@ class TimeFormatTest {
         val epochMillis = 1_783_607_520_000L
         assertEquals("14:32", formatClockHm(epochMillis, TimeZone.UTC))
     }
+
+    @Test
+    fun formatCompletedAtLabel_formatsValidEpoch() {
+        // 2026-07-09T14:32:00Z
+        val epochMillis = 1_783_607_520_000L
+        assertEquals("14:32", formatCompletedAtLabel(epochMillis, TimeZone.UTC))
+    }
+
+    @Test
+    fun formatCompletedAtLabel_missingIsUnknown() {
+        assertEquals("不明", formatCompletedAtLabel(0L))
+        assertEquals("不明", formatCompletedAtLabel(-1L))
+    }
 }

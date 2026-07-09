@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
-import com.droidkaigi.quiz.core.domain.time.formatClockHm
+import com.droidkaigi.quiz.core.domain.time.formatCompletedAtLabel
 import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
 import com.droidkaigi.quiz.core.ui.components.QuizRankingRow
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
@@ -120,7 +120,7 @@ fun RankingContent(
                                     nickname = entry.nickname,
                                     score = entry.score,
                                     highlighted = entry.nickname == highlightNickname,
-                                    completedAtLabel = formatClockHm(entry.completedAtEpochMillis),
+                                    completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis),
                                 )
                             }
                         }
