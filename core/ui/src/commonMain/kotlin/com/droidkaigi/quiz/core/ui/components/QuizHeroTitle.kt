@@ -18,12 +18,7 @@ import androidx.compose.ui.text.withStyle
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizHeroTitle(
-    title: String,
-    subtitle: String,
-    modifier: Modifier = Modifier,
-    badge: String? = null,
-) {
+fun QuizHeroTitle(title: String, subtitle: String, modifier: Modifier = Modifier, badge: String? = null) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,

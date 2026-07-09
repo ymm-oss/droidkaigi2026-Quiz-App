@@ -12,9 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class RankingViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class RankingViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(RankingUiState(highlightNickname = deps.sessionHolder.highlightNickname))
     val uiState: StateFlow<RankingUiState> = _uiState.asStateFlow()
 

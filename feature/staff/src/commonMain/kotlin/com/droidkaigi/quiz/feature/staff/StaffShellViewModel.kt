@@ -28,9 +28,7 @@ sealed interface StaffShellIntent {
     data object PublishSelectedFolder : StaffShellIntent
 }
 
-class StaffShellViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(StaffShellUiState())
     val uiState: StateFlow<StaffShellUiState> = _uiState.asStateFlow()
 

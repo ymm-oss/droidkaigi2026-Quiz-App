@@ -14,10 +14,7 @@ import androidx.compose.ui.Modifier
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizSurfaceCard(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
+fun QuizSurfaceCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     val containerColor = if (isSystemInDarkTheme()) {
         MaterialTheme.colorScheme.surface
     } else {

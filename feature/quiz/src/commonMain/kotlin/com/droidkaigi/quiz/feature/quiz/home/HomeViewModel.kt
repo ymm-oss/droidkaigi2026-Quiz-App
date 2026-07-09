@@ -3,6 +3,7 @@ package com.droidkaigi.quiz.feature.quiz.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.droidkaigi.quiz.core.data.AppDependencies
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,9 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -48,7 +47,11 @@ class HomeViewModel(
                 )
                 deps.sessionHolder.highlightNickname = nickname
                 _events.emit(HomeEvent.NavigateToQuiz)
-            } catch (e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: IllegalStateException) {
+                _uiState.update { it.copy(errorMessage = e.message ?: "読み込みに失敗しました") }
+            } catch (e: IllegalArgumentException) {
                 _uiState.update { it.copy(errorMessage = e.message ?: "読み込みに失敗しました") }
             } finally {
                 _uiState.update { it.copy(isLoading = false) }

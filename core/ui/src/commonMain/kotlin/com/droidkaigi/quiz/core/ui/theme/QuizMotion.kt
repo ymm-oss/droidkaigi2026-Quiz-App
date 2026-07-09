@@ -1,6 +1,5 @@
 package com.droidkaigi.quiz.core.ui.theme
 
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.runtime.Composable

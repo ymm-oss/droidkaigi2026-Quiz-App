@@ -31,10 +31,7 @@ import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import kotlin.random.Random
 
 @Composable
-fun ResultScreen(
-    onGoToRanking: () -> Unit,
-    viewModel: ResultViewModel = viewModel { ResultViewModel() },
-) {
+fun ResultScreen(onGoToRanking: () -> Unit, viewModel: ResultViewModel = viewModel { ResultViewModel() }) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel) {
@@ -92,7 +89,7 @@ fun ResultContent(
             ) {
                 QuizHeroTitle(
                     title = "クイズ完了",
-                    subtitle = "おつかれさま、${nickname} さん！",
+                    subtitle = "おつかれさま、$nickname さん！",
                     badge = "RESULT",
                 )
                 QuizSurfaceCard {

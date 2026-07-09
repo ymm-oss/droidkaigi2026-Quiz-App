@@ -30,11 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.navigation.Route
 
 @Composable
-fun QuizAdaptiveScaffold(
-    currentRoute: Route,
-    onNavigate: (Route) -> Unit,
-    content: @Composable () -> Unit,
-) {
+fun QuizAdaptiveScaffold(currentRoute: Route, onNavigate: (Route) -> Unit, content: @Composable () -> Unit) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val useRail = maxWidth >= 600.dp
         val navItems = listOf(
@@ -58,7 +54,7 @@ fun QuizAdaptiveScaffold(
                     navItems.forEach { item ->
                         val selected =
                             currentRoute == item.route ||
-                                isQuizFlow(currentRoute) && item.route == Route.Home
+                                (isQuizFlow(currentRoute) && item.route == Route.Home)
                         NavigationRailItem(
                             selected = selected,
                             onClick = { onNavigate(item.route) },
@@ -118,8 +114,7 @@ private fun NavIcon(item: NavItem, selected: Boolean) {
     )
 }
 
-private fun isQuizFlow(route: Route): Boolean =
-    route == Route.Quiz || route == Route.Result
+private fun isQuizFlow(route: Route): Boolean = route == Route.Quiz || route == Route.Result
 
 private data class NavItem(
     val route: Route,

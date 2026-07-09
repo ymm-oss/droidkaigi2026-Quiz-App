@@ -14,11 +14,7 @@ import androidx.compose.ui.draw.clip
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizProgressHeader(
-    progressLabel: String,
-    progressFraction: Float,
-    modifier: Modifier = Modifier,
-) {
+fun QuizProgressHeader(progressLabel: String, progressFraction: Float, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = progressLabel,

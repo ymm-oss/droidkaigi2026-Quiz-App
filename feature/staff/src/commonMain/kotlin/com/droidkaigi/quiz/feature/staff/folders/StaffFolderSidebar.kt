@@ -162,12 +162,7 @@ fun StaffFolderSidebar(
 }
 
 @Composable
-private fun StaffFolderRow(
-    folder: QuizFolder,
-    selected: Boolean,
-    isActive: Boolean,
-    onClick: () -> Unit,
-) {
+private fun StaffFolderRow(folder: QuizFolder, selected: Boolean, isActive: Boolean, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()

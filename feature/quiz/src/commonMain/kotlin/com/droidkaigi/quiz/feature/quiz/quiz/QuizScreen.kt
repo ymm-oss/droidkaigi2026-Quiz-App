@@ -41,9 +41,7 @@ import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.core.ui.theme.quizShake
 
 @Composable
-fun QuizScreen(
-    onFinished: () -> Unit,
-) {
+fun QuizScreen(onFinished: () -> Unit) {
     val sessionKey = AppDependencies.shared.sessionHolder.currentSession?.startedAtEpochMillis
     val viewModel: QuizViewModel = viewModel(key = sessionKey?.toString() ?: "no-session") {
         QuizViewModel()
@@ -173,6 +171,7 @@ private fun QuestionAnswerArea(
                 enabled = !showFeedback,
             )
         }
+
         is MultipleChoice -> q.options.forEach { option ->
             ChoiceCard(
                 label = option.label,
@@ -181,6 +180,7 @@ private fun QuestionAnswerArea(
                 enabled = !showFeedback,
             )
         }
+
         is Reorder -> {
             QuizReorderList(
                 itemIds = reorderIds,
@@ -189,6 +189,7 @@ private fun QuestionAnswerArea(
                 enabled = !showFeedback,
             )
         }
+
         null -> Text("問題がありません")
     }
 }

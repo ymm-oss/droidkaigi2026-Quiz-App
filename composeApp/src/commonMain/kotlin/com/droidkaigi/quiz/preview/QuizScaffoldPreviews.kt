@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.core.ui.preview.QuizPreview
 import com.droidkaigi.quiz.feature.quiz.home.HomeContent
 import com.droidkaigi.quiz.navigation.Route

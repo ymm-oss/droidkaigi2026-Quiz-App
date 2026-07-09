@@ -49,8 +49,7 @@ class InMemoryQuizCatalog {
         }
     }
 
-    fun getQuizSet(folderId: String): QuizSet =
-        quizSets[folderId] ?: error("Quiz set not found for folder: $folderId")
+    fun getQuizSet(folderId: String): QuizSet = quizSets[folderId] ?: error("Quiz set not found for folder: $folderId")
 
     fun saveQuizSet(quizSet: QuizSet) {
         quizSets[quizSet.id] = quizSet
