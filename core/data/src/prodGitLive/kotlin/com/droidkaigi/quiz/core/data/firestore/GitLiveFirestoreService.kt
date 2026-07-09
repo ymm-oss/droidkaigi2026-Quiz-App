@@ -20,11 +20,13 @@ internal class GitLiveFirestoreService : FirestoreService {
             }
 
     override suspend fun getFolder(folderId: String): FolderFirestoreDocument? =
-        db.collection(FirestorePaths.FOLDERS)
-            .document(folderId)
-            .get()
-            .data(FolderFirestoreDocument.serializer())
-            ?.withResolvedLabels()
+        runCatching {
+            db.collection(FirestorePaths.FOLDERS)
+                .document(folderId)
+                .get()
+                .data(FolderFirestoreDocument.serializer())
+                ?.withResolvedLabels()
+        }.getOrNull()
 
     override suspend fun setFolder(folderId: String, document: FolderFirestoreDocument) {
         db.collection(FirestorePaths.FOLDERS)
@@ -39,10 +41,12 @@ internal class GitLiveFirestoreService : FirestoreService {
     }
 
     override suspend fun getAppConfig(): AppConfigFirestoreDocument? =
-        db.collection(FirestorePaths.APP_CONFIG)
-            .document(FirestorePaths.APP_CONFIG_DEFAULT)
-            .get()
-            .data(AppConfigFirestoreDocument.serializer())
+        runCatching {
+            db.collection(FirestorePaths.APP_CONFIG)
+                .document(FirestorePaths.APP_CONFIG_DEFAULT)
+                .get()
+                .data(AppConfigFirestoreDocument.serializer())
+        }.getOrNull()
 
     override suspend fun setAppConfig(document: AppConfigFirestoreDocument) {
         db.collection(FirestorePaths.APP_CONFIG)

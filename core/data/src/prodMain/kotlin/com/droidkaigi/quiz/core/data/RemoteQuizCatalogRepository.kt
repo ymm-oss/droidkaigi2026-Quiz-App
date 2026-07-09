@@ -104,10 +104,28 @@ class RemoteQuizCatalogRepository(
     override suspend fun getActiveFolderId(): String {
         val configured = firestore.getAppConfig()?.activeFolderId?.takeIf { it.isNotBlank() }
         if (configured != null && firestore.getFolder(configured) != null) return configured
-        return listFolders().firstOrNull()?.id
-            ?: error(
-                "アクティブなフォルダがありません。Firestore に folders と appConfig/default を作成してください。",
+        val folders = listFolders()
+        val firstFolder = folders.firstOrNull()?.id
+        if (firstFolder != null) {
+            FirestoreDiagnostics.log(
+                "QuizCatalog",
+                "getActiveFolderId: appConfig missing/invalid; fallback folderId=$firstFolder",
             )
+            return firstFolder
+        }
+        FirestoreDiagnostics.logError(
+            "QuizCatalog",
+            "getActiveFolderId: no published quiz. " +
+                "Need folders + appConfig/default. " +
+                "Local: firebase emulators:start --import=./emulator-data — docs/DEVELOPMENT.md#firebase-emulatorlocal " +
+                "(configuredActiveFolderId=${configured ?: "null"}, folderCount=${folders.size})",
+        )
+        error(MISSING_QUIZ_DATA_MESSAGE)
+    }
+
+    companion object {
+        /** UI 向けの短い文言。手順の詳細は [FirestoreDiagnostics] に出す。 */
+        const val MISSING_QUIZ_DATA_MESSAGE = "公開中の問題がありません"
     }
 
     override suspend fun setActiveFolderId(folderId: String) {
