@@ -20,10 +20,17 @@ class TimeFormatTest {
     }
 
     @Test
+    fun formatDateClockHm_includesDateAndTime() {
+        // 2026-07-09T14:32:00Z
+        val epochMillis = 1_783_607_520_000L
+        assertEquals("07/09 14:32", formatDateClockHm(epochMillis, TimeZone.UTC))
+    }
+
+    @Test
     fun formatCompletedAtLabel_formatsValidEpoch() {
         // 2026-07-09T14:32:00Z
         val epochMillis = 1_783_607_520_000L
-        assertEquals("14:32", formatCompletedAtLabel(epochMillis, TimeZone.UTC))
+        assertEquals("07/09 14:32", formatCompletedAtLabel(epochMillis, TimeZone.UTC))
     }
 
     @Test

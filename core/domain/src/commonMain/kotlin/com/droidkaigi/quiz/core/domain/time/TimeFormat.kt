@@ -15,6 +15,17 @@ fun formatClockHm(
     return "$hour:$minute"
 }
 
+/** Formats epoch millis as local `MM/dd HH:mm` (zero-padded). */
+fun formatDateClockHm(
+    epochMillis: Long,
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+): String {
+    val local = Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(timeZone)
+    val month = local.monthNumber.toString().padStart(2, '0')
+    val day = local.dayOfMonth.toString().padStart(2, '0')
+    return "$month/$day ${formatClockHm(epochMillis, timeZone)}"
+}
+
 /**
  * Ranking row label for completion time.
  * Missing / invalid records (`<= 0`, e.g. Firestore default) show as 「不明」.
@@ -24,5 +35,5 @@ fun formatCompletedAtLabel(
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
 ): String {
     if (epochMillis <= 0L) return "不明"
-    return formatClockHm(epochMillis, timeZone)
+    return formatDateClockHm(epochMillis, timeZone)
 }

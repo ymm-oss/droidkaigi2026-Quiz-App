@@ -59,7 +59,7 @@
 
 - [x] **P4-01** Ranking 画面 + ハイライト — 確認: `feature/ranking/.../RankingScreen.kt`
 - [x] **P4-02** RankingAndroidTest — 確認: `androidApp/.../RankingAndroidTest.kt`
-- [x] **P4-03** ランキング行に回答完了時刻（`HH:mm`）— 確認: `QuizRankingRow` + `formatClockHm`、`./gradlew :core:domain:cleanJvmTest :core:domain:jvmTest --tests '*TimeFormatTest'`
+- [x] **P4-03** ランキング行に回答完了日時（`MM/dd HH:mm`）— 確認: `QuizRankingRow` + `formatCompletedAtLabel`、`./gradlew :core:domain:cleanJvmTest :core:domain:jvmTest --tests '*TimeFormatTest'`
 - [x] **P4-04** 完了時刻欠落時は「不明」— 確認: `formatCompletedAtLabel`、`./gradlew :core:domain:cleanJvmTest :core:domain:jvmTest --tests '*TimeFormatTest'`
 
 ## Phase 5 — Polish
