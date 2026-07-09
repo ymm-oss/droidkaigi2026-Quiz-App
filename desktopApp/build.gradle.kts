@@ -9,8 +9,8 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
-check(quizRuntime in setOf("fake", "prod")) {
-    "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
+check(quizRuntime in setOf("fake", "prod", "local")) {
+    "quiz.runtime must be 'fake', 'prod', or 'local' (was '$quizRuntime')."
 }
 kotlin {
     jvmToolchain(17)

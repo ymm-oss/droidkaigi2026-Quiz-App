@@ -40,7 +40,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 | ドキュメント | 内容 |
 |--------------|------|
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 参加方法・PR/Issue・レビュー・AI 開発 |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 環境構築・ビルド・fake/prod・**Firebase セットアップ** |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 環境構築・ビルド・fake/prod/local・**Firebase セットアップ**・[Emulator 起動](docs/DEVELOPMENT.md#firebase-emulatorlocal) |
 | [docs/SPEC.md](docs/SPEC.md) | 画面・問題形式・採点 |
 | [docs/FIRESTORE.md](docs/FIRESTORE.md) | 本番 DB 構成・ルール・シード |
 | [docs/VERIFY.md](docs/VERIFY.md) | 手動確認手順 |
@@ -56,6 +56,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 |--------------|------------------|
 | 初めて参加する | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) |
 | ビルド・実行する | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)（既定は `quiz.runtime=fake` でオフライン可） |
+| Firestore を Emulator で結合する | [DEVELOPMENT の Emulator 節](docs/DEVELOPMENT.md#firebase-emulatorlocal)（`firebase emulators:start --import=./emulator-data`） |
 | 仕様を確認する | [docs/SPEC.md](docs/SPEC.md) |
 | AI（Cursor）で実装する | [CONTRIBUTING の AI 節](docs/CONTRIBUTING.md#ai-駆動開発推奨) + [AGENTS.md](AGENTS.md) |
 

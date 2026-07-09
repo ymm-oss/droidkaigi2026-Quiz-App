@@ -7,7 +7,12 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
-if (quizRuntime == "prod" && file("src/prod/google-services.json").exists()) {
+val usesProdBackend = rootProject.extra["usesProdBackend"] as Boolean
+if (usesProdBackend && (
+        file("src/prod/google-services.json").exists() ||
+            file("src/local/google-services.json").exists()
+    )
+) {
     apply(plugin = libs.plugins.googleServices.get().pluginId)
 }
 
@@ -42,6 +47,11 @@ android {
             dimension = "runtime"
             // applicationId は google-services.json の package_name（com.droidkaigi.quiz）と一致させる
             versionNameSuffix = "-prod"
+        }
+        create("local") {
+            dimension = "runtime"
+            applicationIdSuffix = ".local"
+            versionNameSuffix = "-local"
         }
     }
     buildFeatures {

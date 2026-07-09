@@ -1,7 +1,7 @@
 # Implementation Checklist
 
-> **進捗:** 33 / 33 完了  
-> **最終更新:** 2026-06-04
+> **進捗:** 37 / 37 完了  
+> **最終更新:** 2026-07-09
 
 ## 使い方
 
@@ -24,6 +24,7 @@
 | 7 | UI リデザイン（Home 基準） | 6 / 6 |
 | H | Harness iterate | 3 / 3 |
 | 8 | Staff 認証 | 1 / 1 |
+| 9 | Firebase Emulator（local） | 4 / 4 |
 
 ---
 
@@ -84,6 +85,13 @@
 ## Phase 8 — Staff 認証
 
 - [x] **P8-01** スタッフ認証画面（スタッフアプリのみ） — 確認: `./gradlew :staffDesktopApp:run` でログイン画面 → `staff@droidkaigi.local` / `staff2026` → コンソール、`feature/staff/.../auth/StaffAuthScreen.kt`
+
+## Phase 9 — Firebase Emulator（local）
+
+- [x] **P9-01** Emulator 起動（`--import`）— 確認: `firebase emulators:start --only auth,firestore --import=./emulator-data`、`emulator-data/`、[DEVELOPMENT.md#firebase-emulatorlocal](DEVELOPMENT.md#firebase-emulatorlocal)
+- [x] **P9-02** `quiz.runtime=local` + `FirebaseEmulatorConnector` — 確認: `core/data/.../FirebaseEmulatorConnector.kt`, `gradle/quiz-runtime.gradle.kts`
+- [x] **P9-03** Android `local` productFlavor — 確認: `./gradlew :androidApp:assembleLocalDebug`
+- [x] **P9-04** Desktop Run Configuration `staffDesktop[Local]` — 確認: `.run/staffDesktop[Local].run.xml`, `-Pquiz.runtime=local`
 
 ## Harness iterate（各 Phase 後）
 

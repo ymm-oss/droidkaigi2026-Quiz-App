@@ -8,10 +8,11 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
-check(quizRuntime in setOf("fake", "prod")) {
-    "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
+val usesProdBackend = rootProject.extra["usesProdBackend"] as Boolean
+check(quizRuntime in setOf("fake", "prod", "local")) {
+    "quiz.runtime must be 'fake', 'prod', or 'local' (was '$quizRuntime')."
 }
-val quizRuntimeSourceSetDir = if (quizRuntime == "prod") "prodMain" else "fakeMain"
+val quizRuntimeSourceSetDir = if (usesProdBackend) "prodMain" else "fakeMain"
 
 kotlin {
     jvm {
