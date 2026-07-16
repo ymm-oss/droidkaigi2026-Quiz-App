@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz
 
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
@@ -32,4 +33,10 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
     waitForIdle()
     // Markdown プロンプトは分割されることがあるので進捗ラベルで開始を確認する
     waitUntilText("0 / 3")
+}
+
+/** プロンプト内の同文言と区別するため、クリック可能な選択肢だけをタップする。 */
+internal fun QuizComposeRule.clickChoice(label: String) {
+    onNode(hasText(label) and hasClickAction()).performClick()
+    waitForIdle()
 }
