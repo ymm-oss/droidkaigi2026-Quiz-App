@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer (e.g. 1.2.0)
+        required: true
+        type: string
+      overwrite:
+        description: Delete existing v{version} tag/release and republish
+        required: false
+        type: boolean
+        default: false
+      release_notes:
+        description: Release notes (empty = auto-generate from commits)
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      version_code: ${{ steps.meta.outputs.version_code }}
+      tag: ${{ steps.meta.outputs.tag }}
+      notes: ${{ steps.notes.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version and compute versionCode
+        id: meta
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "version must be SemVer MAJOR.MINOR.PATCH (got: $VERSION)" >&2
+            exit 1
+          fi
+          IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          TAG="v${VERSION}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Delete existing tag/release when overwrite
+        if: inputs.overwrite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+
+      - name: Generate release notes
+        id: notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          MANUAL="${{ inputs.release_notes }}"
+          if [ -n "$MANUAL" ]; then
+            {
+              echo "notes<<EOF"
+              echo "$MANUAL"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          TAG="${{ steps.meta.outputs.tag }}"
+          PREV=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -n "$PREV" ] && [ "$PREV" != "$TAG" ]; then
+            RANGE="${PREV}..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          {
+            echo "notes<<EOF"
+            echo "## Changes"
+            echo ""
+            if [ "$RANGE" = "HEAD" ]; then
+              git log --pretty=format:'- %s (%h)' -n 50
+            else
+              git log --pretty=format:'- %s (%h)' "$RANGE"
+            fi
+            echo ""
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  build-android:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Assemble prod debug APK
+        run: >
+          ./gradlew :androidApp:assembleProdDebug
+          -Pquiz.runtime=prod
+          -Papp.version=${{ needs.prepare.outputs.version }}
+          -Papp.versionCode=${{ needs.prepare.outputs.version_code }}
+          --no-daemon
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp androidApp/build/outputs/apk/prod/debug/*.apk \
+            "dist/droidkaigi-quiz-android-prod-${{ needs.prepare.outputs.version }}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: dist/*.apk
+
+  build-desktop:
+    needs: prepare
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Package Mac DMG
+        run: >
+          ./gradlew :desktopApp:packageDmg
+          -Pquiz.runtime=prod
+          -Papp.version=${{ needs.prepare.outputs.version }}
+          --no-daemon
+      - name: Rename DMG
+        run: |
+          mkdir -p dist
+          cp desktopApp/build/compose/binaries/main/dmg/*.dmg \
+            "dist/droidkaigi-quiz-desktop-mac-${{ needs.prepare.outputs.version }}.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-dmg
+          path: dist/*.dmg
+
+  publish:
+    needs: [prepare, build-android, build-desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop-dmg
+          path: dist
+
+      - name: Create tag
+        run: |
+          TAG="${{ needs.prepare.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: ${{ needs.prepare.outputs.tag }}
+          body: ${{ needs.prepare.outputs.notes }}
+          files: |
+            dist/*.apk
+            dist/*.dmg

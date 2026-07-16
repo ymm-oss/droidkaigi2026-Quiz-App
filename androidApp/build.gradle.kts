@@ -7,6 +7,8 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
+val appVersion = rootProject.extra["appVersion"] as String
+val appVersionCode = rootProject.extra["appVersionCode"] as Int
 if (quizRuntime == "prod" && file("src/prod/google-services.json").exists()) {
     apply(plugin = libs.plugins.googleServices.get().pluginId)
 }
@@ -26,8 +28,9 @@ android {
         applicationId = "com.droidkaigi.quiz"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersionCode
+        versionName = appVersion
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     flavorDimensions += "runtime"
