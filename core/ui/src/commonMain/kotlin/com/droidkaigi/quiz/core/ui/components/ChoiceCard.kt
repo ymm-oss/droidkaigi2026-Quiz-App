@@ -38,8 +38,8 @@ fun ChoiceCard(
             .fillMaxWidth()
             .padding(vertical = QuizTokens.spacingSmall)
             .scale(animScale)
-            .testTag("choice:$label")
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick)
+            .testTag("choice:$label"),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(QuizTokens.cornerMedium),
     ) {

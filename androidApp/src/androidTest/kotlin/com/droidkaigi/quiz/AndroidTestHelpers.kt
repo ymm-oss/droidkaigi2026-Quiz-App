@@ -37,7 +37,8 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
 
 /** ChoiceCard の testTag で選択肢をタップする（プロンプト内の同文言と区別）。 */
 internal fun QuizComposeRule.clickChoice(label: String) {
-    onNodeWithTag("choice:$label").performClick()
+    // useUnmergedTree: Card の clickable と testTag が別ノードでも拾えるようにする
+    onNodeWithTag("choice:$label", useUnmergedTree = true).performClick()
     waitForIdle()
 }
 
