@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.testTag
 import com.droidkaigi.quiz.core.ui.theme.QuizMotion
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
@@ -37,6 +38,7 @@ fun ChoiceCard(
             .fillMaxWidth()
             .padding(vertical = QuizTokens.spacingSmall)
             .scale(animScale)
+            .testTag("choice:$label")
             .clickable(enabled = enabled, onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(QuizTokens.cornerMedium),
