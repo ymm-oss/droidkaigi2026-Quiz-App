@@ -70,6 +70,8 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: ./gradlew :androidApp:connectedFakeDebugAndroidTest --no-daemon
 
   detekt:

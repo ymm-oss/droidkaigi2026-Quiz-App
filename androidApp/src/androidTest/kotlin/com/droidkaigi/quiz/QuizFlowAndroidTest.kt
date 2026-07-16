@@ -1,11 +1,9 @@
 package com.droidkaigi.quiz
 
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -21,57 +19,34 @@ class QuizFlowAndroidTest {
 
     @Test
     fun restartQuiz_afterCompletion_showsFirstQuestionFromBeginning() {
-        composeRule.onNodeWithText("ニックネーム").performTextInput("RestartTester")
-        composeRule.onNodeWithText("クイズを始める").performClick()
+        composeRule.startQuizWithNickname("RestartTester")
         answerQuizThroughResult()
 
-        composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(hasText("ランキングを見る"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("ランキングを見る")
         composeRule.onNodeWithText("ランキングを見る").performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(hasText("ホームに戻る"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("ホームに戻る")
         composeRule.onNodeWithText("ホームに戻る").performClick()
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(hasText("クイズを始める"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("クイズを始める")
         composeRule.onNodeWithText("クイズを始める").performClick()
 
-        composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodes(hasText(firstQuestionPrompt))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText(firstQuestionPrompt)
         composeRule.onNodeWithText("0 / 3").assertExists()
     }
 
     @Test
     fun fullQuizFlow_reachesRankingWithNickname() {
-        composeRule.onNodeWithText("ニックネーム").performTextInput("FlowTester")
-        composeRule.onNodeWithText("クイズを始める").performClick()
+        composeRule.startQuizWithNickname("FlowTester")
         answerQuizThroughResult()
 
-        composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(hasText("ランキングを見る"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("ランキングを見る")
         composeRule.onNodeWithText("ランキングを見る").performClick()
 
-        composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(hasText("今日のランキング"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("今日のランキング")
     }
 
     private fun waitForProgress(label: String) {
-        composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodes(hasText(label))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText(label)
     }
 
     /**
@@ -90,13 +65,6 @@ class QuizFlowAndroidTest {
 
         waitForProgress("2 / 3")
         composeRule.onNodeWithText("回答する").performScrollTo().performClick()
-        waitForResultScreen()
-    }
-
-    private fun waitForResultScreen() {
-        composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(hasText("クイズ完了"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("クイズ完了")
     }
 }

@@ -8,7 +8,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -21,7 +20,7 @@ class QuizExitAndroidTest {
 
     @Test
     fun backDuringQuiz_showsExitDialog_cancelKeepsQuiz() {
-        startQuiz("ExitCancelTester")
+        composeRule.startQuizWithNickname("ExitCancelTester")
         waitForProgress("0 / 3")
 
         pressSystemBack()
@@ -36,31 +35,25 @@ class QuizExitAndroidTest {
 
     @Test
     fun backDuringQuiz_confirmReturnsToHome() {
-        startQuiz("ExitConfirmTester")
+        composeRule.startQuizWithNickname("ExitConfirmTester")
         waitForProgress("0 / 3")
 
         pressSystemBack()
         composeRule.onNodeWithText("クイズを中断しますか？").assertIsDisplayed()
         composeRule.onNode(hasText("戻る") and hasAnyAncestor(isDialog())).performClick()
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(hasText("クイズを始める"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("クイズを始める")
         assertExitDialogGone()
     }
 
     @Test
     fun abandonThenRestart_doesNotShowExitDialogImmediately() {
-        startQuiz("ExitRestartTester")
+        composeRule.startQuizWithNickname("ExitRestartTester")
         waitForProgress("0 / 3")
 
         pressSystemBack()
         composeRule.onNode(hasText("戻る") and hasAnyAncestor(isDialog())).performClick()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodes(hasText("クイズを始める"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("クイズを始める")
 
         composeRule.onNodeWithText("クイズを始める").performClick()
         waitForProgress("0 / 3")
@@ -70,20 +63,17 @@ class QuizExitAndroidTest {
 
     @Test
     fun afterLastAnswer_backDoesNotShowExitDialog() {
-        startQuiz("ExitFinishingTester")
+        composeRule.startQuizWithNickname("ExitFinishingTester")
         answerThroughLastQuestionSubmit()
 
         pressSystemBack()
 
         assertExitDialogGone()
-        composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodes(hasText("クイズ完了"))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText("クイズ完了")
     }
 
     private fun assertExitDialogGone() {
-        composeRule.waitUntil(timeoutMillis = 2_000) {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodes(hasText("クイズを中断しますか？"))
                 .fetchSemanticsNodes().isEmpty()
         }
@@ -96,16 +86,8 @@ class QuizExitAndroidTest {
         composeRule.waitForIdle()
     }
 
-    private fun startQuiz(nickname: String) {
-        composeRule.onNodeWithText("ニックネーム").performTextInput(nickname)
-        composeRule.onNodeWithText("クイズを始める").performClick()
-    }
-
     private fun waitForProgress(label: String) {
-        composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodes(hasText(label))
-                .fetchSemanticsNodes().isNotEmpty()
-        }
+        composeRule.waitUntilText(label)
     }
 
     private fun answerThroughLastQuestionSubmit() {
