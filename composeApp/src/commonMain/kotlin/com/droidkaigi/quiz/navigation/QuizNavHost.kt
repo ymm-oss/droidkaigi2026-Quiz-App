@@ -1,17 +1,13 @@
 package com.droidkaigi.quiz.navigation
 
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
-import com.droidkaigi.quiz.core.data.AppDependencies
 import com.droidkaigi.quiz.feature.quiz.home.HomeScreen
 import com.droidkaigi.quiz.feature.quiz.quiz.QuizScreen
 import com.droidkaigi.quiz.feature.quiz.result.ResultScreen
@@ -21,7 +17,7 @@ import com.droidkaigi.quiz.shell.QuizAdaptiveScaffold
 @Composable
 fun QuizNavHost() {
     val backStack = remember { mutableStateListOf<Route>(Route.Home) }
-    var showExitQuizConfirm by remember { mutableStateOf(false) }
+    var leaveQuizRequestKey by remember { mutableIntStateOf(0) }
 
     fun navigate(route: Route) {
         backStack.add(route)
@@ -41,13 +37,7 @@ fun QuizNavHost() {
     }
 
     fun requestLeaveQuiz() {
-        showExitQuizConfirm = true
-    }
-
-    fun abandonQuizAndGoHome() {
-        AppDependencies.shared.sessionHolder.currentSession = null
-        showExitQuizConfirm = false
-        popToHome()
+        leaveQuizRequestKey++
     }
 
     fun onBack() {
@@ -66,7 +56,11 @@ fun QuizNavHost() {
             }
 
             Route.Quiz -> NavEntry(key) {
-                QuizScreen(onFinished = { navigateToResult() })
+                QuizScreen(
+                    onFinished = { navigateToResult() },
+                    onAbandoned = { popToHome() },
+                    leaveRequestKey = leaveQuizRequestKey,
+                )
             }
 
             Route.Result -> NavEntry(key) {
@@ -103,26 +97,6 @@ fun QuizNavHost() {
             backStack = backStack,
             onBack = { onBack() },
             entryProvider = provider,
-        )
-    }
-
-    if (showExitQuizConfirm) {
-        AlertDialog(
-            onDismissRequest = { showExitQuizConfirm = false },
-            title = { Text("クイズを中断しますか？") },
-            text = {
-                Text("TOP画面に戻り回答状況が保存されませんが良いでしょうか")
-            },
-            confirmButton = {
-                TextButton(onClick = { abandonQuizAndGoHome() }) {
-                    Text("戻る")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showExitQuizConfirm = false }) {
-                    Text("キャンセル")
-                }
-            },
         )
     }
 }

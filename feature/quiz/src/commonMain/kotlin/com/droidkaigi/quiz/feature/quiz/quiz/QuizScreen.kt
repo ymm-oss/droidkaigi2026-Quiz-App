@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,7 +43,11 @@ import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.core.ui.theme.quizShake
 
 @Composable
-fun QuizScreen(onFinished: () -> Unit) {
+fun QuizScreen(
+    onFinished: () -> Unit,
+    onAbandoned: () -> Unit,
+    leaveRequestKey: Int = 0,
+) {
     val sessionKey = AppDependencies.shared.sessionHolder.currentSession?.startedAtEpochMillis
     val viewModel: QuizViewModel = viewModel(key = sessionKey?.toString() ?: "no-session") {
         QuizViewModel()
@@ -52,10 +58,17 @@ fun QuizScreen(onFinished: () -> Unit) {
         viewModel.syncFromSession()
     }
 
+    LaunchedEffect(leaveRequestKey) {
+        if (leaveRequestKey > 0) {
+            viewModel.onIntent(QuizIntent.RequestExit)
+        }
+    }
+
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 QuizEvent.NavigateToResult -> onFinished()
+                QuizEvent.NavigateHome -> onAbandoned()
             }
         }
     }
@@ -67,6 +80,29 @@ fun QuizScreen(onFinished: () -> Unit) {
         onMoveReorder = { from, to -> viewModel.onIntent(QuizIntent.MoveReorder(from, to)) },
         onSubmitAnswer = { viewModel.onIntent(QuizIntent.SubmitAnswer) },
     )
+
+    if (state.showExitConfirm) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onIntent(QuizIntent.DismissExit) },
+            title = { Text("クイズを中断しますか？") },
+            text = {
+                Text(
+                    text = "TOP画面に戻り回答状況が保存されませんが良いでしょうか",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onIntent(QuizIntent.ConfirmExit) }) {
+                    Text("戻る")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onIntent(QuizIntent.DismissExit) }) {
+                    Text("キャンセル")
+                }
+            },
+        )
+    }
 }
 
 @Composable

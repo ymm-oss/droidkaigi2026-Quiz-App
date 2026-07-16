@@ -54,6 +54,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 canSubmit = (question as? Reorder)?.items?.isNotEmpty() == true,
                 showFeedback = false,
                 lastAnswerCorrect = null,
+                showExitConfirm = it.showExitConfirm,
             )
         }
     }
@@ -83,6 +84,17 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             }
 
             QuizIntent.SubmitAnswer -> submitAnswer()
+            QuizIntent.RequestExit -> _uiState.update { it.copy(showExitConfirm = true) }
+            QuizIntent.DismissExit -> _uiState.update { it.copy(showExitConfirm = false) }
+            QuizIntent.ConfirmExit -> confirmExit()
+        }
+    }
+
+    private fun confirmExit() {
+        deps.sessionHolder.currentSession = null
+        _uiState.update { it.copy(showExitConfirm = false) }
+        viewModelScope.launch {
+            _events.emit(QuizEvent.NavigateHome)
         }
     }
 

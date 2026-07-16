@@ -13,6 +13,7 @@ data class QuizUiState(
     val canSubmit: Boolean = false,
     val showFeedback: Boolean = false,
     val lastAnswerCorrect: Boolean? = null,
+    val showExitConfirm: Boolean = false,
 )
 
 sealed interface QuizIntent {
@@ -20,8 +21,12 @@ sealed interface QuizIntent {
     data class ToggleMultiple(val id: String) : QuizIntent
     data class MoveReorder(val fromIndex: Int, val toIndex: Int) : QuizIntent
     data object SubmitAnswer : QuizIntent
+    data object RequestExit : QuizIntent
+    data object ConfirmExit : QuizIntent
+    data object DismissExit : QuizIntent
 }
 
 sealed interface QuizEvent {
     data object NavigateToResult : QuizEvent
+    data object NavigateHome : QuizEvent
 }
