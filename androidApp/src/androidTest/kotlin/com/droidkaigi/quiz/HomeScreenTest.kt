@@ -22,6 +22,7 @@ class HomeScreenTest {
     @Test
     fun startQuiz_navigatesToFirstQuestion() {
         composeRule.startQuizWithNickname("TestPlayer")
-        composeRule.waitUntilText("Kotlin Multiplatform で UI を共有する Jetpack ライブラリは？")
+        composeRule.onNodeWithText("0 / 3").assertExists()
+        composeRule.waitUntilText("共通化できる Jetpack ライブラリはどれ？", substring = true)
     }
 }

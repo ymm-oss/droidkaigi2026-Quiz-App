@@ -14,8 +14,7 @@ class QuizFlowAndroidTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private val firstQuestionPrompt =
-        "Kotlin Multiplatform で UI を共有する Jetpack ライブラリは？"
+    private val firstQuestionSnippet = "共通化できる Jetpack ライブラリはどれ？"
 
     @Test
     fun restartQuiz_afterCompletion_showsFirstQuestionFromBeginning() {
@@ -29,8 +28,9 @@ class QuizFlowAndroidTest {
 
         composeRule.waitUntilText("クイズを始める")
         composeRule.onNodeWithText("クイズを始める").performClick()
+        composeRule.waitUntilText("0 / 3")
 
-        composeRule.waitUntilText(firstQuestionPrompt)
+        composeRule.waitUntilText(firstQuestionSnippet, substring = true)
         composeRule.onNodeWithText("0 / 3").assertExists()
     }
 

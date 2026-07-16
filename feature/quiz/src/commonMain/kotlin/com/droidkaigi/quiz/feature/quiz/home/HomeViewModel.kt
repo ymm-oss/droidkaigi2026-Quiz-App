@@ -24,6 +24,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         when (intent) {
             is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, errorMessage = null) }
             HomeIntent.StartQuiz -> startQuiz()
+            HomeIntent.Shown -> _uiState.update { it.copy(isLoading = false) }
         }
     }
 

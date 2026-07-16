@@ -14,9 +14,13 @@ internal typealias QuizComposeRule =
 /** CI エミュレータ向けに余裕を持たせた待機上限。 */
 internal const val UI_WAIT_MS = 30_000L
 
-internal fun QuizComposeRule.waitUntilText(text: String, timeoutMillis: Long = UI_WAIT_MS) {
+internal fun QuizComposeRule.waitUntilText(
+    text: String,
+    timeoutMillis: Long = UI_WAIT_MS,
+    substring: Boolean = false,
+) {
     waitUntil(timeoutMillis = timeoutMillis) {
-        onAllNodes(hasText(text)).fetchSemanticsNodes().isNotEmpty()
+        onAllNodes(hasText(text, substring = substring)).fetchSemanticsNodes().isNotEmpty()
     }
 }
 
@@ -26,4 +30,6 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
     waitForIdle()
     onNodeWithText("クイズを始める").performClick()
     waitForIdle()
+    // Markdown プロンプトは分割されることがあるので進捗ラベルで開始を確認する
+    waitUntilText("0 / 3")
 }
