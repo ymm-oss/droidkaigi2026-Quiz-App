@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.droidkaigi.quiz.feature.quiz.home.HomeScreen
@@ -47,74 +48,113 @@ fun QuizNavHost() {
         leaveQuizRequest.tryEmit(Unit)
     }
 
-    fun onBack() {
-        if (backStack.size <= 1) return
-        if (backStack.lastOrNull() == Route.Quiz) {
-            // 完走中は離脱不可。回答中は中断確認のみ（スタックは pop しない）
-            requestLeaveQuiz()
-            return
-        }
-        backStack.removeLastOrNull()
-    }
-
-    val provider: (Route) -> NavEntry<Route> = { key ->
-        when (key) {
-            Route.Home -> NavEntry(key) {
-                HomeScreen(onStartQuiz = { navigate(Route.Quiz) })
-            }
-
-            Route.Quiz -> NavEntry(key) {
-                QuizScreen(
-                    onFinished = { navigateToResult() },
-                    onAbandoned = { popToHome() },
-                    leaveRequest = leaveQuizRequest,
-                    onExitEnabledChange = { quizExitEnabled = it },
-                )
-            }
-
-            Route.Result -> NavEntry(key) {
-                ResultScreen(onGoToRanking = { navigate(Route.Ranking) })
-            }
-
-            Route.Ranking -> NavEntry(key) {
-                RankingScreen(onGoHome = { popToHome() })
-            }
-        }
-    }
-
     QuizAdaptiveScaffold(
         currentRoute = backStack.lastOrNull() ?: Route.Home,
         onNavigate = { route ->
-            when (route) {
-                Route.Home -> {
-                    if (backStack.lastOrNull() == Route.Quiz) {
-                        requestLeaveQuiz()
-                    } else {
-                        popToHome()
-                    }
-                }
-
-                Route.Ranking -> {
-                    if (backStack.lastOrNull() == Route.Quiz) {
-                        // Quiz 中の Ranking は中断確認なしで積めると進捗破棄をバイパスするため、Home と同様に確認する
-                        requestLeaveQuiz()
-                    } else if (backStack.lastOrNull() != Route.Ranking) {
-                        navigate(Route.Ranking)
-                    }
-                }
-
-                else -> {
-                    if (backStack.lastOrNull() != route) {
-                        navigate(route)
-                    }
-                }
-            }
+            handleScaffoldNavigate(
+                route = route,
+                backStack = backStack,
+                requestLeaveQuiz = ::requestLeaveQuiz,
+                popToHome = ::popToHome,
+                navigate = ::navigate,
+            )
         },
     ) {
         NavDisplay(
             backStack = backStack,
-            onBack = { onBack() },
-            entryProvider = provider,
+            onBack = {
+                handleBack(
+                    backStack = backStack,
+                    requestLeaveQuiz = ::requestLeaveQuiz,
+                )
+            },
+            entryProvider = { key ->
+                quizNavEntry(
+                    key = key,
+                    onStartQuiz = { navigate(Route.Quiz) },
+                    onQuizFinished = ::navigateToResult,
+                    onQuizAbandoned = ::popToHome,
+                    leaveRequest = leaveQuizRequest,
+                    onExitEnabledChange = { quizExitEnabled = it },
+                    onGoToRanking = { navigate(Route.Ranking) },
+                    onGoHome = ::popToHome,
+                )
+            },
         )
+    }
+}
+
+private fun handleBack(backStack: SnapshotStateList<Route>, requestLeaveQuiz: () -> Unit) {
+    if (backStack.size <= 1) return
+    if (backStack.lastOrNull() == Route.Quiz) {
+        // 完走中は離脱不可。回答中は中断確認のみ（スタックは pop しない）
+        requestLeaveQuiz()
+        return
+    }
+    backStack.removeLastOrNull()
+}
+
+private fun handleScaffoldNavigate(
+    route: Route,
+    backStack: SnapshotStateList<Route>,
+    requestLeaveQuiz: () -> Unit,
+    popToHome: () -> Unit,
+    navigate: (Route) -> Unit,
+) {
+    when (route) {
+        Route.Home -> {
+            if (backStack.lastOrNull() == Route.Quiz) {
+                requestLeaveQuiz()
+            } else {
+                popToHome()
+            }
+        }
+
+        Route.Ranking -> {
+            if (backStack.lastOrNull() == Route.Quiz) {
+                // Quiz 中の Ranking は中断確認なしで積めると進捗破棄をバイパスするため、Home と同様に確認する
+                requestLeaveQuiz()
+            } else if (backStack.lastOrNull() != Route.Ranking) {
+                navigate(Route.Ranking)
+            }
+        }
+
+        else -> {
+            if (backStack.lastOrNull() != route) {
+                navigate(route)
+            }
+        }
+    }
+}
+
+private fun quizNavEntry(
+    key: Route,
+    onStartQuiz: () -> Unit,
+    onQuizFinished: () -> Unit,
+    onQuizAbandoned: () -> Unit,
+    leaveRequest: MutableSharedFlow<Unit>,
+    onExitEnabledChange: (Boolean) -> Unit,
+    onGoToRanking: () -> Unit,
+    onGoHome: () -> Unit,
+): NavEntry<Route> = when (key) {
+    Route.Home -> NavEntry(key) {
+        HomeScreen(onStartQuiz = onStartQuiz)
+    }
+
+    Route.Quiz -> NavEntry(key) {
+        QuizScreen(
+            onFinished = onQuizFinished,
+            onAbandoned = onQuizAbandoned,
+            leaveRequest = leaveRequest,
+            onExitEnabledChange = onExitEnabledChange,
+        )
+    }
+
+    Route.Result -> NavEntry(key) {
+        ResultScreen(onGoToRanking = onGoToRanking)
+    }
+
+    Route.Ranking -> NavEntry(key) {
+        RankingScreen(onGoHome = onGoHome)
     }
 }

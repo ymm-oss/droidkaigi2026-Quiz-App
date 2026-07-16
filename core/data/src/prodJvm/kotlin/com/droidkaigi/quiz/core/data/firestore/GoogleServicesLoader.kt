@@ -61,6 +61,13 @@ internal object GoogleServicesLoader {
             if (file.isFile) return file
         }
 
+        GoogleServicesLoader::class.java.getResourceAsStream("/google-services.json")?.use { stream ->
+            val temp = File.createTempFile("google-services", ".json")
+            temp.deleteOnExit()
+            temp.writeBytes(stream.readBytes())
+            return temp
+        }
+
         val relativePaths = listOf(
             "androidApp/src/prod/google-services.json",
         )

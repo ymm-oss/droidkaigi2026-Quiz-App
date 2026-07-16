@@ -106,6 +106,16 @@ jobs:
           java-version: 17
       - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
+      - name: Write google-services.json from Secret
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Secret GOOGLE_SERVICES_JSON is required for prod Release builds." >&2
+            exit 1
+          fi
+          mkdir -p androidApp/src/prod
+          printf '%s\n' "$GOOGLE_SERVICES_JSON" > androidApp/src/prod/google-services.json
       - name: Assemble prod debug APK
         run: >
           ./gradlew :androidApp:assembleProdDebug
@@ -134,6 +144,18 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
+      - name: Write google-services.json from Secret
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Secret GOOGLE_SERVICES_JSON is required for prod Release builds." >&2
+            exit 1
+          fi
+          mkdir -p androidApp/src/prod desktopApp/src/main/resources
+          printf '%s\n' "$GOOGLE_SERVICES_JSON" > androidApp/src/prod/google-services.json
+          # Packaged DMG resolves config from classpath (/google-services.json)
+          cp androidApp/src/prod/google-services.json desktopApp/src/main/resources/google-services.json
       - name: Package Mac DMG
         run: >
           ./gradlew :desktopApp:packageDmg
