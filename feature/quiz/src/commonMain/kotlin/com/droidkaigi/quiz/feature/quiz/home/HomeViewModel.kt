@@ -48,8 +48,8 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 )
                 deps.sessionHolder.highlightNickname = nickname
                 _events.emit(HomeEvent.NavigateToQuiz)
-                // Keep isLoading=true until this screen leaves the composition so the
-                // start button cannot be pressed again during the navigation gap.
+                // 画面遷移までの隙間で開始ボタンが再押下されないよう、
+                // この画面が composition から外れるまで isLoading=true を維持する。
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
