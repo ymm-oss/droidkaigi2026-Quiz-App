@@ -1,9 +1,9 @@
 package com.droidkaigi.quiz
 
-import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -35,8 +35,8 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
     waitUntilText("0 / 3")
 }
 
-/** プロンプト内の同文言と区別するため、クリック可能な選択肢だけをタップする。 */
+/** ChoiceCard の testTag で選択肢をタップする（プロンプト内の同文言と区別）。 */
 internal fun QuizComposeRule.clickChoice(label: String) {
-    onNode(hasText(label) and hasClickAction()).performClick()
+    onNodeWithTag("choice:$label").performClick()
     waitForIdle()
 }
