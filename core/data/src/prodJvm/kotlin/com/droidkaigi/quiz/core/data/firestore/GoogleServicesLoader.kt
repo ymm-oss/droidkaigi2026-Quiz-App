@@ -62,8 +62,7 @@ internal object GoogleServicesLoader {
         }
 
         val relativePaths = listOf(
-            "androidApp/google-services.json",
-            "google-services.json",
+            "androidApp/src/prod/google-services.json",
         )
         var dir: File? = File(System.getProperty("user.dir") ?: ".").canonicalFile
         while (dir != null) {
@@ -78,7 +77,7 @@ internal object GoogleServicesLoader {
 
         error(
             "google-services.json が見つかりません。" +
-                " リポジトリ直下の androidApp/google-services.json を配置するか、" +
+                " androidApp/src/prod/google-services.json を配置するか、" +
                 " -Ddroidkaigi.firebase.config=/絶対パス/google-services.json を指定してください。" +
                 " (user.dir=${System.getProperty("user.dir")})",
         )

@@ -39,7 +39,7 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 ./gradlew :staffDesktopApp:run -Pquiz.runtime=prod
 ```
 
-Firebase プロジェクトは**準備中**。
+[Firebase セットアップ](DEVELOPMENT.md#firebase-セットアップ) のスタッフ用ログインで認証する。
 
 ## Prerequisites
 

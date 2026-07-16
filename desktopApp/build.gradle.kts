@@ -38,7 +38,8 @@ compose.desktop {
     }
 }
 
-val rootFirebaseConfig = rootProject.layout.projectDirectory.file("androidApp/google-services.json")
+val rootFirebaseConfig =
+    rootProject.layout.projectDirectory.file("androidApp/src/prod/google-services.json")
 tasks.withType<JavaExec>().configureEach {
     if (name == "run") {
         workingDir = rootProject.layout.projectDirectory.asFile
