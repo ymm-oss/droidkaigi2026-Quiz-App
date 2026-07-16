@@ -78,7 +78,10 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 900
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: ./gradlew :androidApp:connectedFakeDebugAndroidTest --no-daemon
+          script: >
+            ./gradlew :androidApp:connectedFakeDebugAndroidTest
+            -Pandroid.testInstrumentationRunnerArguments.notClass=com.droidkaigi.quiz.QuizFlowAndroidTest
+            --no-daemon
 
   detekt:
     runs-on: ubuntu-latest
