@@ -27,7 +27,6 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 - Development (build, fake/prod): [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - Spec: [docs/SPEC.md](docs/SPEC.md)
 - Firestore (prod DB): [docs/FIRESTORE.md](docs/FIRESTORE.md) · CLI: [firebase.json](firebase.json)
-- Checklist: [docs/CHECKLIST.md](docs/CHECKLIST.md)
 - Verify: [docs/VERIFY.md](docs/VERIFY.md)
 - Rules: [.cursor/rules/](.cursor/rules/) (`quiz-app-core`, `quiz-feature`, `quiz-domain-data`, `quiz-animation`)
 - Skills: [.cursor/skills/](.cursor/skills/) (`droidkaigi-quiz`, `droidkaigi-quiz-test`, `droidkaigi-quiz-verify`, `droidkaigi-quiz-review`)
