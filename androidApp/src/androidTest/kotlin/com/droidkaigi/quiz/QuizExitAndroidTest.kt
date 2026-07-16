@@ -94,6 +94,7 @@ class QuizExitAndroidTest {
         waitForProgress("0 / 3")
         composeRule.clickChoice("Compose Multiplatform")
         composeRule.clickSubmitAnswer()
+        composeRule.waitForAnswerFeedback()
 
         waitForProgress("1 / 3")
         composeRule.clickChoice("count の変更で UI が再 Composition される")

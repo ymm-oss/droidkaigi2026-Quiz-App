@@ -46,3 +46,10 @@ internal fun QuizComposeRule.clickSubmitAnswer() {
     onNodeWithText("回答する").performScrollTo().performClick()
     waitForIdle()
 }
+
+internal fun QuizComposeRule.waitForAnswerFeedback() {
+    waitUntil(timeoutMillis = UI_WAIT_MS) {
+        onAllNodes(hasText("正解！")).fetchSemanticsNodes().isNotEmpty() ||
+            onAllNodes(hasText("不正解")).fetchSemanticsNodes().isNotEmpty()
+    }
+}

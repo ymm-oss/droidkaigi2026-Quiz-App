@@ -144,6 +144,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 lastAnswerCorrect = correct,
                 showExitConfirm = false,
                 isFinishing = updated.isComplete,
+                progress = updated.progressLabel,
+                progressFraction = updated.currentIndex.toFloat() /
+                    updated.quizSet.questions.size.coerceAtLeast(1),
             )
         }
 
