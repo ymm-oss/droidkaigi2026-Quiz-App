@@ -1,8 +1,11 @@
 package com.droidkaigi.quiz.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.droidkaigi.quiz.feature.quiz.home.HomeScreen
@@ -15,9 +18,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 @Composable
 fun QuizNavHost() {
     val backStack = remember { mutableStateListOf<Route>(Route.Home) }
-    val leaveQuizRequests = remember {
+    val leaveQuizRequest = remember {
         MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     }
+    var quizExitEnabled by remember { mutableStateOf(true) }
 
     fun navigate(route: Route) {
         backStack.add(route)
@@ -25,6 +29,7 @@ fun QuizNavHost() {
 
     /** Quiz → Result では Quiz を置き換え、戻る操作で回答済み問題に戻れないようにする。 */
     fun navigateToResult() {
+        quizExitEnabled = true
         if (backStack.lastOrNull() == Route.Quiz) {
             backStack.removeLastOrNull()
         }
@@ -32,17 +37,20 @@ fun QuizNavHost() {
     }
 
     fun popToHome() {
+        quizExitEnabled = true
         backStack.clear()
         backStack.add(Route.Home)
     }
 
     fun requestLeaveQuiz() {
-        leaveQuizRequests.tryEmit(Unit)
+        if (!quizExitEnabled) return
+        leaveQuizRequest.tryEmit(Unit)
     }
 
     fun onBack() {
         if (backStack.size <= 1) return
         if (backStack.lastOrNull() == Route.Quiz) {
+            // 完走中は離脱不可。回答中は中断確認のみ（スタックは pop しない）
             requestLeaveQuiz()
             return
         }
@@ -59,7 +67,8 @@ fun QuizNavHost() {
                 QuizScreen(
                     onFinished = { navigateToResult() },
                     onAbandoned = { popToHome() },
-                    leaveRequests = leaveQuizRequests,
+                    leaveRequest = leaveQuizRequest,
+                    onExitEnabledChange = { quizExitEnabled = it },
                 )
             }
 

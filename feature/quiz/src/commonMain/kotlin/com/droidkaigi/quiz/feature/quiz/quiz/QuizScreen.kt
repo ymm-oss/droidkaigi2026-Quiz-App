@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,7 +48,8 @@ import kotlinx.coroutines.flow.Flow
 fun QuizScreen(
     onFinished: () -> Unit,
     onAbandoned: () -> Unit,
-    leaveRequests: Flow<Unit>,
+    leaveRequest: Flow<Unit>,
+    onExitEnabledChange: (Boolean) -> Unit = {},
 ) {
     val sessionKey = AppDependencies.shared.sessionHolder.currentSession?.startedAtEpochMillis
     val viewModel: QuizViewModel = viewModel(key = sessionKey?.toString() ?: "no-session") {
@@ -59,8 +61,16 @@ fun QuizScreen(
         viewModel.syncFromSession()
     }
 
-    LaunchedEffect(leaveRequests) {
-        leaveRequests.collect {
+    LaunchedEffect(state.isFinishing) {
+        onExitEnabledChange(!state.isFinishing)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { onExitEnabledChange(true) }
+    }
+
+    LaunchedEffect(leaveRequest) {
+        leaveRequest.collect {
             viewModel.onIntent(QuizIntent.RequestExit)
         }
     }

@@ -14,6 +14,8 @@ data class QuizUiState(
     val showFeedback: Boolean = false,
     val lastAnswerCorrect: Boolean? = null,
     val showExitConfirm: Boolean = false,
+    /** 最終問回答後〜Result 遷移前。中断ダイアログ・離脱操作を受け付けない */
+    val isFinishing: Boolean = false,
 )
 
 sealed interface QuizIntent {

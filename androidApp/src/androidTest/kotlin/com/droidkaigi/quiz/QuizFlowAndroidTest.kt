@@ -83,9 +83,9 @@ class QuizFlowAndroidTest {
         composeRule.onNodeWithText("回答する").performClick()
 
         waitForProgress("1 / 3")
-        composeRule.onNodeWithText("宣言的 UI").performClick()
-        composeRule.onNodeWithText("プレビュー可能").performClick()
-        composeRule.onNodeWithText("状態駆動").performClick()
+        composeRule.onNodeWithText("count の変更で UI が再 Composition される").performClick()
+        composeRule.onNodeWithText("Button の onClick はユーザー操作で呼ばれる").performClick()
+        composeRule.onNodeWithText("Text の内容は状態に連動して更新される").performClick()
         composeRule.onNodeWithText("回答する").performClick()
 
         waitForProgress("2 / 3")
