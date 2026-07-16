@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Quiz app — core
 
-1. Read `docs/SPEC.md` before feature work; update `docs/CHECKLIST.md` when done (see checklist rules below).
+1. Read `docs/SPEC.md` before feature work.
 2. Module boundaries in `AGENTS.md` — no reverse dependencies.
 3. MVI per screen: `XxxUiState`, `XxxIntent`, `XxxEvent`, `XxxViewModel`; business logic in domain use cases.
 4. Shared state: `AppDependencies.shared` only — initialize once with `initQuizAppGraph()` (Metro); no duplicate graphs.
@@ -13,10 +13,3 @@ alwaysApply: true
 6. Theming: use `QuizTheme { }`; colors from `QuizTokens` / `QuizColors`, not raw `Color(0x…)` in features.
 7. Tests: scoring/date in `commonTest`; UI flows in `androidInstrumentedTest`.
 
-## Checklist (`docs/CHECKLIST.md`)
-
-- Pick one `[ ]` item before starting; mark `[x]` only after the **確認** step passes.
-- Keep the `- [ ]` / `- [x]` task-list format (clickable in Cursor/GitHub); do not replace with plain bullets or tables only.
-- Each item must have a stable **ID** (`P7-04`, `H-01`, …) and a **確認** hint (path, command, or test).
-- When adding items, append with the next ID in that Phase; update the progress summary counts and **最終更新** date.
-- When architecture changes (e.g. new module), revise the **確認** hint and summary — do not leave stale verify steps.

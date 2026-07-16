@@ -27,7 +27,6 @@
 ## PR チェックリスト
 
 - [ ] [docs/SPEC.md](../docs/SPEC.md) の該当 AC を満たしている
-- [ ] 機能追加・仕様変更時は [docs/CHECKLIST.md](../docs/CHECKLIST.md) の該当 ID を更新（該当する場合）
 - [ ] ユニットテスト: `./gradlew :core:domain:jvmTest :core:data:jvmTest`
 - [ ] UI 変更時は `./gradlew :androidApp:connectedDebugAndroidTest`（エミュレータ要）または [docs/VERIFY.md](../docs/VERIFY.md) で手動確認
 - [ ] `quiz.runtime` や Firestore 周りを触った場合は prod ビルド・結合確認の手順を PR 説明に記載
