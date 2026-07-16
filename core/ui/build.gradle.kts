@@ -26,10 +26,6 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     sourceSets {
-        val dragReorderMain by creating {
-            dependsOn(commonMain.get())
-        }
-
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(libs.compose.runtime)
@@ -37,17 +33,9 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
+            implementation(libs.compose.reorderable)
             implementation(libs.multiplatform.markdown.renderer)
             implementation(libs.multiplatform.markdown.renderer.m3)
-        }
-        dragReorderMain.dependencies {
-            implementation(libs.compose.reorderable)
-        }
-        jvmMain {
-            dependsOn(dragReorderMain)
-        }
-        androidMain {
-            dependsOn(dragReorderMain)
         }
     }
 }
