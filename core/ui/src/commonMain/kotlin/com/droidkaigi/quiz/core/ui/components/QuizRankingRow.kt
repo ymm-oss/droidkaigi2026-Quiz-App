@@ -15,7 +15,14 @@ import androidx.compose.ui.Modifier
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 
 @Composable
-fun QuizRankingRow(rank: Int, nickname: String, score: Int, highlighted: Boolean, modifier: Modifier = Modifier) {
+fun QuizRankingRow(
+    rank: Int,
+    nickname: String,
+    score: Int,
+    highlighted: Boolean,
+    modifier: Modifier = Modifier,
+    completedAtLabel: String? = null,
+) {
     val containerColor = if (highlighted) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
@@ -50,6 +57,13 @@ fun QuizRankingRow(rank: Int, nickname: String, score: Int, highlighted: Boolean
                 )
                 Text(
                     text = "スコア $score",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (completedAtLabel != null) {
+                Text(
+                    text = completedAtLabel,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

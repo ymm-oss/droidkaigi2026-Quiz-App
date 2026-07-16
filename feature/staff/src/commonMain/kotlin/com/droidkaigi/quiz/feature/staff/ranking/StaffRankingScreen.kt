@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
+import com.droidkaigi.quiz.core.domain.time.formatCompletedAtLabel
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizRankingRow
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
@@ -98,6 +99,7 @@ fun StaffRankingContent(
                             nickname = entry.nickname,
                             score = entry.score,
                             highlighted = false,
+                            completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis),
                         )
                     }
                 }

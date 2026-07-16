@@ -1,6 +1,6 @@
 # Firestore — データベース構造と prod 実装
 
-`quiz.runtime=prod` 時のバックエンド仕様。**Firebase プロジェクトは準備中。**
+`quiz.runtime=prod` 時のバックエンド仕様。prod ビルドの準備は [DEVELOPMENT.md#firebase-セットアップ](DEVELOPMENT.md#firebase-セットアップ) を参照。
 
 ## コレクション構成
 
@@ -34,34 +34,19 @@ folders/{folderId}/rankings/{entryId}
 | 観点 | 説明 |
 |------|------|
 | 読み取り回数 | 参加者起動時は `getActiveFolderId` → `getQuizSet` の **2 読み取り**で足りる |
-| シード | `questions` は `QuizSetDto` / `quiz_set.json` と同型で Console 投入が容易 |
+| シード | fake は同梱 `quiz_set.json`。Firestore 上の `questions` は同型（参考: [firestore-seed.json](firestore-seed.json)） |
 | ドキュメントサイズ | 会場想定の問題数なら 1 フォルダ 1 ドキュメントで 1 MiB 以内 |
 | ランキング | サブコレクションに分離し、提出増加でフォルダ本体が肥大化しない |
-
-### 避ける形
-
-- 全問題を `quizSets/global` 1 件に集約 → `QuizCatalogRepository` のフォルダ API とずれる
-- ランキングをフォルダドキュメント内配列のみ → 当日の提出で競合・サイズ増大
-
-### 将来の拡張
-
-問題単位の差分更新・同時編集が必要になったら `folders/{folderId}/questions/{questionId}` サブコレクション + `sortOrder` へ分割。初版は `questions` 配列のままでよい。
-
-## 初期データ
-
-**準備中。**
 
 ## インデックス
 
 当日ランキング取得用の **複合インデックス**（クエリ失敗時はクライアント側で `dateKey` フィルタにフォールバック）。
 
+定義: [firestore.indexes.json](../firestore.indexes.json)
+
 | コレクション | フィールド |
 |--------------|------------|
 | `folders/{folderId}/rankings` | `dateKey` 昇順、`score` 降順 |
-
-## Firebase CLI でデプロイ
-
-**準備中。**
 
 ## セキュリティルール
 
