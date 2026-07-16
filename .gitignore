@@ -10,6 +10,7 @@ captures/
 .cxx
 *.hprof
 .kotlin/
+.artifacts/
 
 # Firebase
 androidApp/google-services.json
