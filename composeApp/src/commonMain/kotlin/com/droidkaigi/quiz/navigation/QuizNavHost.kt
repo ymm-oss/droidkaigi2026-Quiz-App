@@ -1,11 +1,8 @@
 package com.droidkaigi.quiz.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.droidkaigi.quiz.feature.quiz.home.HomeScreen
@@ -13,16 +10,16 @@ import com.droidkaigi.quiz.feature.quiz.quiz.QuizScreen
 import com.droidkaigi.quiz.feature.quiz.result.ResultScreen
 import com.droidkaigi.quiz.feature.ranking.RankingScreen
 import com.droidkaigi.quiz.shell.QuizAdaptiveScaffold
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 @Composable
 fun QuizNavHost() {
     val backStack = remember { mutableStateListOf<Route>(Route.Home) }
-    var leaveQuizRequestKey by remember { mutableIntStateOf(0) }
+    val leaveQuizRequests = remember {
+        MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    }
 
     fun navigate(route: Route) {
-        if (route == Route.Quiz) {
-            leaveQuizRequestKey = 0
-        }
         backStack.add(route)
     }
 
@@ -35,13 +32,12 @@ fun QuizNavHost() {
     }
 
     fun popToHome() {
-        leaveQuizRequestKey = 0
         backStack.clear()
         backStack.add(Route.Home)
     }
 
     fun requestLeaveQuiz() {
-        leaveQuizRequestKey++
+        leaveQuizRequests.tryEmit(Unit)
     }
 
     fun onBack() {
@@ -63,7 +59,7 @@ fun QuizNavHost() {
                 QuizScreen(
                     onFinished = { navigateToResult() },
                     onAbandoned = { popToHome() },
-                    leaveRequestKey = leaveQuizRequestKey,
+                    leaveRequests = leaveQuizRequests,
                 )
             }
 
