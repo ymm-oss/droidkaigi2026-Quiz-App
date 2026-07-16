@@ -28,6 +28,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     }
 
     private fun startQuiz() {
+        if (_uiState.value.isLoading) return
         val nickname = _uiState.value.nickname.trim()
         if (nickname.isEmpty()) {
             _uiState.update { it.copy(errorMessage = "ニックネームを入力してください") }
@@ -47,14 +48,14 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 )
                 deps.sessionHolder.highlightNickname = nickname
                 _events.emit(HomeEvent.NavigateToQuiz)
+                // 画面遷移までの隙間で開始ボタンが再押下されないよう、
+                // この画面が composition から外れるまで isLoading=true を維持する。
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: IllegalStateException) {
-                _uiState.update { it.copy(errorMessage = e.message ?: "読み込みに失敗しました") }
-            } catch (e: IllegalArgumentException) {
-                _uiState.update { it.copy(errorMessage = e.message ?: "読み込みに失敗しました") }
-            } finally {
-                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = e.message ?: "読み込みに失敗しました")
+                }
             }
         }
     }
