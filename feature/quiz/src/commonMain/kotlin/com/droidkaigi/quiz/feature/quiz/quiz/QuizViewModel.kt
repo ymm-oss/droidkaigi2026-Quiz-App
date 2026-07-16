@@ -84,13 +84,23 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             }
 
             QuizIntent.SubmitAnswer -> submitAnswer()
-            QuizIntent.RequestExit -> _uiState.update { it.copy(showExitConfirm = true) }
+            QuizIntent.RequestExit -> requestExit()
             QuizIntent.DismissExit -> _uiState.update { it.copy(showExitConfirm = false) }
             QuizIntent.ConfirmExit -> confirmExit()
         }
     }
 
+    /** 最終問回答後〜Result 遷移前は中断させず、採点送信を優先する。 */
+    private fun requestExit() {
+        if (session()?.isComplete == true) return
+        _uiState.update { it.copy(showExitConfirm = true) }
+    }
+
     private fun confirmExit() {
+        if (session()?.isComplete == true) {
+            _uiState.update { it.copy(showExitConfirm = false) }
+            return
+        }
         deps.sessionHolder.currentSession = null
         _uiState.update { it.copy(showExitConfirm = false) }
         viewModelScope.launch {

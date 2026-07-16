@@ -85,6 +85,15 @@ fun QuizNavHost() {
                     }
                 }
 
+                Route.Ranking -> {
+                    if (backStack.lastOrNull() == Route.Quiz) {
+                        // Quiz 中の Ranking は中断確認なしで積めると進捗破棄をバイパスするため、Home と同様に確認する
+                        requestLeaveQuiz()
+                    } else if (backStack.lastOrNull() != Route.Ranking) {
+                        navigate(Route.Ranking)
+                    }
+                }
+
                 else -> {
                     if (backStack.lastOrNull() != route) {
                         navigate(route)
