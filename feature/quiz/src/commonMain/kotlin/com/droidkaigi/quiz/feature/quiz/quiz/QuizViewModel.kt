@@ -54,26 +54,35 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 canSubmit = (question as? Reorder)?.items?.isNotEmpty() == true,
                 showFeedback = false,
                 lastAnswerCorrect = null,
+                showExitConfirm = it.showExitConfirm,
+                isFinishing = false,
             )
         }
     }
 
     fun onIntent(intent: QuizIntent) {
         when (intent) {
-            is QuizIntent.SelectSingle -> _uiState.update {
-                it.copy(selectedSingleId = intent.id, canSubmit = true)
+            is QuizIntent.SelectSingle -> {
+                if (_uiState.value.isFinishing) return
+                _uiState.update {
+                    it.copy(selectedSingleId = intent.id, canSubmit = true)
+                }
             }
 
-            is QuizIntent.ToggleMultiple -> _uiState.update {
-                val next = if (intent.id in it.selectedMultipleIds) {
-                    it.selectedMultipleIds - intent.id
-                } else {
-                    it.selectedMultipleIds + intent.id
+            is QuizIntent.ToggleMultiple -> {
+                if (_uiState.value.isFinishing) return
+                _uiState.update {
+                    val next = if (intent.id in it.selectedMultipleIds) {
+                        it.selectedMultipleIds - intent.id
+                    } else {
+                        it.selectedMultipleIds + intent.id
+                    }
+                    it.copy(selectedMultipleIds = next, canSubmit = next.isNotEmpty())
                 }
-                it.copy(selectedMultipleIds = next, canSubmit = next.isNotEmpty())
             }
 
             is QuizIntent.MoveReorder -> {
+                if (_uiState.value.isFinishing) return
                 val ids = _uiState.value.reorderIds.toMutableList()
                 if (intent.fromIndex in ids.indices && intent.toIndex in ids.indices) {
                     val item = ids.removeAt(intent.fromIndex)
@@ -82,7 +91,34 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 }
             }
 
-            QuizIntent.SubmitAnswer -> submitAnswer()
+            QuizIntent.SubmitAnswer -> {
+                if (_uiState.value.isFinishing) return
+                submitAnswer()
+            }
+            QuizIntent.RequestExit -> requestExit()
+            QuizIntent.DismissExit -> {
+                if (_uiState.value.isFinishing) return
+                _uiState.update { it.copy(showExitConfirm = false) }
+            }
+            QuizIntent.ConfirmExit -> confirmExit()
+        }
+    }
+
+    /** 最終問回答後〜Result 遷移前は中断ダイアログを出さない。 */
+    private fun requestExit() {
+        if (_uiState.value.isFinishing) return
+        _uiState.update { it.copy(showExitConfirm = true) }
+    }
+
+    private fun confirmExit() {
+        if (_uiState.value.isFinishing) {
+            _uiState.update { it.copy(showExitConfirm = false) }
+            return
+        }
+        deps.sessionHolder.currentSession = null
+        _uiState.update { it.copy(showExitConfirm = false) }
+        viewModelScope.launch {
+            _events.emit(QuizEvent.NavigateHome)
         }
     }
 
@@ -96,7 +132,12 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         deps.sessionHolder.currentSession = updated
 
         _uiState.update {
-            it.copy(showFeedback = true, lastAnswerCorrect = correct)
+            it.copy(
+                showFeedback = true,
+                lastAnswerCorrect = correct,
+                showExitConfirm = false,
+                isFinishing = updated.isComplete,
+            )
         }
 
         viewModelScope.launch {
