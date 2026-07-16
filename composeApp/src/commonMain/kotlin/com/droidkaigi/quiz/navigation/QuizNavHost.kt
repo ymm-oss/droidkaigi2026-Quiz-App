@@ -20,6 +20,9 @@ fun QuizNavHost() {
     var leaveQuizRequestKey by remember { mutableIntStateOf(0) }
 
     fun navigate(route: Route) {
+        if (route == Route.Quiz) {
+            leaveQuizRequestKey = 0
+        }
         backStack.add(route)
     }
 
@@ -32,6 +35,7 @@ fun QuizNavHost() {
     }
 
     fun popToHome() {
+        leaveQuizRequestKey = 0
         backStack.clear()
         backStack.add(Route.Home)
     }

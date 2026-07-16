@@ -22,6 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -53,12 +56,16 @@ fun QuizScreen(
         QuizViewModel()
     }
     val state by viewModel.uiState.collectAsState()
+    // 入場時の既存 key は無視し、増分だけ中断要求として扱う（再スタート直後の誤表示防止）
+    var lastHandledLeaveRequestKey by remember { mutableIntStateOf(leaveRequestKey) }
 
     LaunchedEffect(sessionKey) {
         viewModel.syncFromSession()
     }
 
     LaunchedEffect(leaveRequestKey) {
+        if (leaveRequestKey == lastHandledLeaveRequestKey) return@LaunchedEffect
+        lastHandledLeaveRequestKey = leaveRequestKey
         if (leaveRequestKey > 0) {
             viewModel.onIntent(QuizIntent.RequestExit)
         }
