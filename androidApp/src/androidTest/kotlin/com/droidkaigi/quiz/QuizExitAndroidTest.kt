@@ -93,16 +93,16 @@ class QuizExitAndroidTest {
     private fun answerThroughLastQuestionSubmit() {
         waitForProgress("0 / 3")
         composeRule.clickChoice("Compose Multiplatform")
-        composeRule.onNodeWithText("回答する").performClick()
+        composeRule.clickSubmitAnswer()
 
         waitForProgress("1 / 3")
         composeRule.clickChoice("count の変更で UI が再 Composition される")
         composeRule.clickChoice("Button の onClick はユーザー操作で呼ばれる")
         composeRule.clickChoice("Text の内容は状態に連動して更新される")
-        composeRule.onNodeWithText("回答する").performClick()
+        composeRule.clickSubmitAnswer()
 
         waitForProgress("2 / 3")
-        composeRule.onNodeWithText("回答する").performScrollTo().performClick()
+        composeRule.clickSubmitAnswer()
         composeRule.waitForIdle()
     }
 }
