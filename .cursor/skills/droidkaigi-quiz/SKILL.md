@@ -8,8 +8,7 @@ description: Master workflow for DroidKaigi 2026 Quiz — new screens, features,
 ## Before coding
 
 1. Read AC in `docs/SPEC.md`
-2. Pick one open item in `docs/CHECKLIST.md`
-3. Confirm module from `AGENTS.md`
+2. Confirm module from `AGENTS.md`
 
 ## Order
 
@@ -31,7 +30,6 @@ description: Master workflow for DroidKaigi 2026 Quiz — new screens, features,
 
 ## After phase
 
-- Mark the matching **ID** in `docs/CHECKLIST.md` as `[x]` only after its **確認** step passes
 - Update progress summary counts and **最終更新** date in the checklist header
 - Extract repeated rules into `.cursor/rules/*.mdc` (one line each)
 - Update `AGENTS.md` links only if new skill/rule file added

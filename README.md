@@ -29,7 +29,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 
 ### Web（Wasm）について
 
-`:wasmApp` は **ビルドターゲットとして追加済み**だが、**現時点では運用・配布に使っていない**。将来、QR コード経由でのブラウザ参加などを検討する余地用。
+`:wasmApp` は **ビルドターゲットとして追加済み**だが、**現時点では運用・配布に使っていない**。将来、QR コード経由でのブラウザ参加などを検討する余地用。Firebase Hosting 設定は [docs/DEVELOPMENT.md#firebase-セットアップ](docs/DEVELOPMENT.md#firebase-セットアップ) を参照。
 
 ### データ（本番と開発）
 
@@ -40,7 +40,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 | ドキュメント | 内容 |
 |--------------|------|
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 参加方法・PR/Issue・レビュー・AI 開発 |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 環境構築・ビルド・fake/prod・Firebase |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 環境構築・ビルド・fake/prod・**Firebase セットアップ** |
 | [docs/SPEC.md](docs/SPEC.md) | 画面・問題形式・採点 |
 | [docs/FIRESTORE.md](docs/FIRESTORE.md) | 本番 DB 構成・ルール・シード |
 | [docs/VERIFY.md](docs/VERIFY.md) | 手動確認手順 |

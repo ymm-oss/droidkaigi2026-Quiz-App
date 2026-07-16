@@ -6,14 +6,10 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-val quizRuntime = rootProject.extra["quizRuntime"] as String
-
 kotlin {
     jvm {
         compilerOptions {
-            jvmTarget.set(
-                if (quizRuntime == "prod") JvmTarget.JVM_17 else JvmTarget.JVM_11,
-            )
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 

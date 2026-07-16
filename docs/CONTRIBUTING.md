@@ -38,7 +38,6 @@ Slack は **Accenture Enterprise Slack** のワークスペース参加が必要
 マージ前に以下を確認してください。
 
 - [ ] [docs/SPEC.md](SPEC.md) の該当 AC を満たしている
-- [ ] 機能追加・仕様変更時は [docs/CHECKLIST.md](CHECKLIST.md) の該当 ID を更新（該当する場合）
 - [ ] ユニットテスト: `./gradlew :core:domain:jvmTest :core:data:jvmTest`
 - [ ] UI 変更時は `./gradlew :androidApp:connectedDebugAndroidTest`（エミュレータ要）または [docs/VERIFY.md](VERIFY.md) で手動確認
 - [ ] `quiz.runtime` や Firestore 周りを触った場合は prod ビルド・結合確認の手順を PR 説明に記載
@@ -61,7 +60,7 @@ Slack は **Accenture Enterprise Slack** のワークスペース参加が必要
 ### おすすめの進め方
 
 1. **Plan モード** — 仕様・影響範囲を整理してから実装に入る
-2. **Agent モード** — `docs/SPEC.md` と `AGENTS.md` を前提に、CHECKLIST の 1 項目ずつ着手
+2. **Agent モード** — `docs/SPEC.md` と `AGENTS.md` を前提に実装に着手
 3. **PR 前** — `jvmTest` と必要に応じて `connectedDebugAndroidTest` / [VERIFY.md](VERIFY.md) を実行
 
 ### CI 自動レビュー（Cursor CLI）

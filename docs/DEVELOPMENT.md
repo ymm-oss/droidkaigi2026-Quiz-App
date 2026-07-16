@@ -18,7 +18,7 @@
 
 | バリアント | `quiz.runtime` | 内容 |
 |------------|----------------|------|
-| **fake**（デフォルト） | `fake` | **開発専用**: 同梱 JSON（`quiz_set.json`）とインメモリランキング。ネット不要で UI・採点を検証。 |
+| **fake**（デフォルト） | `fake` | **開発専用**: 同梱 [quiz_set.json](../core/data/src/commonMain/composeResources/files/quiz_set.json) とインメモリランキング。ネット不要で UI・採点を検証。 |
 | **prod** | `prod` | **本番**: 問題・ランキングとも Firestore 必須（`RemoteQuizCatalogRepository` / `RemoteRankingRepository` 等）。`core/data/src/prodMain` に実装。オフライン非対応。 |
 
 ### 全体像（fake / prod と Firebase）
@@ -84,6 +84,12 @@ flowchart TB
 | **参加者アプリ** | Android / Desktop（ネット不要） | Android / Desktop（Firestore 必須） |
 | **Wasm** | ビルド可能だが本番未採用 | 同上（要検討） |
 
+### 初期データ（fake）
+
+`quiz.runtime=fake` で使う問題データは、同梱の [quiz_set.json](../core/data/src/commonMain/composeResources/files/quiz_set.json) のみ。`FakeQuizCatalogSeeder` が起動時にインメモリ catalog へ投入する。ランキングもインメモリ（再起動で消える）。
+
+[firestore-seed.json](firestore-seed.json) は、同じデモ問題を **Firestore ドキュメント形式**で示した参考 JSON（fake 実行時には読み込まない。prod の Firestore 仕様を理解するための対応表）。
+
 ### 切り替え方
 
 | プラットフォーム | 切り替え |
@@ -130,7 +136,7 @@ Run Configuration で切り替えて実行できる（`.run/staffDesktop[Fake].r
 3. **Build → Rebuild Project**（Variant 切替後は必須）
 4. Run 設定 [`.run/androidApp.run.xml`](../.run/androidApp.run.xml) などで `:androidApp` を実行
 
-**Firebase プロジェクト（prod）**: **準備中。**
+**Firebase プロジェクト（prod）**: [Firebase セットアップ](#firebase-セットアップ) を完了してから `prodDebug` / `-Pquiz.runtime=prod` で結合確認する。
 
 **注意**
 
@@ -153,18 +159,54 @@ quiz.runtime=fake
 
 Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.properties` または `-Pquiz.runtime` を使う。スタッフ Desktop は Android Studio では [JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ) の Run Configuration でも切り替え可能。
 
-#### Firebase プロジェクト
+## Firebase セットアップ
 
-**準備中。**
+`quiz.runtime=prod` でビルド・実行するときに、**開発者が手元で用意するもの**。Firestore の仕様は [FIRESTORE.md](FIRESTORE.md)。
 
-コレクション設計などの仕様は [FIRESTORE.md](FIRESTORE.md) を参照。
+### 用意するもの
+
+| 項目 | 内容 |
+|------|------|
+| **Firebase プロジェクトへのアクセス** | [.firebaserc](../.firebaserc) のプロジェクト（本番: `droidkaigi26`）への権限 |
+| **`google-services.json`** | 下記パスに配置（Android `prod`・Desktop / スタッフ Desktop 共通） |
+| **スタッフ用ログイン** | prod 用メール / パスワード（運営から共有。fake の `staff@droidkaigi.local` は使えない） |
+
+### `google-services.json`
+
+配置先は **1 か所のみ**:
+
+```
+androidApp/src/prod/google-services.json
+```
+
+[Firebase Console](https://console.firebase.google.com/) の **プロジェクト設定 → マイアプリ → Android（`com.droidkaigi.quiz`）** から **google-services.json** をダウンロードし、上記パスに置く。リポジトリに同梱されている場合はそのまま使える。フィールド構成の参考: [google-services.json.example](../androidApp/src/prod/google-services.json.example)。
+
+### リポジトリ内の Firebase ファイル
+
+| パス | 内容 |
+|------|------|
+| [.firebaserc](../.firebaserc) | CLI のデフォルトプロジェクト ID |
+| [firebase.json](../firebase.json) | Firestore ルール・インデックス、Wasm 向け Hosting（Hosting は未デプロイ） |
+| [firestore.rules](../firestore.rules) / [firestore.indexes.json](../firestore.indexes.json) | ルール・インデックス定義 |
+| [functions/](../functions/) | Cloud Functions 雛形（**未使用**・`firebase.json` 登録済み） |
+| [docs/firestore-seed.json](firestore-seed.json) | fake 問題データの Firestore 形式参考（実行時は未使用） |
+
+### prod の起動
+
+```bash
+./gradlew :androidApp:assembleProdDebug
+./gradlew :staffDesktopApp:run -Pquiz.runtime=prod
+./gradlew :desktopApp:run -Pquiz.runtime=prod
+```
+
+結合確認: [VERIFY.md](VERIFY.md)
 
 **環境の切り分け**
 
-- **開発**: `quiz.runtime=fake`（既定）— 同梱 JSON + インメモリランキングでオフライン検証。本番仕様の代替ではない。
-- **結合・会場（prod）**: **準備中**
+- **開発**: `quiz.runtime=fake`（既定）— 同梱 JSON + インメモリランキングでオフライン検証。Firebase 不要。
+- **結合・会場（prod）**: 上記を用意したうえで Firestore + Firebase Auth を使用
 
-コード上の Repository マッピング・prod 取得経路は [FIRESTORE.md#アプリからのマッピング](FIRESTORE.md#アプリからのマッピング) を参照。
+Repository マッピング: [FIRESTORE.md#アプリからのマッピング](FIRESTORE.md#アプリからのマッピング)
 
 ## ビルド・実行
 
@@ -174,7 +216,7 @@ AGP 9.x + Gradle 9.4。Android アプリは `:androidApp` モジュール。
 
 ```bash
 ./gradlew :androidApp:assembleFakeDebug    # 開発（fake）
-./gradlew :androidApp:assembleProdDebug    # prod（Firebase プロジェクト準備中）
+./gradlew :androidApp:assembleProdDebug    # prod（要 [Firebase セットアップ](#firebase-セットアップ)）
 ./gradlew :androidApp:assembleDebug        # 既定 Variant に依存
 ```
 
@@ -183,21 +225,21 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 ### 参加者 — Desktop
 
 ```bash
-./gradlew :desktopApp:run                                    # fake（既定）
+./gradlew :desktopApp:run                                    # fake（既定・JDK 17+）
 ./gradlew :desktopApp:run -Pquiz.runtime=prod                # prod（JDK 17+）
 ```
 
 ### スタッフ — Desktop
 
 ```bash
-./gradlew :staffDesktopApp:run                               # fake（既定）
+./gradlew :staffDesktopApp:run                               # fake（既定・JDK 17+）
 ./gradlew :staffDesktopApp:run -Pquiz.runtime=prod           # prod（JDK 17+）
 ```
 
 Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDesktop[Prod]`** の切り替えでも fake / prod を選べる（[JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ)）。
 
 - **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
-- **prod**: **準備中**
+- **prod**: [Firebase セットアップ](#firebase-セットアップ) のスタッフ用ログインで認証
 
 ### Web（Wasm）
 
