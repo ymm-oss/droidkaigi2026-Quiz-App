@@ -27,7 +27,7 @@ fun QuizNavHost() {
         backStack.add(route)
     }
 
-    /** Quiz → Result replaces Quiz so system back cannot return to answered questions. */
+    /** Quiz → Result では Quiz を置き換え、戻る操作で回答済み問題に戻れないようにする。 */
     fun navigateToResult() {
         if (backStack.lastOrNull() == Route.Quiz) {
             backStack.removeLastOrNull()
