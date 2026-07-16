@@ -11,6 +11,7 @@ internal object FirestoreBootstrap {
         synchronized(this) {
             if (initialized) return
             initializeFirebasePlatform()
+            FirebaseEmulatorConnector.connectAfterInitialize()
             initialized = true
         }
     }

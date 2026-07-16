@@ -12,14 +12,15 @@
 - `core:domain` / `core:data` / `core:ui`
 - `feature:quiz` / `feature:ranking` / `feature:staff`
 
-## ランタイムバリアント（fake / prod）
+## ランタイムバリアント（fake / prod / local）
 
-データ層は **2 つのランタイム** を持ち、ビルド時にどちらか一方だけがコンパイルされます（`src/fakeMain` または `src/prodMain` を `commonMain` に載せ替え + Metro グラフ切り替え）。
+データ層は **fake** と **prod 系（prod / local）** の 2 実装を持ち、ビルド時にどちらか一方だけがコンパイルされます（`src/fakeMain` または `src/prodMain` を `commonMain` に載せ替え + Metro グラフ切り替え）。`local` は `prodMain` を使い、接続先だけ Firebase Emulator に向けます。
 
 | バリアント | `quiz.runtime` | 内容 |
 |------------|----------------|------|
 | **fake**（デフォルト） | `fake` | **開発専用**: 同梱 [quiz_set.json](../core/data/src/commonMain/composeResources/files/quiz_set.json) とインメモリランキング。ネット不要で UI・採点を検証。 |
 | **prod** | `prod` | **本番**: 問題・ランキングとも Firestore 必須（`RemoteQuizCatalogRepository` / `RemoteRankingRepository` 等）。`core/data/src/prodMain` に実装。オフライン非対応。 |
+| **local** | `local` | **エミュレータ**: prod と同じ `prodMain` + Firebase Emulator Suite（Firestore 8080 / Auth 9099）。クラウド誤書き込みを避けつつ prod 結合を検証。 |
 
 ### 全体像（fake / prod と Firebase）
 
@@ -106,24 +107,25 @@ flowchart TB
 Run Configuration で切り替えて実行できる（`.run/staffDesktop[Fake].run.xml` / `.run/staffDesktop[Prod] .run.xml`）。
 
 1. ツールバーの Run Configuration ドロップダウンを開く
-2. **`staffDesktop[Fake]`**（fake）または **`staffDesktop[Prod]`**（prod）を選択
-3. Run（`:staffDesktopApp:run` が実行される。Prod は `-Pquiz.runtime=prod` 付き）
+2. **`staffDesktop[Fake]`**（fake）、**`staffDesktop[Local]`**（local / エミュ）、または **`staffDesktop[Prod]`**（prod）を選択
+3. Run（`:staffDesktopApp:run` が実行される。Local は `-Pquiz.runtime=local`、Prod は `-Pquiz.runtime=prod` 付き）
 
 `quiz.runtime` を変更したあとは、**必ず再ビルド**してください（選ばれていない側の source set はコンパイルされません）。
 
 ### Android Build Variant（`runtime` flavor）
 
-参加者 Android（`:androidApp`）だけ **AGP の productFlavor** で fake / prod を切り替えます。KMP ライブラリ（`:composeApp` / `:core:data` など）は [Android-KMP プラグイン](https://developer.android.com/kotlin/multiplatform/plugin)の都合で **flavor を持たない**ため、同じビルド内の `quiz.runtime` は [gradle/quiz-runtime.gradle.kts](../gradle/quiz-runtime.gradle.kts) で 1 つに揃えます。
+参加者 Android（`:androidApp`）だけ **AGP の productFlavor** で fake / prod / local を切り替えます。KMP ライブラリ（`:composeApp` / `:core:data` など）は [Android-KMP プラグイン](https://developer.android.com/kotlin/multiplatform/plugin)の都合で **flavor を持たない**ため、同じビルド内の `quiz.runtime` は [gradle/quiz-runtime.gradle.kts](../gradle/quiz-runtime.gradle.kts) で 1 つに揃えます。
 
 | Build Variant | productFlavor | `quiz.runtime`（KMP） | データ源 | パッケージ名（例） |
 |---------------|---------------|----------------------|----------|-------------------|
 | **fakeDebug**（既定） | `fake` | `fake` | 同梱 JSON + インメモリ | `com.droidkaigi.quiz.fake` |
-| **prodDebug** | `prod` | `prod` | Firestore | `com.droidkaigi.quiz` |
-| fakeRelease / prodRelease | 同上 | 同上 | 同上 | 同上 |
+| **prodDebug** | `prod` | `prod` | Firestore（クラウド） | `com.droidkaigi.quiz` |
+| **localDebug** | `local` | `local` | Firestore（**エミュレータ**） | `com.droidkaigi.quiz.local` |
+| fakeRelease / prodRelease / localRelease | 同上 | 同上 | 同上 | 同上 |
 
 `quiz.runtime` の決まり方（優先順）:
 
-1. Gradle タスク名に含まれる flavor（`assembleProdDebug` → `prod`）
+1. Gradle タスク名に含まれる flavor（`assembleProdDebug` → `prod`、`assembleLocalDebug` → `local`）
 2. `-Pquiz.runtime=…` または [gradle.properties](../gradle.properties)
 3. 既定 `fake`
 
@@ -132,7 +134,7 @@ Run Configuration で切り替えて実行できる（`.run/staffDesktop[Fake].r
 **Android Studio の手順**
 
 1. **View → Tool Windows → Build Variants**
-2. モジュール `:androidApp` を **fakeDebug** または **prodDebug** に変更
+2. モジュール `:androidApp` を **fakeDebug** / **localDebug** / **prodDebug** に変更
 3. **Build → Rebuild Project**（Variant 切替後は必須）
 4. Run 設定 [`.run/androidApp.run.xml`](../.run/androidApp.run.xml) などで `:androidApp` を実行
 
@@ -140,15 +142,64 @@ Run Configuration で切り替えて実行できる（`.run/staffDesktop[Fake].r
 
 **注意**
 
-- fake と prod の APK は **別アプリ**として端末に共存可能（applicationId が異なる）
-- `./gradlew :androidApp:assembleFakeDebug :androidApp:assembleProdDebug` のように **1 コマンドで両 flavor を並べると KMP は fake にフォールバック**する。片方ずつビルドする
+- fake / prod / local の APK は **別アプリ**として端末に共存可能（applicationId が異なる）
+- `./gradlew :androidApp:assembleFakeDebug :androidApp:assembleProdDebug` のように **1 コマンドで複数 flavor を並べると KMP は fake にフォールバック**する。片方ずつビルドする
 - prod なのにデモ問題が出る → **fakeDebug の APK が入っている**か、Rebuild 不足。ログに `quiz.runtime resolved to 'prod'` が出るか確認
+- local なのにクラウドに書き込む → **localDebug** をビルドしているか確認。ログに `useFirebaseEmulator=true` が出ること
+
+### Firebase Emulator（`local`）
+
+prod と同じ Repository 経路で **ローカルエミュレータ**に接続する。`firebase.json` に emulators 設定済み。  
+日常の起動は **`--import=./emulator-data`**（リポジトリ同梱のスナップショット）。問題データの参考 JSON は [firestore-seed.json](firestore-seed.json)。
+
+#### 前提
+
+- [Firebase CLI](https://firebase.google.com/docs/cli): `npm install -g firebase-tools`
+- リポジトリの [emulator-data/](../emulator-data/)
+
+#### エミュレータの起動
+
+リポジトリルート:
+
+```bash
+firebase emulators:start --only auth,firestore --import=./emulator-data
+```
+
+| 項目 | 値 |
+|------|-----|
+| Emulator UI | http://localhost:4000 |
+| Auth | `9099` |
+| Firestore | `8080` |
+| 初期データ | `emulator-data/`（`--import`） |
+
+停止は Ctrl+C。
+
+スタッフ用 Auth ユーザーは Emulator UI → Authentication で 1 件追加する（参加者アプリのクイズ開始には不要。スタッフ Desktop の local ログインに必要）。セッション中に作ったユーザーを baseline に残したい場合は、停止前に次を実行する（共有 `emulator-data/` を上書きするので注意）:
+
+```bash
+firebase emulators:export ./emulator-data --force
+```
+
+#### アプリ実行（エミュレータ起動後）
+
+```bash
+./gradlew :androidApp:assembleLocalDebug
+./gradlew :staffDesktopApp:run -Pquiz.runtime=local
+./gradlew :desktopApp:run -Pquiz.runtime=local
+```
+
+初期データが無い場合はクイズを開始できない（prod でも同梱 JSON へのフォールバックはしない）。
+
+Android エミュレータから接続する場合、Firestore / Auth ホストは `10.0.2.2`（ホスト PC）。実機の場合は `adb reverse tcp:8080 tcp:8080` と `adb reverse tcp:9099 tcp:9099` を検討（ホストは `127.0.0.1` 側に合わせる必要あり）。
+
+**使い分け**: 日常 UI → `fake` / Firestore 結合・ルール検証 → `local` / 会場・本番 → `prod`
 
 **永続的に変える（Desktop など）** — ルートの `gradle.properties`:
 
 ```properties
 quiz.runtime=fake
 # quiz.runtime=prod
+# quiz.runtime=local
 ```
 
 **1 回だけ上書き**:
@@ -189,7 +240,8 @@ androidApp/src/prod/google-services.json
 | [firebase.json](../firebase.json) | Firestore ルール・インデックス、Wasm 向け Hosting（Hosting は未デプロイ） |
 | [firestore.rules](../firestore.rules) / [firestore.indexes.json](../firestore.indexes.json) | ルール・インデックス定義 |
 | [functions/](../functions/) | Cloud Functions 雛形（**未使用**・`firebase.json` 登録済み） |
-| [docs/firestore-seed.json](firestore-seed.json) | fake 問題データの Firestore 形式参考（実行時は未使用） |
+| [docs/firestore-seed.json](firestore-seed.json) | Emulator / Firestore 向け問題データの参考 JSON |
+| [emulator-data/](../emulator-data/) | Emulator `--import` 用スナップショット |
 
 ### prod の起動
 
@@ -204,7 +256,8 @@ androidApp/src/prod/google-services.json
 **環境の切り分け**
 
 - **開発**: `quiz.runtime=fake`（既定）— 同梱 JSON + インメモリランキングでオフライン検証。Firebase 不要。
-- **結合・会場（prod）**: 上記を用意したうえで Firestore + Firebase Auth を使用
+- **結合（local）**: `quiz.runtime=local` または `localDebug` — Firebase Emulator（[Firebase Emulator（`local`）](#firebase-emulatorlocal)）
+- **結合・会場（prod）**: 上記を用意したうえで Firestore + Firebase Auth（クラウド）を使用
 
 Repository マッピング: [FIRESTORE.md#アプリからのマッピング](FIRESTORE.md#アプリからのマッピング)
 
@@ -216,6 +269,7 @@ AGP 9.x + Gradle 9.4。Android アプリは `:androidApp` モジュール。
 
 ```bash
 ./gradlew :androidApp:assembleFakeDebug    # 開発（fake）
+./gradlew :androidApp:assembleLocalDebug   # エミュレータ（local・要 [Emulator 起動](#firebase-emulatorlocal)）
 ./gradlew :androidApp:assembleProdDebug    # prod（要 [Firebase セットアップ](#firebase-セットアップ)）
 ./gradlew :androidApp:assembleDebug        # 既定 Variant に依存
 ```
@@ -226,6 +280,7 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 
 ```bash
 ./gradlew :desktopApp:run                                    # fake（既定・JDK 17+）
+./gradlew :desktopApp:run -Pquiz.runtime=local               # エミュレータ（JDK 17+）
 ./gradlew :desktopApp:run -Pquiz.runtime=prod                # prod（JDK 17+）
 ```
 
@@ -233,12 +288,14 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 
 ```bash
 ./gradlew :staffDesktopApp:run                               # fake（既定・JDK 17+）
+./gradlew :staffDesktopApp:run -Pquiz.runtime=local          # エミュレータ（JDK 17+）
 ./gradlew :staffDesktopApp:run -Pquiz.runtime=prod           # prod（JDK 17+）
 ```
 
-Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDesktop[Prod]`** の切り替えでも fake / prod を選べる（[JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ)）。
+Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDesktop[Local]`** / **`staffDesktop[Prod]`** の切り替えでも fake / local / prod を選べる（[JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ)）。
 
 - **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
+- **local**: 先に [Emulator 起動](#firebase-emulatorlocal) → Emulator UI で作成したスタッフアカウントでログイン
 - **prod**: [Firebase セットアップ](#firebase-セットアップ) のスタッフ用ログインで認証
 
 ### Web（Wasm）

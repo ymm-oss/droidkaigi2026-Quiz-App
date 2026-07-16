@@ -34,7 +34,7 @@ folders/{folderId}/rankings/{entryId}
 | 観点 | 説明 |
 |------|------|
 | 読み取り回数 | 参加者起動時は `getActiveFolderId` → `getQuizSet` の **2 読み取り**で足りる |
-| シード | fake は同梱 `quiz_set.json`。Firestore 上の `questions` は同型（参考: [firestore-seed.json](firestore-seed.json)） |
+| シード | fake は同梱 `quiz_set.json`。local Emulator は `emulator-data/` を `--import`（参考: [firestore-seed.json](firestore-seed.json)） |
 | ドキュメントサイズ | 会場想定の問題数なら 1 フォルダ 1 ドキュメントで 1 MiB 以内 |
 | ランキング | サブコレクションに分離し、提出増加でフォルダ本体が肥大化しない |
 

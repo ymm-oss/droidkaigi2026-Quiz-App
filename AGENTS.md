@@ -8,7 +8,7 @@ Package: `com.droidkaigi.quiz`
 |--------|------|
 | `:androidApp` | Android entry (`MainActivity`) — `com.android.application` |
 | `:desktopApp` | Desktop entry (`main`) — `kotlin.jvm` + Compose Desktop |
-| `:staffDesktopApp` | Staff desktop entry — `kotlin.jvm` + Compose Desktop; `quiz.runtime=fake` (dev) or `prod` (venue Firestore) |
+| `:staffDesktopApp` | Staff desktop entry — `kotlin.jvm` + Compose Desktop; `quiz.runtime=fake` (dev), `local` (emulator), or `prod` (venue Firestore) |
 | `:staffComposeApp` | Staff shared UI (`StaffApp`) — JVM only; Metro graph follows `quiz.runtime` (`FakeStaffQuizAppGraph` / `ProdStaffQuizAppGraph`) |
 | `:wasmApp` | Web entry (`main`) — `wasmJs` + `ComposeViewport` |
 | `:composeApp` | Shared UI + Nav3 (`App`, routes) — `androidKmpLibrary` + `jvm` + `wasmJs` |
