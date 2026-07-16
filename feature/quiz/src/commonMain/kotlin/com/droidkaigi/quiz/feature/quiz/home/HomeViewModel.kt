@@ -52,11 +52,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 // start button cannot be pressed again during the navigation gap.
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: IllegalStateException) {
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "読み込みに失敗しました")
-                }
-            } catch (e: IllegalArgumentException) {
+            } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = e.message ?: "読み込みに失敗しました")
                 }
