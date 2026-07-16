@@ -225,14 +225,14 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 ### 参加者 — Desktop
 
 ```bash
-./gradlew :desktopApp:run                                    # fake（既定）
+./gradlew :desktopApp:run                                    # fake（既定・JDK 17+）
 ./gradlew :desktopApp:run -Pquiz.runtime=prod                # prod（JDK 17+）
 ```
 
 ### スタッフ — Desktop
 
 ```bash
-./gradlew :staffDesktopApp:run                               # fake（既定）
+./gradlew :staffDesktopApp:run                               # fake（既定・JDK 17+）
 ./gradlew :staffDesktopApp:run -Pquiz.runtime=prod           # prod（JDK 17+）
 ```
 

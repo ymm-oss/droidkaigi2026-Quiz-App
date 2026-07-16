@@ -12,12 +12,10 @@ val quizRuntime = rootProject.extra["quizRuntime"] as String
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
 }
-val prodJvm = quizRuntime == "prod"
-
 kotlin {
-    jvmToolchain(if (prodJvm) 17 else 11)
+    jvmToolchain(17)
     compilerOptions {
-        jvmTarget.set(if (prodJvm) JvmTarget.JVM_17 else JvmTarget.JVM_11)
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
