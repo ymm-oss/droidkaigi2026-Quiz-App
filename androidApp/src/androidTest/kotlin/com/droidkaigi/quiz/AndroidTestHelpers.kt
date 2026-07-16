@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 
@@ -38,12 +37,12 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
 
 /** ChoiceCard の testTag で選択肢をタップする（プロンプト内の同文言と区別）。 */
 internal fun QuizComposeRule.clickChoice(label: String) {
-    onNodeWithTag("choice:$label").performScrollTo().performClick()
+    onNodeWithTag("choice:$label").performClick()
     waitForIdle()
 }
 
 internal fun QuizComposeRule.clickSubmitAnswer() {
-    onNodeWithText("回答する").performScrollTo().performClick()
+    onNodeWithText("回答する").performClick()
     waitForIdle()
 }
 
