@@ -13,6 +13,8 @@ plugins {
 }
 
 apply(from = "gradle/quiz-runtime.gradle.kts")
+apply(from = "gradle/version.gradle.kts")
+
 
 subprojects {
     pluginManager.apply(rootProject.libs.plugins.droidkaigiDetekt.get().pluginId)

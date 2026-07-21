@@ -24,6 +24,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         when (intent) {
             is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, errorMessage = null) }
             HomeIntent.StartQuiz -> startQuiz()
+            HomeIntent.Shown -> _uiState.update { it.copy(isLoading = false) }
         }
     }
 
@@ -52,7 +53,8 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 // この画面が composition から外れるまで isLoading=true を維持する。
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // Use cases may surface diverse failures (remote/IO); show message on Home.
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = e.message ?: "読み込みに失敗しました")
                 }

@@ -62,46 +62,53 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
 
     fun onIntent(intent: QuizIntent) {
         when (intent) {
-            is QuizIntent.SelectSingle -> {
-                if (_uiState.value.isFinishing) return
-                _uiState.update {
-                    it.copy(selectedSingleId = intent.id, canSubmit = true)
-                }
-            }
-
-            is QuizIntent.ToggleMultiple -> {
-                if (_uiState.value.isFinishing) return
-                _uiState.update {
-                    val next = if (intent.id in it.selectedMultipleIds) {
-                        it.selectedMultipleIds - intent.id
-                    } else {
-                        it.selectedMultipleIds + intent.id
-                    }
-                    it.copy(selectedMultipleIds = next, canSubmit = next.isNotEmpty())
-                }
-            }
-
-            is QuizIntent.MoveReorder -> {
-                if (_uiState.value.isFinishing) return
-                val ids = _uiState.value.reorderIds.toMutableList()
-                if (intent.fromIndex in ids.indices && intent.toIndex in ids.indices) {
-                    val item = ids.removeAt(intent.fromIndex)
-                    ids.add(intent.toIndex, item)
-                    _uiState.update { it.copy(reorderIds = ids, canSubmit = true) }
-                }
-            }
-
-            QuizIntent.SubmitAnswer -> {
-                if (_uiState.value.isFinishing) return
-                submitAnswer()
-            }
+            is QuizIntent.SelectSingle -> selectSingle(intent.id)
+            is QuizIntent.ToggleMultiple -> toggleMultiple(intent.id)
+            is QuizIntent.MoveReorder -> moveReorder(intent.fromIndex, intent.toIndex)
+            QuizIntent.SubmitAnswer -> submitAnswerIfAllowed()
             QuizIntent.RequestExit -> requestExit()
-            QuizIntent.DismissExit -> {
-                if (_uiState.value.isFinishing) return
-                _uiState.update { it.copy(showExitConfirm = false) }
-            }
+            QuizIntent.DismissExit -> dismissExit()
             QuizIntent.ConfirmExit -> confirmExit()
         }
+    }
+
+    private fun selectSingle(id: String) {
+        if (_uiState.value.isFinishing) return
+        _uiState.update {
+            it.copy(selectedSingleId = id, canSubmit = true)
+        }
+    }
+
+    private fun toggleMultiple(id: String) {
+        if (_uiState.value.isFinishing) return
+        _uiState.update {
+            val next = if (id in it.selectedMultipleIds) {
+                it.selectedMultipleIds - id
+            } else {
+                it.selectedMultipleIds + id
+            }
+            it.copy(selectedMultipleIds = next, canSubmit = next.isNotEmpty())
+        }
+    }
+
+    private fun moveReorder(fromIndex: Int, toIndex: Int) {
+        if (_uiState.value.isFinishing) return
+        val ids = _uiState.value.reorderIds.toMutableList()
+        if (fromIndex in ids.indices && toIndex in ids.indices) {
+            val item = ids.removeAt(fromIndex)
+            ids.add(toIndex, item)
+            _uiState.update { it.copy(reorderIds = ids, canSubmit = true) }
+        }
+    }
+
+    private fun submitAnswerIfAllowed() {
+        if (_uiState.value.isFinishing) return
+        submitAnswer()
+    }
+
+    private fun dismissExit() {
+        if (_uiState.value.isFinishing) return
+        _uiState.update { it.copy(showExitConfirm = false) }
     }
 
     /** 最終問回答後〜Result 遷移前は中断ダイアログを出さない。 */
@@ -137,6 +144,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 lastAnswerCorrect = correct,
                 showExitConfirm = false,
                 isFinishing = updated.isComplete,
+                progress = updated.progressLabel,
+                progressFraction = updated.currentIndex.toFloat() /
+                    updated.quizSet.questions.size.coerceAtLeast(1),
             )
         }
 

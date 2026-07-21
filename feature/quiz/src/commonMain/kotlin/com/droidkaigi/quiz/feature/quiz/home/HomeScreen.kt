@@ -33,6 +33,10 @@ import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { HomeViewModel() }) {
     val state by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.onIntent(HomeIntent.Shown)
+    }
+
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {

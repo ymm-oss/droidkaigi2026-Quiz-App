@@ -9,9 +9,11 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
+val appVersion = rootProject.extra["appVersion"] as String
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
 }
+
 kotlin {
     jvmToolchain(17)
     compilerOptions {
@@ -31,7 +33,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.droidkaigi.quiz"
-            packageVersion = "1.0.0"
+            packageVersion = appVersion
         }
     }
 }
