@@ -1,7 +1,6 @@
 package com.droidkaigi.quiz.core.ui.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,10 +37,11 @@ fun ChoiceCard(
             .fillMaxWidth()
             .padding(vertical = QuizTokens.spacingSmall)
             .scale(animScale)
-            .clickable(enabled = enabled, onClick = onClick)
             .testTag("choice:$label"),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(QuizTokens.cornerMedium),
+        enabled = enabled,
+        onClick = onClick,
     ) {
         Text(
             text = label,
