@@ -40,13 +40,29 @@ folders/{folderId}/rankings/{entryId}
 
 ## インデックス
 
-当日ランキング取得用の **複合インデックス**（クエリ失敗時はクライアント側で `dateKey` フィルタにフォールバック）。
-
-定義: [firestore.indexes.json](../firestore.indexes.json)
+当日ランキング取得用の **複合インデックス**。定義: [firestore.indexes.json](../firestore.indexes.json)
 
 | コレクション | フィールド |
 |--------------|------------|
 | `folders/{folderId}/rankings` | `dateKey` 昇順、`score` 降順 |
+
+### クエリとフォールバック（`GitLiveFirestoreService.listRankingsForDate`）
+
+1. **通常**: `dateKey == target` + `orderBy(score DESC)`（上記複合インデックスが必要）
+2. **フォールバック**（複合インデックス不足時のみ）: `dateKey == target` の等値クエリ → クライアント側で `score` 降順ソート  
+   - 判定: GitLive の `FirebaseFirestoreException.code == FAILED_PRECONDITION`（型優先）。型が取れない場合のみメッセージの `FAILED_PRECONDITION` / `requires an index` を見る
+   - 通信障害・権限エラーなど **それ以外の例外は握りつぶさず上位へ伝播**（参加者 UI でエラー表示）
+   - **フォルダ内ランキングの全件取得フォールバックはしない**（過去日分の読み取り肥大化を避ける）
+
+### インデックスのデプロイ
+
+未デプロイだと通常クエリが `FAILED_PRECONDITION` になり、上記等値フォールバックに落ちる。本番・結合前にデプロイする:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+手順の位置づけは [DEVELOPMENT.md#firestore-インデックスのデプロイ](DEVELOPMENT.md#firestore-インデックスのデプロイ) も参照。
 
 ## セキュリティルール
 
@@ -70,7 +86,7 @@ folders/{folderId}/rankings/{entryId}
 **prod のデータ取得**
 
 - `QuizRepository` / `getDefaultQuizSet` は使わない。参加者・スタッフとも `QuizCatalogRepository` 経由。
-- `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える。
+- `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える（インデックス不足時の挙動は [クエリとフォールバック](#クエリとフォールバックgitlivefirestoreservicelistrankingsfordate)）。
 
 ### prod 実装クラス（`core:data`）
 

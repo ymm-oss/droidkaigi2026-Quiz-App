@@ -191,6 +191,20 @@ androidApp/src/prod/google-services.json
 | [functions/](../functions/) | Cloud Functions 雛形（**未使用**・`firebase.json` 登録済み） |
 | [docs/firestore-seed.json](firestore-seed.json) | fake 問題データの Firestore 形式参考（実行時は未使用） |
 
+### Firestore インデックスのデプロイ
+
+当日ランキング（`dateKey` + `score`）用の複合インデックスは [firestore.indexes.json](../firestore.indexes.json) で管理する。未デプロイだと通常クエリが失敗し、アプリは `dateKey` 等値クエリへフォールバックする（詳細: [FIRESTORE.md#インデックス](FIRESTORE.md#インデックス)）。
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+ルールもまとめて反映する場合:
+
+```bash
+firebase deploy --only firestore
+```
+
 ### prod の起動
 
 ```bash
