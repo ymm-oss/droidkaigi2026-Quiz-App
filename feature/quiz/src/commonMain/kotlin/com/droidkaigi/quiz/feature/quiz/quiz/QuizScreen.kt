@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.data.AppDependencies
@@ -220,6 +221,7 @@ fun QuizContent(
                     text = stringResource(Res.string.quiz_submit),
                     onClick = onSubmitAnswer,
                     enabled = state.canSubmit && !state.showFeedback,
+                    modifier = Modifier.testTag("quizSubmit"),
                 )
             }
 

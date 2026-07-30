@@ -121,7 +121,6 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: >
             ./gradlew :androidApp:connectedFakeDebugAndroidTest
-            -Pandroid.testInstrumentationRunnerArguments.notClass=com.droidkaigi.quiz.QuizFlowAndroidTest
             --no-daemon
 
   wasm:

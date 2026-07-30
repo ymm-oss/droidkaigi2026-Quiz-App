@@ -294,7 +294,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 | `jvm` | `:core:domain:jvmTest` / `:core:data:jvmTest` |
 | `ui-jvm` | `:feature:quiz` / `:feature:staff` の Compose UI スモーク（`xvfb-run`）。スタッフ画面は `captureToImage` で PNG を `docs/screenshots/staff/` に出力（上書き先は `-Dstaff.screenshot.dir`） |
 | `android` | `:androidApp:assembleFakeDebug` |
-| `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Ranking / 中断系。回答フローは CI 不安定のため `@Ignore` / 除外 — ローカルで実行） |
+| `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Quiz フロー / Ranking / 中断系） |
 | `wasm` | `:wasmApp:compileKotlinWasmJs`（fake） |
 | `detekt` | `detektAll` |
 
