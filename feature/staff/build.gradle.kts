@@ -32,6 +32,9 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.compose.ui.test.junit4)
             implementation(compose.desktop.currentOs)
+            // Ranking rows format completion times through core:domain, whose deps are not
+            // exposed to this module's test runtime classpath.
+            implementation(libs.kotlinx.datetime)
         }
     }
 }
