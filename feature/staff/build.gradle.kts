@@ -28,5 +28,17 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.reorderable)
         }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test.junit4)
+            implementation(compose.desktop.currentOs)
+        }
     }
+}
+
+tasks.named<Test>("jvmTest") {
+    val screenshotDir = System.getProperty("quiz.screenshot.dir")
+        ?: System.getenv("QUIZ_SCREENSHOT_DIR")
+        ?: layout.buildDirectory.dir("screenshots").get().asFile.absolutePath
+    systemProperty("quiz.screenshot.dir", screenshotDir)
 }

@@ -267,7 +267,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。本番未採用（要�
 | Job | 内容 |
 |-----|------|
 | `jvm` | `:core:domain:jvmTest` / `:core:data:jvmTest` |
-| `ui-jvm` | `:feature:quiz` の Compose UI スモーク（`xvfb-run`） |
+| `ui-jvm` | `:feature:quiz` / `:feature:staff` の Compose UI スモーク（`xvfb-run`）。スタッフ認証は `captureToImage` で PNG も出力（`feature/staff/build/screenshots/`、上書き先は `-Dquiz.screenshot.dir`） |
 | `android` | `:androidApp:assembleFakeDebug` |
 | `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Ranking / 中断系。回答フローは CI 不安定のため `@Ignore` / 除外 — ローカルで実行） |
 | `detekt` | `detektAll` |

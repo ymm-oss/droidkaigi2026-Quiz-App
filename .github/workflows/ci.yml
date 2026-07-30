@@ -37,7 +37,14 @@ jobs:
       - name: Install xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: JVM Compose UI smoke
-        run: xvfb-run --auto-servernum ./gradlew :feature:quiz:jvmTest --tests 'com.droidkaigi.quiz.feature.quiz.home.HomeContentJvmUiTest' --no-daemon
+        run: xvfb-run --auto-servernum ./gradlew :feature:quiz:jvmTest :feature:staff:jvmTest --no-daemon
+      - name: Upload staff auth screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staff-auth-screenshots
+          path: feature/staff/build/screenshots/*.png
+          if-no-files-found: ignore
 
   android:
     runs-on: ubuntu-latest
