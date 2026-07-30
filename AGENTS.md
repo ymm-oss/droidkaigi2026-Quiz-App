@@ -29,7 +29,7 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 - Firestore (prod DB): [docs/FIRESTORE.md](docs/FIRESTORE.md) · CLI: [firebase.json](firebase.json)
 - Verify: [docs/VERIFY.md](docs/VERIFY.md)
 - Rules: [.cursor/rules/](.cursor/rules/) (`quiz-app-core`, `quiz-feature`, `quiz-domain-data`, `quiz-animation`, `quiz-android-pr-screenshots`, `quiz-staff-pr-screenshots`)
-- Skills: [.cursor/skills/](.cursor/skills/) (`droidkaigi-quiz`, `droidkaigi-quiz-test`, `droidkaigi-quiz-verify`, `droidkaigi-quiz-review`, `android-compose-screenshot`, `android-pr-screenshots`, `jvm-compose-screenshot`, `staff-pr-screenshots`)
+- Skills: [.cursor/skills/](.cursor/skills/) (`droidkaigi-quiz`, `droidkaigi-quiz-test`, `droidkaigi-quiz-verify`, `droidkaigi-quiz-review`, `droidkaigi-quiz-device-review`, `android-compose-screenshot`, `android-pr-screenshots`, `jvm-compose-screenshot`, `staff-pr-screenshots`)
 
 ## External skills
 

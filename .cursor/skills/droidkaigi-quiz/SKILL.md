@@ -22,6 +22,8 @@ description: Master workflow for DroidKaigi 2026 Quiz — new screens, features,
 8. **Staff UI PR screenshots** — 管理者アプリ UI 変更時は `.cursor/skills/staff-pr-screenshots/SKILL.md`（必須・比較表で埋め込み）
 9. **Review** — see `.cursor/skills/droidkaigi-quiz-review/SKILL.md`（PR 前）
 
+参加者アプリを実機で通しレビューして指摘を Issue 化するときは `.cursor/skills/droidkaigi-quiz-device-review/SKILL.md`
+
 ## External skills
 
 - Nav3: `~/.claude/skills/navigation-3`
