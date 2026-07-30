@@ -28,5 +28,17 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.reorderable)
         }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test.junit4)
+            implementation(compose.desktop.currentOs)
+        }
     }
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "staff.screenshot.dir",
+        rootProject.layout.projectDirectory.dir("docs/screenshots/staff").asFile.absolutePath,
+    )
 }
