@@ -66,9 +66,13 @@ internal class GitLiveFirestoreService : FirestoreService {
             throw e
         } catch (e: Exception) {
             // create-only rules: retry after a successful write looks like a denied update.
-            // If the doc already exists, the previous attempt landed — treat as success.
-            val existing = runCatching { ref.get() }.getOrNull()
-            if (existing != null && existing.exists) {
+            // Only an identical existing document proves that the previous attempt landed.
+            val existing = runCatching {
+                ref.get()
+                    .takeIf { it.exists }
+                    ?.data(RankingFirestoreDocument.serializer())
+            }.getOrNull()
+            if (existing == document) {
                 return
             }
             throw e

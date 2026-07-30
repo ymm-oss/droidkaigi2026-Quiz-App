@@ -71,7 +71,7 @@ class QuizExitAndroidTest {
         pressSystemBack()
 
         assertExitDialogGone()
-        composeRule.waitUntilText("クイズ完了")
+        composeRule.waitUntilText("結果を見る")
     }
 
     private fun assertExitDialogGone() {

@@ -6,14 +6,14 @@ import kotlin.test.assertTrue
 
 class FirestoreMissingIndexErrorTest {
     @Test
-    fun matchesCodeOrMessage_prefersFailedPreconditionCode() {
-        assertTrue(
+    fun matchesCodeOrMessage_doesNotAcceptFailedPreconditionWithoutIndexMessage() {
+        assertFalse(
             FirestoreMissingIndexError.matchesCodeOrMessage(
                 codeName = "FAILED_PRECONDITION",
                 message = null,
             ),
         )
-        assertTrue(
+        assertFalse(
             FirestoreMissingIndexError.matchesCodeOrMessage(
                 codeName = "failed_precondition",
                 message = "unrelated",
@@ -35,7 +35,7 @@ class FirestoreMissingIndexErrorTest {
     fun matchesCodeOrMessage_detectsFailedPreconditionInMessage() {
         assertTrue(
             FirestoreMissingIndexError.matchesCodeOrMessage(
-                codeName = null,
+                codeName = "FAILED_PRECONDITION",
                 message = "FAILED_PRECONDITION: The query requires an index.",
             ),
         )
@@ -65,13 +65,18 @@ class FirestoreMissingIndexErrorTest {
     }
 
     @Test
-    fun matches_usesResolvedCodeNameOverMessage() {
-        val error = RuntimeException("permission denied")
+    fun matches_requiresIndexMessageEvenWithResolvedCode() {
+        val error = RuntimeException("The query requires an index.")
         assertTrue(
             FirestoreMissingIndexError.matches(error) { "FAILED_PRECONDITION" },
         )
         assertFalse(
             FirestoreMissingIndexError.matches(error) { "PERMISSION_DENIED" },
+        )
+        assertFalse(
+            FirestoreMissingIndexError.matches(RuntimeException("other precondition")) {
+                "FAILED_PRECONDITION"
+            },
         )
     }
 

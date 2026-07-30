@@ -9,11 +9,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.ui.locale.LocalAppLocale
 import com.droidkaigi.quiz.core.ui.theme.QuizTheme
 import com.droidkaigi.quiz.feature.quiz.preview.QuizPreviewFixtures
 import com.droidkaigi.quiz.feature.quiz.quiz.QuizContent
 import com.droidkaigi.quiz.feature.quiz.quiz.QuizUiState
+import com.droidkaigi.quiz.feature.quiz.quiz.SubmitPhase
+import com.droidkaigi.quiz.feature.ranking.RankingContent
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,7 +47,12 @@ class QuizLayoutScreenshotAndroidTest {
     }
 
     private fun capture(fileName: String) {
-        val bitmap = composeRule.onRoot().captureToImage().asAndroidBitmap()
+        val bitmap = runCatching {
+            composeRule.onRoot().captureToImage().asAndroidBitmap()
+        }.getOrElse {
+            // AlertDialog has a second Compose root; capture the instrumented display in that case.
+            InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        }
         FileOutputStream(File(outputDir(), fileName)).use { out ->
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
@@ -86,5 +94,43 @@ class QuizLayoutScreenshotAndroidTest {
     fun captureSingleChoiceWithCodeBlock() {
         render(QuizPreviewFixtures.singleChoiceState())
         capture("android-quiz-single-choice-code.png")
+    }
+
+    @Test
+    fun captureScoreSubmitFailure() {
+        render(
+            QuizPreviewFixtures.multipleChoiceState().copy(
+                showFeedback = true,
+                lastAnswerCorrect = true,
+                isFinishing = true,
+                submitPhase = SubmitPhase.Failed,
+            ),
+        )
+        capture("android-quiz-score-submit-failed.png")
+    }
+
+    @Test
+    fun captureRankingRefreshFailureWithStaleEntries() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppLocale provides "ja") {
+                key("ja") {
+                    QuizTheme {
+                        RankingContent(
+                            entries = listOf(
+                                RankingEntry("Alice", 250, 1_700_000_000_000L),
+                                RankingEntry("Bob", 180, 1_700_000_100_000L),
+                            ),
+                            highlightNickname = "Alice",
+                            isLoading = false,
+                            errorMessage = "ランキングを更新できませんでした。",
+                            onRetryClick = {},
+                            onGoHomeClick = {},
+                        )
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        capture("android-ranking-refresh-failed.png")
     }
 }

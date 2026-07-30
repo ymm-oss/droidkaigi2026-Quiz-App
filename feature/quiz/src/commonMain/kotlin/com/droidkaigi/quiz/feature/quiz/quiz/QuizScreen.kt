@@ -109,6 +109,7 @@ fun QuizScreen(
         onMoveReorder = { from, to -> viewModel.onIntent(QuizIntent.MoveReorder(from, to)) },
         onSubmitAnswer = { viewModel.onIntent(QuizIntent.SubmitAnswer) },
         onContinueAfterFeedback = { viewModel.onIntent(QuizIntent.ContinueAfterFeedback) },
+        onRetrySubmitScore = { viewModel.onIntent(QuizIntent.RetrySubmitScore) },
     )
 
     if (state.showExitConfirm) {
@@ -133,24 +134,6 @@ fun QuizScreen(
             },
         )
     }
-
-    if (state.submitPhase == SubmitPhase.Failed) {
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text(stringResource(Res.string.quiz_submit_score_failed_title)) },
-            text = {
-                Text(
-                    text = stringResource(Res.string.quiz_submit_score_failed_message),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { viewModel.onIntent(QuizIntent.RetrySubmitScore) }) {
-                    Text(stringResource(Res.string.quiz_submit_score_retry))
-                }
-            },
-        )
-    }
 }
 
 @Composable
@@ -161,6 +144,7 @@ fun QuizContent(
     onMoveReorder: (Int, Int) -> Unit,
     onSubmitAnswer: () -> Unit,
     onContinueAfterFeedback: () -> Unit,
+    onRetrySubmitScore: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     QuizScreenBackground(modifier = modifier) {
@@ -246,6 +230,24 @@ fun QuizContent(
                 )
             }
         }
+    }
+
+    if (state.submitPhase == SubmitPhase.Failed) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(Res.string.quiz_submit_score_failed_title)) },
+            text = {
+                Text(
+                    text = stringResource(Res.string.quiz_submit_score_failed_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onRetrySubmitScore) {
+                    Text(stringResource(Res.string.quiz_submit_score_retry))
+                }
+            },
+        )
     }
 }
 

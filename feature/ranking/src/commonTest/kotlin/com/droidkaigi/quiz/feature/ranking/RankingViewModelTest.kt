@@ -152,7 +152,12 @@ private fun rankingTestDeps(
     val rankingRepository = object : RankingRepository {
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = rankings(folderId)
 
-        override suspend fun submitScore(result: QuizResult, completedAtEpochMillis: Long, folderId: String) = Unit
+        override suspend fun submitScore(
+            result: QuizResult,
+            completedAtEpochMillis: Long,
+            folderId: String,
+            entryId: String,
+        ) = Unit
     }
     val catalogRepository = object : QuizCatalogRepository {
         override suspend fun listFolders(): List<QuizFolder> = error("unused")
@@ -187,7 +192,7 @@ private fun rankingTestDeps(
         rankingRepository = rankingRepository,
         quizEngine = QuizEngine(),
         sessionHolder = sessionHolder,
-        submitScoreUseCase = SubmitScoreUseCase(rankingRepository, instantProvider),
+        submitScoreUseCase = SubmitScoreUseCase(rankingRepository),
         getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
         listQuizFoldersUseCase = ListQuizFoldersUseCase(catalogRepository),
         createQuizFolderUseCase = CreateQuizFolderUseCase(catalogRepository),
