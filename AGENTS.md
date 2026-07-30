@@ -29,11 +29,30 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 - Firestore (prod DB): [docs/FIRESTORE.md](docs/FIRESTORE.md) · CLI: [firebase.json](firebase.json)
 - Verify: [docs/VERIFY.md](docs/VERIFY.md)
 - Rules: [.cursor/rules/](.cursor/rules/) (`quiz-app-core`, `quiz-feature`, `quiz-domain-data`, `quiz-animation`, `quiz-android-pr-screenshots`, `quiz-staff-pr-screenshots`)
-- Skills: [.cursor/skills/](.cursor/skills/) (`droidkaigi-quiz`, `droidkaigi-quiz-test`, `droidkaigi-quiz-verify`, `droidkaigi-quiz-review`, `android-compose-screenshot`, `android-pr-screenshots`, `jvm-compose-screenshot`, `staff-pr-screenshots`)
+
+## Skills
+
+[.cursor/skills/](.cursor/skills/) — タスクに応じて読み込む。
+
+| Skill | 用途 |
+|-------|------|
+| [`droidkaigi-quiz`](.cursor/skills/droidkaigi-quiz/SKILL.md) | 実装マスターワークフロー。新画面・機能・修正の起点（domain → data → UI → feature → nav → test → verify → review） |
+| [`droidkaigi-quiz-test`](.cursor/skills/droidkaigi-quiz-test/SKILL.md) | テストの追加・実行（`commonTest` / `androidInstrumentedTest`） |
+| [`droidkaigi-quiz-verify`](.cursor/skills/droidkaigi-quiz-verify/SKILL.md) | Android CLI + スクショで手順どおりに動作確認する |
+| [`droidkaigi-quiz-device-review`](.cursor/skills/droidkaigi-quiz-device-review/SKILL.md) | 参加者 Android を実機で通しレビューし、UI/UX・画面サイズ・アクセシビリティ・保守性の指摘を Issue 化する |
+| [`droidkaigi-quiz-review`](.cursor/skills/droidkaigi-quiz-review/SKILL.md) | PR / ブランチ変更のコードレビュー（CI の Cursor Code Review と同じ観点） |
+| [`android-pr-screenshots`](.cursor/skills/android-pr-screenshots/SKILL.md) | 参加者 Android の UI 変更 PR にスクショを比較表で埋め込む（必須） |
+| [`android-compose-screenshot`](.cursor/skills/android-compose-screenshot/SKILL.md) | instrumented テストから Android Compose UI の決定的 PNG を撮る撮影ハーネス |
+| [`staff-pr-screenshots`](.cursor/skills/staff-pr-screenshots/SKILL.md) | スタッフ（管理者）UI 変更 PR にスクショを比較表で埋め込む（必須） |
+| [`jvm-compose-screenshot`](.cursor/skills/jvm-compose-screenshot/SKILL.md) | JVM/Desktop Compose UI テストから決定的 PNG を撮る撮影ハーネス |
 
 ## External skills
 
-- `~/.claude/skills/navigation-3`
-- `~/.claude/skills/adaptive`
-- `~/.claude/skills/android-cli`
-- `~/.claude/skills/testing-setup`
+`~/.claude/skills/` — 汎用の外部スキル。
+
+| Skill | 用途 |
+|-------|------|
+| [`navigation-3`](~/.claude/skills/navigation-3) | Jetpack Navigation 3 の導入・移行・パターン実装 |
+| [`adaptive`](~/.claude/skills/adaptive) | 端末サイズ（スマホ / タブレット / Foldable など）に応じた適応 UI |
+| [`android-cli`](~/.claude/skills/android-cli) | `android` CLI でのビルド・実行・端末操作・スクショ・レイアウト調査 |
+| [`testing-setup`](~/.claude/skills/testing-setup) | Android のテスト基盤・ハーネス整備 |
