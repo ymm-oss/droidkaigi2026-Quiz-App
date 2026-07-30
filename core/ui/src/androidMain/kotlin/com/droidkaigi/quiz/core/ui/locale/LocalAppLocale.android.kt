@@ -16,12 +16,11 @@ actual object LocalAppLocale {
     @Composable
     actual infix fun provides(value: String?): ProvidedValue<*> {
         val configuration = Configuration(LocalConfiguration.current)
-        if (default == null) {
-            default = Locale.getDefault()
-        }
-        val new = when (value) {
-            null -> default!!
-            else -> Locale.forLanguageTag(value)
+        val systemDefault = default ?: Locale.getDefault().also { default = it }
+        val new = if (value == null) {
+            systemDefault
+        } else {
+            Locale.forLanguageTag(value)
         }
         Locale.setDefault(new)
         configuration.setLocale(new)

@@ -7,8 +7,7 @@ import java.util.prefs.Preferences
 private class JvmLocalePreferenceStore : LocalePreferenceStore {
     private val prefs = Preferences.userRoot().node(NODE)
 
-    override fun load(): AppLocalePreference =
-        AppLocalePreference.fromStorageKey(prefs.get(KEY_LOCALE, null))
+    override fun load(): AppLocalePreference = AppLocalePreference.fromStorageKey(prefs.get(KEY_LOCALE, null))
 
     override fun save(preference: AppLocalePreference) {
         prefs.put(KEY_LOCALE, preference.storageKey)
@@ -22,5 +21,4 @@ private class JvmLocalePreferenceStore : LocalePreferenceStore {
 }
 
 @Composable
-actual fun rememberLocalePreferenceStore(): LocalePreferenceStore =
-    remember { JvmLocalePreferenceStore() }
+actual fun rememberLocalePreferenceStore(): LocalePreferenceStore = remember { JvmLocalePreferenceStore() }
