@@ -40,6 +40,7 @@ Slack は **Accenture Enterprise Slack** のワークスペース参加が必要
 - [ ] [docs/SPEC.md](SPEC.md) の該当 AC を満たしている
 - [ ] ユニットテスト: `./gradlew :core:domain:jvmTest :core:data:jvmTest`
 - [ ] UI 変更時は `./gradlew :androidApp:connectedDebugAndroidTest`（エミュレータ要）または [docs/VERIFY.md](VERIFY.md) で手動確認
+- [ ] 管理者アプリ UI 変更時は PR 本文にスクショを埋め込み（比較表・縮小。[staff-pr-screenshots](../.cursor/skills/staff-pr-screenshots/SKILL.md)）
 - [ ] `quiz.runtime` や Firestore 周りを触った場合は prod ビルド・結合確認の手順を PR 説明に記載
 
 ## AI 駆動開発（推奨）
@@ -56,6 +57,8 @@ Slack は **Accenture Enterprise Slack** のワークスペース参加が必要
 | [.cursor/skills/droidkaigi-quiz-test/](../.cursor/skills/droidkaigi-quiz-test/) | テスト追加手順 |
 | [.cursor/skills/droidkaigi-quiz-verify/](../.cursor/skills/droidkaigi-quiz-verify/) | 手動確認手順 |
 | [.cursor/skills/droidkaigi-quiz-review/](../.cursor/skills/droidkaigi-quiz-review/) | PR レビュー（ローカルは Agent + スキル、CI と同観点） |
+| [.cursor/skills/jvm-compose-screenshot/](../.cursor/skills/jvm-compose-screenshot/) | JVM Compose スクショ取得 |
+| [.cursor/skills/staff-pr-screenshots/](../.cursor/skills/staff-pr-screenshots/) | 管理者アプリ UI の PR 埋め込み（必須） |
 
 ### おすすめの進め方
 

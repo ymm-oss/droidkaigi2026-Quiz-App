@@ -1,0 +1,11 @@
+---
+description: Staff/admin UI PRs must embed comparison screenshots
+alwaysApply: true
+---
+
+# Staff PR screenshots
+
+1. PR が管理者アプリ UI（`:feature:staff` / `:staffComposeApp` / `:staffDesktopApp` の見た目・操作）に関わる場合、**必ず** スクショを PR 本文に埋め込む。
+2. 手順・表フォーマット・画像サイズは `.cursor/skills/staff-pr-screenshots/SKILL.md` に従う。
+3. 埋め込みは raw GitHub URL の `<img width="…">`（比較は表）。サイズ未指定の巨大表示やリンクのみは不可。
+4. キャプチャは JVM Compose UI テスト（`docs/screenshots/staff/`）。手撮りを新規に増やさない。
