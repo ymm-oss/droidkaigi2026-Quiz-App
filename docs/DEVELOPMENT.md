@@ -199,6 +199,17 @@ androidApp/src/prod/google-services.json
 ./gradlew :desktopApp:run -Pquiz.runtime=prod
 ```
 
+### Crashlytics（Android prod のみ）
+
+参加者向け Android の `prod` flavor は Firebase Crashlytics を有効にします。`fake` flavor、Desktop、スタッフ Desktop、Wasm は対象外です。
+
+- `androidApp/src/prod/google-services.json` があり、`quiz.runtime=prod` のときだけ Google Services と Crashlytics の Gradle プラグインを適用
+- Crashlytics SDK は `prodImplementation` のみに追加されるため、`fake` APK からクラッシュレポートを送信しない
+- `release` の難読化は現在無効。難読化を有効にした場合は Crashlytics Gradle プラグインが mapping file をアップロードする
+- NDK Crashlytics は未導入。Kotlin / Java の未捕捉例外を収集対象とする
+
+導入確認では、一時的な `RuntimeException` を `prod` アプリで発生させ、アプリを再起動してレポートを送信します。[Firebase Console の Crashlytics](https://console.firebase.google.com/project/droidkaigi26/crashlytics) で受信を確認したら、強制クラッシュのコードは必ず削除してください。
+
 結合確認: [VERIFY.md](VERIFY.md)
 
 **環境の切り分け**
