@@ -6,13 +6,18 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,6 +45,7 @@ import com.droidkaigi.quiz.core.ui.generated.resources.ranking_subtitle
 import com.droidkaigi.quiz.core.ui.generated.resources.ranking_title
 import com.droidkaigi.quiz.core.ui.generated.resources.time_unknown
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.core.ui.theme.quizSafeHorizontalPadding
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -75,7 +81,7 @@ fun RankingContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .safeContentPadding(),
+                .quizSafeHorizontalPadding(),
         ) {
             Column(
                 modifier = Modifier
@@ -83,9 +89,12 @@ fun RankingContent(
                     .fillMaxSize()
                     .widthIn(max = 640.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = QuizTokens.spacingLarge),
+                    .padding(horizontal = QuizTokens.spacingLarge)
+                    .windowInsetsPadding(
+                        WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical),
+                    )
+                    .padding(top = QuizTokens.spacingMedium),
             ) {
-                Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
                 QuizHeroTitle(
                     title = stringResource(Res.string.ranking_title),
                     subtitle = stringResource(Res.string.ranking_subtitle),
@@ -113,6 +122,7 @@ fun RankingContent(
                 } else {
                     LazyColumn(
                         modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(bottom = QuizTokens.spacingLarge),
                         verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
                     ) {
                         itemsIndexed(

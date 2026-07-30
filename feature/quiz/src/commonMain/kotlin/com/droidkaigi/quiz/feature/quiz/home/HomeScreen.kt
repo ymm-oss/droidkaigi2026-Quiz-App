@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -40,6 +39,8 @@ import com.droidkaigi.quiz.core.ui.generated.resources.home_subtitle
 import com.droidkaigi.quiz.core.ui.locale.AppLocalePreference
 import com.droidkaigi.quiz.core.ui.locale.LocalAppLocaleController
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.core.ui.theme.quizSafeHorizontalPadding
+import com.droidkaigi.quiz.core.ui.theme.quizSafeVerticalPadding
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -93,16 +94,17 @@ fun HomeContent(
     QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .quizSafeHorizontalPadding(),
             contentAlignment = Alignment.Center,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .widthIn(max = 480.dp)
-                    .padding(horizontal = QuizTokens.spacingLarge)
                     .verticalScroll(rememberScrollState())
-                    .imePadding(),
+                    .quizSafeVerticalPadding()
+                    .padding(horizontal = QuizTokens.spacingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingExtraLarge),
             ) {
