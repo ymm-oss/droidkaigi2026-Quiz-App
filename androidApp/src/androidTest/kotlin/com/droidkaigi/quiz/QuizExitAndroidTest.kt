@@ -43,7 +43,7 @@ class QuizExitAndroidTest {
 
         pressSystemBack()
         composeRule.onNodeWithText("クイズを中断しますか？").assertIsDisplayed()
-        composeRule.onNode(hasText("戻る") and hasAnyAncestor(isDialog())).performClick()
+        composeRule.onNode(hasText("中断する") and hasAnyAncestor(isDialog())).performClick()
 
         composeRule.waitUntilText("クイズを始める")
         assertExitDialogGone()
@@ -55,7 +55,7 @@ class QuizExitAndroidTest {
         waitForProgress("0 / 3")
 
         pressSystemBack()
-        composeRule.onNode(hasText("戻る") and hasAnyAncestor(isDialog())).performClick()
+        composeRule.onNode(hasText("中断する") and hasAnyAncestor(isDialog())).performClick()
         composeRule.waitUntilText("クイズを始める")
 
         composeRule.onNodeWithText("クイズを始める").performClick()
