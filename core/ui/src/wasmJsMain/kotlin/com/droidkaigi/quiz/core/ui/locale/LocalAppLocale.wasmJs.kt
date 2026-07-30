@@ -12,15 +12,15 @@ private fun setCustomLocale(value: String?) {
     js("window.__customLocale = value")
 }
 
-actual object LocalAppLocale {
-    private val LocalAppLocaleComposition = staticCompositionLocalOf { Locale.current }
+private val WasmLocalAppLocale = staticCompositionLocalOf { Locale.current }
 
+actual object LocalAppLocale {
     actual val current: String
-        @Composable get() = LocalAppLocaleComposition.current.toString()
+        @Composable get() = WasmLocalAppLocale.current.toString()
 
     @Composable
     actual infix fun provides(value: String?): ProvidedValue<*> {
         setCustomLocale(value?.replace('_', '-'))
-        return LocalAppLocaleComposition.provides(Locale.current)
+        return WasmLocalAppLocale.provides(Locale.current)
     }
 }
