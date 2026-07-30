@@ -1,6 +1,15 @@
 package com.droidkaigi.quiz.feature.quiz.home
 
-data class HomeUiState(val nickname: String = "", val isLoading: Boolean = false, val errorMessage: String? = null)
+data class HomeUiState(
+    val nickname: String = "",
+    val isLoading: Boolean = false,
+    val error: HomeError? = null,
+)
+
+sealed interface HomeError {
+    data object EmptyNickname : HomeError
+    data class LoadFailed(val detail: String?) : HomeError
+}
 
 sealed interface HomeIntent {
     data class NicknameChanged(val value: String) : HomeIntent

@@ -40,9 +40,20 @@ import com.droidkaigi.quiz.core.ui.components.QuizProgressHeader
 import com.droidkaigi.quiz.core.ui.components.QuizReorderList
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
+import com.droidkaigi.quiz.core.ui.generated.resources.Res
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_cancel
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_confirm
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_message
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_title
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_instruction_choice
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_instruction_reorder
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_no_question
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_section_question
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.core.ui.theme.quizShake
 import kotlinx.coroutines.flow.Flow
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun QuizScreen(
@@ -95,21 +106,21 @@ fun QuizScreen(
     if (state.showExitConfirm) {
         AlertDialog(
             onDismissRequest = { viewModel.onIntent(QuizIntent.DismissExit) },
-            title = { Text("クイズを中断しますか？") },
+            title = { Text(stringResource(Res.string.quiz_exit_title)) },
             text = {
                 Text(
-                    text = "TOP画面に戻り回答状況が保存されませんが良いでしょうか",
+                    text = stringResource(Res.string.quiz_exit_message),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             },
             confirmButton = {
                 TextButton(onClick = { viewModel.onIntent(QuizIntent.ConfirmExit) }) {
-                    Text("戻る")
+                    Text(stringResource(Res.string.quiz_exit_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.onIntent(QuizIntent.DismissExit) }) {
-                    Text("キャンセル")
+                    Text(stringResource(Res.string.quiz_exit_cancel))
                 }
             },
         )
@@ -153,7 +164,7 @@ fun QuizContent(
                 )
                 QuizSurfaceCard {
                     Text(
-                        text = "問題",
+                        text = stringResource(Res.string.quiz_section_question),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -162,11 +173,11 @@ fun QuizContent(
                 }
                 QuizSurfaceCard {
                     Text(
-                        text = when(state.question) {
-                            is Reorder -> "上から順に並び替えてください"
+                        text = when (state.question) {
+                            is Reorder -> stringResource(Res.string.quiz_instruction_reorder)
                             is MultipleChoice,
                             is SingleChoice,
-                            null -> "回答を選んでください"
+                            null -> stringResource(Res.string.quiz_instruction_choice)
                         },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -189,7 +200,7 @@ fun QuizContent(
                     }
                 }
                 QuizPrimaryButton(
-                    text = "回答する",
+                    text = stringResource(Res.string.quiz_submit),
                     onClick = onSubmitAnswer,
                     enabled = state.canSubmit && !state.showFeedback,
                 )
@@ -238,6 +249,6 @@ private fun QuestionAnswerArea(
             )
         }
 
-        null -> Text("問題がありません")
+        null -> Text(stringResource(Res.string.quiz_no_question))
     }
 }

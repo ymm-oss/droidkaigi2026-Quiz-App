@@ -46,6 +46,7 @@
 - 開発: `fake` ランタイムのみオフライン検証可
 - テーマは `core/ui/.../QuizTokens.kt` のみ編集で差し替え
 - Tablet（幅 >= 600dp）では NavRail
+- 参加者 UI は日本語 / 英語（Compose Resources の `stringResource`）。端末ロケール追従に加え、Home で System / 日本語 / English を手動切替可能（端末内に永続化）。クイズ問題コンテンツとスタッフ UI は本スコープ外（著者言語のまま）
 
 ## モジュール構成（エントリ分離）
 

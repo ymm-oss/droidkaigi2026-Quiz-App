@@ -33,7 +33,14 @@ import com.droidkaigi.quiz.core.ui.components.QuizRankingRow
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
 import com.droidkaigi.quiz.core.ui.components.QuizSecondaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
+import com.droidkaigi.quiz.core.ui.generated.resources.Res
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_empty
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_go_home
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_subtitle
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_title
+import com.droidkaigi.quiz.core.ui.generated.resources.time_unknown
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RankingScreen(onGoHome: () -> Unit, viewModel: RankingViewModel = viewModel { RankingViewModel() }) {
@@ -63,6 +70,7 @@ fun RankingContent(
     onGoHomeClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val unknownCompletedAt = stringResource(Res.string.time_unknown)
     QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
@@ -79,8 +87,8 @@ fun RankingContent(
             ) {
                 Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
                 QuizHeroTitle(
-                    title = "今日のランキング",
-                    subtitle = "今日のベストスコア",
+                    title = stringResource(Res.string.ranking_title),
+                    subtitle = stringResource(Res.string.ranking_subtitle),
                     badge = "RANKING",
                 )
                 Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
@@ -120,7 +128,8 @@ fun RankingContent(
                                     nickname = entry.nickname,
                                     score = entry.score,
                                     highlighted = entry.nickname == highlightNickname,
-                                    completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis),
+                                    completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis)
+                                        ?: unknownCompletedAt,
                                 )
                             }
                         }
@@ -128,7 +137,7 @@ fun RankingContent(
                             item {
                                 QuizSurfaceCard {
                                     Text(
-                                        text = "まだエントリーがありません",
+                                        text = stringResource(Res.string.ranking_empty),
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -139,7 +148,7 @@ fun RankingContent(
                 }
                 Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
                 QuizSecondaryButton(
-                    text = "ホームに戻る",
+                    text = stringResource(Res.string.ranking_go_home),
                     onClick = onGoHomeClick,
                 )
                 Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))

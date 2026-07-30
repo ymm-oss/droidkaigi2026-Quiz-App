@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DroidKaigi 2026 Quiz</title>
     <link type="text/css" rel="stylesheet" href="styles.css">
+    <script type="text/javascript">
+        var currentLanguagesImplementation = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
+        var newLanguagesImplementation = Object.assign({}, currentLanguagesImplementation, {
+            get: function () {
+                if (window.__customLocale) {
+                    return [window.__customLocale];
+                } else {
+                    return currentLanguagesImplementation.get.apply(this);
+                }
+            }
+        });
+        Object.defineProperty(Navigator.prototype, "languages", newLanguagesImplementation);
+    </script>
 </head>
 <body>
 <div id="webApp"></div>

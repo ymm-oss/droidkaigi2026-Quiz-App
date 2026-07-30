@@ -99,7 +99,7 @@ fun StaffRankingContent(
                             nickname = entry.nickname,
                             score = entry.score,
                             highlighted = false,
-                            completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis),
+                            completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis) ?: "不明",
                         )
                     }
                 }

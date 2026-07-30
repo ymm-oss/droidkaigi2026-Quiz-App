@@ -1,9 +1,12 @@
 package com.droidkaigi.quiz.feature.quiz.home
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import com.droidkaigi.quiz.core.ui.locale.LocalAppLocale
 import com.droidkaigi.quiz.core.ui.theme.QuizTheme
 import kotlin.test.Test
 
@@ -15,14 +18,18 @@ class HomeContentJvmUiTest {
     @Test
     fun homeContent_showsTitleAndStartButton() = runComposeUiTest {
         setContent {
-            QuizTheme {
-                HomeContent(
-                    nickname = "",
-                    isLoading = false,
-                    errorMessage = null,
-                    onNicknameChange = {},
-                    onStartClick = {},
-                )
+            CompositionLocalProvider(LocalAppLocale provides "ja") {
+                key("ja") {
+                    QuizTheme {
+                        HomeContent(
+                            nickname = "",
+                            isLoading = false,
+                            errorMessage = null,
+                            onNicknameChange = {},
+                            onStartClick = {},
+                        )
+                    }
+                }
             }
         }
 

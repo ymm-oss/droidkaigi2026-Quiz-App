@@ -12,7 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.droidkaigi.quiz.core.ui.generated.resources.Res
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_score
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun QuizRankingRow(
@@ -56,7 +59,7 @@ fun QuizRankingRow(
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
-                    text = "スコア $score",
+                    text = stringResource(Res.string.ranking_score, score),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

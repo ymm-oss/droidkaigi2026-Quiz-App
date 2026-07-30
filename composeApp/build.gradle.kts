@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.components.resources)
             implementation(libs.metro.runtime)
         }
     }

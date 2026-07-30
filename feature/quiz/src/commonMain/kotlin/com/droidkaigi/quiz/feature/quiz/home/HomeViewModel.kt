@@ -22,7 +22,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
 
     fun onIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, errorMessage = null) }
+            is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
             HomeIntent.StartQuiz -> startQuiz()
             HomeIntent.Shown -> _uiState.update { it.copy(isLoading = false) }
         }
@@ -32,11 +32,11 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         if (_uiState.value.isLoading) return
         val nickname = _uiState.value.nickname.trim()
         if (nickname.isEmpty()) {
-            _uiState.update { it.copy(errorMessage = "ニックネームを入力してください") }
+            _uiState.update { it.copy(error = HomeError.EmptyNickname) }
             return
         }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val folderId = deps.getActiveQuizFolderIdUseCase()
                 val quizSet = deps.getQuizSetForFolderUseCase(folderId)
@@ -56,7 +56,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 // Use cases may surface diverse failures (remote/IO); show message on Home.
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "読み込みに失敗しました")
+                    it.copy(isLoading = false, error = HomeError.LoadFailed(e.message))
                 }
             }
         }

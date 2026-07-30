@@ -8,12 +8,15 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class QuizFlowAndroidTest {
+    private val composeRule = createAndroidComposeRule<MainActivity>()
+
     @get:Rule
-    val composeRule = createAndroidComposeRule<MainActivity>()
+    val ruleChain: RuleChain = RuleChain.outerRule(ForceJapaneseLocaleRule()).around(composeRule)
 
     private val firstQuestionSnippet = "共通化できる Jetpack ライブラリはどれ？"
 

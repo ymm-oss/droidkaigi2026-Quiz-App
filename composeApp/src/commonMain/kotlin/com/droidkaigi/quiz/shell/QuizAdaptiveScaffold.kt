@@ -27,7 +27,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.droidkaigi.quiz.core.ui.generated.resources.Res
+import com.droidkaigi.quiz.core.ui.generated.resources.nav_home
+import com.droidkaigi.quiz.core.ui.generated.resources.nav_ranking
 import com.droidkaigi.quiz.navigation.Route
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun QuizAdaptiveScaffold(currentRoute: Route, onNavigate: (Route) -> Unit, content: @Composable () -> Unit) {
@@ -36,13 +40,13 @@ fun QuizAdaptiveScaffold(currentRoute: Route, onNavigate: (Route) -> Unit, conte
         val navItems = listOf(
             NavItem(
                 route = Route.Home,
-                label = "ホーム",
+                label = stringResource(Res.string.nav_home),
                 selectedIcon = Icons.Filled.Home,
                 unselectedIcon = Icons.Outlined.Home,
             ),
             NavItem(
                 route = Route.Ranking,
-                label = "ランキング",
+                label = stringResource(Res.string.nav_ranking),
                 selectedIcon = Icons.Filled.Leaderboard,
                 unselectedIcon = Icons.Outlined.Leaderboard,
             ),
