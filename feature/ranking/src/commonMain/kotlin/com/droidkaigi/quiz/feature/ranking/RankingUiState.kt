@@ -6,7 +6,12 @@ data class RankingUiState(
     val entries: List<RankingEntry> = emptyList(),
     val highlightNickname: String? = null,
     val isLoading: Boolean = true,
+    val error: RankingError? = null,
 )
+
+sealed interface RankingError {
+    data class LoadFailed(val detail: String?) : RankingError
+}
 
 sealed interface RankingIntent {
     data object Refresh : RankingIntent

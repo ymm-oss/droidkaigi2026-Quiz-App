@@ -42,6 +42,8 @@
     <string name="ranking_title">今日のランキング</string>
     <string name="ranking_subtitle">今日のベストスコア</string>
     <string name="ranking_empty">まだエントリーがありません</string>
+    <string name="ranking_error_load_failed">ランキングの取得に失敗しました</string>
+    <string name="ranking_retry">再試行</string>
     <string name="ranking_go_home">ホームに戻る</string>
     <string name="ranking_score">スコア %1$d</string>
 

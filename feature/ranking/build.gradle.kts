@@ -38,6 +38,10 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
     }
 }
 
