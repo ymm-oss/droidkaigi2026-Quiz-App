@@ -43,6 +43,8 @@ fun QuizAnswerFeedbackOverlay(
     continueLabel: String,
     onContinue: () -> Unit,
     modifier: Modifier = Modifier,
+    continueEnabled: Boolean = true,
+    continueLoading: Boolean = false,
 ) {
     val revealScale = QuizMotion.animateFeedbackReveal(visible = true)
     val accent = if (isCorrect) QuizTokens.correct else QuizTokens.incorrect
@@ -116,6 +118,8 @@ fun QuizAnswerFeedbackOverlay(
                 text = continueLabel,
                 onClick = onContinue,
                 modifier = Modifier.testTag("feedbackContinue"),
+                enabled = continueEnabled,
+                loading = continueLoading,
             )
         }
     }

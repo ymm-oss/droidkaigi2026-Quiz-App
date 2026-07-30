@@ -3,6 +3,7 @@ package com.droidkaigi.quiz.core.data.firestore
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.firestore
+import kotlin.coroutines.cancellation.CancellationException
 
 internal class GitLiveFirestoreService : FirestoreService {
     private val db get() = Firebase.firestore
@@ -52,13 +53,26 @@ internal class GitLiveFirestoreService : FirestoreService {
             }
     }
 
-    override suspend fun addRanking(folderId: String, document: RankingFirestoreDocument) {
-        db.collection(FirestorePaths.FOLDERS)
+    override suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) {
+        val ref = db.collection(FirestorePaths.FOLDERS)
             .document(folderId)
             .collection(FirestorePaths.RANKINGS)
-            .add(RankingFirestoreDocument.serializer(), document) {
+            .document(entryId)
+        try {
+            ref.set(RankingFirestoreDocument.serializer(), document) {
                 encodeDefaults = true
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // create-only rules: retry after a successful write looks like a denied update.
+            // If the doc already exists, the previous attempt landed — treat as success.
+            val existing = runCatching { ref.get() }.getOrNull()
+            if (existing != null && existing.exists) {
+                return
+            }
+            throw e
+        }
     }
 
     override suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument> {

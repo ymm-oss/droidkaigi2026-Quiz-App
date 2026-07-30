@@ -52,6 +52,9 @@ import com.droidkaigi.quiz.core.ui.generated.resources.quiz_instruction_reorder
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_no_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_section_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit_score_failed_message
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit_score_failed_title
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit_score_retry
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.core.ui.theme.quizSafeHorizontalPadding
 import com.droidkaigi.quiz.core.ui.theme.quizSafeVerticalPadding
@@ -125,6 +128,24 @@ fun QuizScreen(
             dismissButton = {
                 TextButton(onClick = { viewModel.onIntent(QuizIntent.DismissExit) }) {
                     Text(stringResource(Res.string.quiz_exit_cancel))
+                }
+            },
+        )
+    }
+
+    if (state.submitPhase == SubmitPhase.Failed) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(Res.string.quiz_submit_score_failed_title)) },
+            text = {
+                Text(
+                    text = stringResource(Res.string.quiz_submit_score_failed_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onIntent(QuizIntent.RetrySubmitScore) }) {
+                    Text(stringResource(Res.string.quiz_submit_score_retry))
                 }
             },
         )
@@ -217,6 +238,9 @@ fun QuizContent(
                         },
                     ),
                     onContinue = onContinueAfterFeedback,
+                    continueEnabled = state.submitPhase != SubmitPhase.Submitting &&
+                        state.submitPhase != SubmitPhase.Failed,
+                    continueLoading = state.submitPhase == SubmitPhase.Submitting,
                 )
             }
         }

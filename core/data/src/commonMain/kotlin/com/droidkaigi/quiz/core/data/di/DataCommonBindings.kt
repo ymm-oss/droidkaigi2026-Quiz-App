@@ -47,8 +47,7 @@ object DataCommonBindings {
     @Provides
     fun provideSubmitScoreUseCase(
         rankingRepository: RankingRepository,
-        instantProvider: InstantProvider,
-    ): SubmitScoreUseCase = SubmitScoreUseCase(rankingRepository, instantProvider)
+    ): SubmitScoreUseCase = SubmitScoreUseCase(rankingRepository)
 
     @Provides
     fun provideGetTodayRankingsUseCase(rankingRepository: RankingRepository): GetTodayRankingsUseCase =

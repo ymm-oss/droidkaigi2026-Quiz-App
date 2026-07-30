@@ -31,6 +31,9 @@
     <string name="feedback_incorrect">不正解</string>
     <string name="quiz_feedback_next">次の問題へ</string>
     <string name="quiz_feedback_finish">結果を見る</string>
+    <string name="quiz_submit_score_failed_title">スコアの送信に失敗しました</string>
+    <string name="quiz_submit_score_failed_message">ネットワーク接続を確認して、もう一度お試しください。</string>
+    <string name="quiz_submit_score_retry">再試行</string>
 
     <string name="result_title">クイズ完了</string>
     <string name="result_subtitle">おつかれさま、%1$s さん！</string>

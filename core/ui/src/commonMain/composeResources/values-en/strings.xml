@@ -31,6 +31,9 @@
     <string name="feedback_incorrect">Incorrect</string>
     <string name="quiz_feedback_next">Next question</string>
     <string name="quiz_feedback_finish">See results</string>
+    <string name="quiz_submit_score_failed_title">Couldn’t submit your score</string>
+    <string name="quiz_submit_score_failed_message">Check your network connection and try again.</string>
+    <string name="quiz_submit_score_retry">Retry</string>
 
     <string name="result_title">Quiz complete</string>
     <string name="result_subtitle">Nice work, %1$s!</string>
