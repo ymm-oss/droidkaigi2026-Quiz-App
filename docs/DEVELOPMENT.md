@@ -72,7 +72,7 @@ flowchart TB
   end
 
   WASM["wasmApp<br/>（Web / Wasm）"]
-  WASM -.->|"未使用（要検討）<br/>QR 配布など"| prodParticipant
+  WASM -.->|"本番配布は未定<br/>QR 配布など"| prodParticipant
 ```
 
 要点:
