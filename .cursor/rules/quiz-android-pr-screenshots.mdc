@@ -1,0 +1,12 @@
+---
+description: User-facing Android UI PRs must embed instrumented screenshots
+alwaysApply: true
+---
+
+# Android PR screenshots
+
+1. PR がユーザー向けアプリ UI（`:feature:quiz` / `:feature:ranking` / `:core:ui` / `:composeApp` / `:androidApp` の見た目・操作）に関わる場合、**必ず** Android スクショを PR 本文に埋め込む。
+2. 手順・表フォーマット・画像サイズは `.cursor/skills/android-pr-screenshots/SKILL.md` に従う。
+3. キャプチャは instrumented Compose テスト（`docs/screenshots/android/`）。`android` CLI / `adb shell input tap` でのライブ操作キャプチャは不可。撮り方は `.cursor/skills/android-compose-screenshot/SKILL.md`。
+4. 埋め込みは raw GitHub URL の `<img width="…">`（比較は表）。サイズ未指定の巨大表示やリンクのみは不可。
+5. Android と Desktop の両方が変わる PR は、`### Android UI` / `### Desktop UI` に節を分けて両方載せる。
