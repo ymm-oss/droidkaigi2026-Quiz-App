@@ -31,7 +31,7 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 ./gradlew :staffDesktopApp:run
 ```
 
-- **認証**（fake）: メール `staff@droidkaigi.local`、パスワード `staff2026`（ローカル固定値・開発専用）。成功後にコンソールへ遷移。トップバーの「ログアウト」で認証画面に戻る
+- **認証**（fake）: メール `staff@droidkaigi.local`、パスワード `staff2026`（ローカル固定値・開発専用）で入力ログイン、またはログインボタン下の「デモアカウントでログイン」でワンクリック。成功後にコンソールへ遷移。トップバーの「ログアウト」で認証画面に戻る。prod ではワンクリックボタンは出ない
 
 **本番（prod）**
 

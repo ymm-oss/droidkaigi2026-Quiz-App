@@ -17,6 +17,7 @@ import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
@@ -91,6 +92,12 @@ object DataCommonBindings {
         staffAuthRepository: StaffAuthRepository,
         staffAuthHolder: StaffAuthHolder,
     ): SignInStaffUseCase = SignInStaffUseCase(staffAuthRepository, staffAuthHolder)
+
+    @Provides
+    fun provideQuickSignInStaffUseCase(
+        staffAuthRepository: StaffAuthRepository,
+        signInStaffUseCase: SignInStaffUseCase,
+    ): QuickSignInStaffUseCase = QuickSignInStaffUseCase(staffAuthRepository, signInStaffUseCase)
 
     @Provides
     fun provideGetStaffAuthStateUseCase(staffAuthHolder: StaffAuthHolder): GetStaffAuthStateUseCase =

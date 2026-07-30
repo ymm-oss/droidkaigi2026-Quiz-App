@@ -62,7 +62,7 @@
 
 | ランタイム | 認証 | データ |
 |------------|------|--------|
-| **fake**（開発） | ローカル固定アカウント（`FakeStaffAuthRepository`） | インメモリ（`InMemoryQuizCatalog`） |
+| **fake**（開発） | ローカル固定アカウント（`FakeStaffAuthRepository`）。入力ログインに加え「デモアカウントでログイン」ワンクリック可 | インメモリ（`InMemoryQuizCatalog`） |
 | **prod**（本番） | Firebase Authentication（`ProdStaffAuthRepository`） | Firestore（[docs/FIRESTORE.md](FIRESTORE.md)） |
 
 `quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。

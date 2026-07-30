@@ -238,7 +238,7 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 
 Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDesktop[Prod]`** の切り替えでも fake / prod を選べる（[JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ)）。
 
-- **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
+- **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。入力ログインに加え、ログインボタン下の「デモアカウントでログイン」でワンクリック可。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
 - **prod**: [Firebase セットアップ](#firebase-セットアップ) のスタッフ用ログインで認証
 
 ### Web（Wasm）

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.droidkaigi.quiz.core.data.AppDependencies
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
+import com.droidkaigi.quiz.core.domain.model.StaffSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,7 +12,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
-    private val _uiState = MutableStateFlow(StaffAuthUiState())
+    private val _uiState = MutableStateFlow(
+        StaffAuthUiState(showQuickSignIn = deps.quickSignInStaffUseCase.isAvailable),
+    )
     val uiState: StateFlow<StaffAuthUiState> = _uiState.asStateFlow()
 
     init {
@@ -36,13 +39,17 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
             }
 
             StaffAuthIntent.SignIn -> signIn()
+            StaffAuthIntent.QuickSignIn -> quickSignIn()
         }
     }
 
     fun onSignOut() {
         deps.signOutStaffUseCase()
         _uiState.update {
-            StaffAuthUiState(email = it.email)
+            StaffAuthUiState(
+                email = it.email,
+                showQuickSignIn = it.showQuickSignIn,
+            )
         }
     }
 
@@ -55,27 +62,39 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            deps.signInStaffUseCase(email, password)
-                .onSuccess { session ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isAuthenticated = true,
-                            email = session.email,
-                            password = "",
-                            errorMessage = null,
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    val message = when (error) {
-                        is StaffAuthException -> error.message
-                        else -> error.message ?: "ログインに失敗しました"
-                    }
-                    _uiState.update {
-                        it.copy(isLoading = false, errorMessage = message)
-                    }
-                }
+            applySignInResult(deps.signInStaffUseCase(email, password))
         }
+    }
+
+    private fun quickSignIn() {
+        if (!_uiState.value.showQuickSignIn) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            applySignInResult(deps.quickSignInStaffUseCase())
+        }
+    }
+
+    private fun applySignInResult(result: Result<StaffSession>) {
+        result
+            .onSuccess { session ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isAuthenticated = true,
+                        email = session.email,
+                        password = "",
+                        errorMessage = null,
+                    )
+                }
+            }
+            .onFailure { error ->
+                val message = when (error) {
+                    is StaffAuthException -> error.message
+                    else -> error.message ?: "ログインに失敗しました"
+                }
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = message)
+                }
+            }
     }
 }
