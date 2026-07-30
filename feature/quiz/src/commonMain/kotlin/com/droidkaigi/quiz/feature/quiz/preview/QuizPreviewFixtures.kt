@@ -71,6 +71,7 @@ internal object QuizPreviewFixtures {
         selectedId: String? = "b",
         showFeedback: Boolean = false,
         lastAnswerCorrect: Boolean? = null,
+        isFinishing: Boolean = false,
     ) = QuizUiState(
         prompt = singleChoiceQuestion.prompt,
         progress = "1 / 5",
@@ -80,6 +81,7 @@ internal object QuizPreviewFixtures {
         canSubmit = selectedId != null,
         showFeedback = showFeedback,
         lastAnswerCorrect = lastAnswerCorrect,
+        isFinishing = isFinishing,
     )
 
     fun multipleChoiceState() = QuizUiState(

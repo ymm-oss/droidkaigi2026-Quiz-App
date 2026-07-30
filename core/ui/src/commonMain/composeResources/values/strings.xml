@@ -24,11 +24,13 @@
     <string name="quiz_no_question">問題がありません</string>
     <string name="quiz_exit_title">クイズを中断しますか？</string>
     <string name="quiz_exit_message">TOP画面に戻り回答状況が保存されませんが良いでしょうか</string>
-    <string name="quiz_exit_confirm">戻る</string>
+    <string name="quiz_exit_confirm">中断する</string>
     <string name="quiz_exit_cancel">キャンセル</string>
 
     <string name="feedback_correct">正解！</string>
     <string name="feedback_incorrect">不正解</string>
+    <string name="quiz_feedback_next">次の問題へ</string>
+    <string name="quiz_feedback_finish">結果を見る</string>
 
     <string name="result_title">クイズ完了</string>
     <string name="result_subtitle">おつかれさま、%1$s さん！</string>

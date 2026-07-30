@@ -1,9 +1,9 @@
 package com.droidkaigi.quiz.core.domain.time
 
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 interface InstantProvider {
     fun nowEpochMillis(): Long

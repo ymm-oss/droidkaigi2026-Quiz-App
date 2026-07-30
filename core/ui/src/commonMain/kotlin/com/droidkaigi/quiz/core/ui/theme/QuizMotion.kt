@@ -21,6 +21,16 @@ object QuizMotion {
         val value by animateIntAsState(targetValue = target, animationSpec = QuizTokens.scoreSpring)
         return value
     }
+
+    @Composable
+    fun animateFeedbackReveal(visible: Boolean): Float {
+        val scale by animateFloatAsState(
+            targetValue = if (visible) 1f else 0.6f,
+            animationSpec = QuizTokens.selectionSpring,
+            label = "feedbackReveal",
+        )
+        return scale
+    }
 }
 
 fun Modifier.quizShake(offset: Float): Modifier = graphicsLayer { translationX = offset }

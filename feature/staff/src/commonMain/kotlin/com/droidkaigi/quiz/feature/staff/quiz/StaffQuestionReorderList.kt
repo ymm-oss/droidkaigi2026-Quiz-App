@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz.feature.staff.quiz
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -7,6 +8,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.droidkaigi.quiz.core.domain.model.Question
+import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -25,6 +27,7 @@ fun StaffQuestionReorderList(
     LazyColumn(
         state = lazyListState,
         modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
     ) {
         itemsIndexed(questions, key = { _, question -> question.id }) { index, question ->
             ReorderableItem(
@@ -35,7 +38,7 @@ fun StaffQuestionReorderList(
                     index = index + 1,
                     question = question,
                     isDragging = isDragging,
-                    dragHandleModifier = Modifier.longPressDraggableHandle(),
+                    dragHandleModifier = Modifier.draggableHandle(),
                     onEdit = { onEdit(question) },
                     onDelete = { onRequestDelete(question) },
                 )
