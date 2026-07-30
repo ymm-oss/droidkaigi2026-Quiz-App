@@ -1,6 +1,5 @@
 package com.droidkaigi.quiz.core.ui.components
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,10 +11,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.core.ui.theme.isQuizDarkTheme
 
 @Composable
 fun QuizSurfaceCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    val containerColor = if (isSystemInDarkTheme()) {
+    val containerColor = if (isQuizDarkTheme()) {
         MaterialTheme.colorScheme.surface
     } else {
         QuizTokens.surfaceElevated

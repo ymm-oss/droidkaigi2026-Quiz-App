@@ -1,8 +1,9 @@
 package com.droidkaigi.quiz.core.domain.time
 
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 /** Formats epoch millis as local `HH:mm` (zero-padded). */
 fun formatClockHm(epochMillis: Long, timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
@@ -15,8 +16,8 @@ fun formatClockHm(epochMillis: Long, timeZone: TimeZone = TimeZone.currentSystem
 /** Formats epoch millis as local `MM/dd HH:mm` (zero-padded). */
 fun formatDateClockHm(epochMillis: Long, timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
     val local = Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(timeZone)
-    val month = local.monthNumber.toString().padStart(2, '0')
-    val day = local.dayOfMonth.toString().padStart(2, '0')
+    val month = local.month.number.toString().padStart(2, '0')
+    val day = local.day.toString().padStart(2, '0')
     return "$month/$day ${formatClockHm(epochMillis, timeZone)}"
 }
 

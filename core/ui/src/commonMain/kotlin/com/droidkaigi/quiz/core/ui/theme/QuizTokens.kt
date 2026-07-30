@@ -49,6 +49,47 @@ object QuizTokens {
     val gradientEndDark = Color(0xFF101814)
     val gradientOrbDark = Color(0x336FE89F)
 
+    // Staff console ("Android Green Operations") — dark-only, tonal layering for venue operation.
+    val staffPrimary = Color(0xFFAEFFC7)
+    val staffOnPrimary = Color(0xFF00391E)
+    val staffPrimaryContainer = Color(0xFF6FE89F)
+    val staffOnPrimaryContainer = Color(0xFF00673A)
+    val staffSecondary = Color(0xFFB8CBBD)
+    val staffOnSecondary = Color(0xFF24342A)
+    val staffSecondaryContainer = Color(0xFF3A4B40)
+    val staffOnSecondaryContainer = Color(0xFFD4E7D8)
+    val staffTertiary = Color(0xFFB8FDCD)
+    val staffOnTertiary = Color(0xFF00391E)
+    val staffTertiaryContainer = Color(0xFF9DE0B2)
+    val staffOnTertiaryContainer = Color(0xFF236540)
+    val staffSurface = Color(0xFF0D1511)
+    val staffOnSurface = Color(0xFFE2E8E4)
+    val staffSurfaceVariant = Color(0xFF2E3732)
+    val staffOnSurfaceVariant = Color(0xFFBFC9C2)
+    val staffSurfaceContainerLowest = Color(0xFF08100C)
+    val staffSurfaceContainerLow = Color(0xFF151D19)
+    val staffSurfaceContainer = Color(0xFF19211D)
+    val staffSurfaceContainerHigh = Color(0xFF242C27)
+    val staffSurfaceContainerHighest = Color(0xFF2E3732)
+    val staffSurfaceBright = Color(0xFF333B36)
+    val staffInverseSurface = Color(0xFFDCE5DE)
+    val staffInverseOnSurface = Color(0xFF2A322E)
+    val staffInversePrimary = Color(0xFF006D3E)
+    val staffOutline = Color(0xFF89938C)
+    val staffOutlineVariant = Color(0xFF3D4A40)
+    val staffError = Color(0xFFFFB4AB)
+    val staffOnError = Color(0xFF690005)
+    val staffErrorContainer = Color(0xFF93000A)
+    val staffOnErrorContainer = Color(0xFFFFDAD6)
+
+    // Staff console layout metrics (1440x900 desktop reference).
+    val staffNavRailWidth = 80.dp
+    val staffSidebarWidth = 260.dp
+    val staffEditorPanelWidth = 450.dp
+    val staffContentMaxWidth = 1000.dp
+    val staffTopBarHeight = 64.dp
+    val staffTableRowHeight = 56.dp
+
     val cornerSmall = 8.dp
     val cornerMedium = 12.dp
     val cornerLarge = 16.dp

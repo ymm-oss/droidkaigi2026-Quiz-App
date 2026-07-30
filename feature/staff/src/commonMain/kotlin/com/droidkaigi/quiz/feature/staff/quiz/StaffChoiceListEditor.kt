@@ -4,7 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -14,14 +15,15 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.droidkaigi.quiz.core.ui.components.QuizTextField
+import androidx.compose.ui.unit.dp
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.feature.staff.components.StaffTextButton
 
 @Composable
 fun StaffChoiceListEditor(
@@ -30,13 +32,17 @@ fun StaffChoiceListEditor(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
-        Text(
+        StaffFieldLabel(
             text = when (draft.type) {
-                StaffQuestionType.Reorder -> "項目（上から正解の順）"
-                StaffQuestionType.MultipleChoice -> "選択肢（正解にチェック）"
-                StaffQuestionType.SingleChoice -> "選択肢（正解を1つ選択）"
+                StaffQuestionType.Reorder -> "項目"
+                StaffQuestionType.MultipleChoice -> "選択肢"
+                StaffQuestionType.SingleChoice -> "選択肢"
             },
-            style = MaterialTheme.typography.labelLarge,
+            hint = when (draft.type) {
+                StaffQuestionType.Reorder -> "上から正解の順"
+                StaffQuestionType.MultipleChoice -> "正解にチェック"
+                StaffQuestionType.SingleChoice -> "正解を1つ選択"
+            },
         )
         if (draft.type == StaffQuestionType.Reorder) {
             Text(
@@ -70,13 +76,7 @@ fun StaffChoiceListEditor(
                 onDelete = { onDraftChange(draft.removeItem(item.id)) },
             )
         }
-        TextButton(
-            onClick = { onDraftChange(draft.addItem()) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Icon(Icons.Default.Add, contentDescription = null)
-            Text("追加", modifier = Modifier.padding(start = QuizTokens.spacingSmall))
-        }
+        StaffTextButton(text = "追加", icon = Icons.Default.Add, onClick = { onDraftChange(draft.addItem()) })
     }
 }
 
@@ -106,35 +106,52 @@ private fun StaffChoiceRow(
             StaffQuestionType.SingleChoice -> RadioButton(
                 selected = isCorrectSingle,
                 onClick = onSelectSingle,
+                modifier = Modifier.size(QuizTokens.spacingLarge),
             )
 
             StaffQuestionType.MultipleChoice -> Checkbox(
                 checked = isCorrectMultiple,
                 onCheckedChange = onToggleMultiple,
+                modifier = Modifier.size(QuizTokens.spacingLarge),
             )
 
             StaffQuestionType.Reorder -> Text(
                 text = "${index + 1}.",
                 style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = QuizTokens.spacingSmall),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        QuizTextField(
+        OutlinedTextField(
             value = item.label,
             onValueChange = onLabelChange,
-            label = "選択肢 ${index + 1}",
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = "選択肢 ${index + 1}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            textStyle = MaterialTheme.typography.bodyMedium,
+            shape = RoundedCornerShape(QuizTokens.cornerSmall),
+            colors = staffFieldColors(),
             modifier = Modifier.weight(1f),
         )
         if (type == StaffQuestionType.Reorder) {
-            IconButton(onClick = onMoveUp, enabled = canMoveUp) {
-                Icon(Icons.Default.ArrowUpward, contentDescription = "上へ")
+            IconButton(onClick = onMoveUp, enabled = canMoveUp, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.ArrowUpward, contentDescription = "上へ", modifier = Modifier.size(18.dp))
             }
-            IconButton(onClick = onMoveDown, enabled = canMoveDown) {
-                Icon(Icons.Default.ArrowDownward, contentDescription = "下へ")
+            IconButton(onClick = onMoveDown, enabled = canMoveDown, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.ArrowDownward, contentDescription = "下へ", modifier = Modifier.size(18.dp))
             }
         }
-        IconButton(onClick = onDelete, enabled = canDelete) {
-            Icon(Icons.Default.Delete, contentDescription = "削除")
+        IconButton(onClick = onDelete, enabled = canDelete, modifier = Modifier.size(32.dp)) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "削除",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp),
+            )
         }
     }
 }
