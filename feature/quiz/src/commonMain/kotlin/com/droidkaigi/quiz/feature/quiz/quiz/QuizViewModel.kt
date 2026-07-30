@@ -66,6 +66,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             is QuizIntent.ToggleMultiple -> toggleMultiple(intent.id)
             is QuizIntent.MoveReorder -> moveReorder(intent.fromIndex, intent.toIndex)
             QuizIntent.SubmitAnswer -> submitAnswerIfAllowed()
+            QuizIntent.ContinueAfterFeedback -> continueAfterFeedback()
             QuizIntent.RequestExit -> requestExit()
             QuizIntent.DismissExit -> dismissExit()
             QuizIntent.ConfirmExit -> confirmExit()
@@ -149,14 +150,16 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     updated.quizSet.questions.size.coerceAtLeast(1),
             )
         }
+    }
 
-        viewModelScope.launch {
-            kotlinx.coroutines.delay(600)
-            if (updated.isComplete) {
-                finishQuiz(updated)
-            } else {
-                refreshFromSession()
-            }
+    private fun continueAfterFeedback() {
+        if (!_uiState.value.showFeedback) return
+        _uiState.update { it.copy(showFeedback = false) }
+        val session = session() ?: return
+        if (session.isComplete) {
+            finishQuiz(session)
+        } else {
+            refreshFromSession()
         }
     }
 

@@ -23,6 +23,7 @@ sealed interface QuizIntent {
     data class ToggleMultiple(val id: String) : QuizIntent
     data class MoveReorder(val fromIndex: Int, val toIndex: Int) : QuizIntent
     data object SubmitAnswer : QuizIntent
+    data object ContinueAfterFeedback : QuizIntent
     data object RequestExit : QuizIntent
     data object ConfirmExit : QuizIntent
     data object DismissExit : QuizIntent

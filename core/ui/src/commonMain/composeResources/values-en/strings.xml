@@ -29,6 +29,8 @@
 
     <string name="feedback_correct">Correct!</string>
     <string name="feedback_incorrect">Incorrect</string>
+    <string name="quiz_feedback_next">Next question</string>
+    <string name="quiz_feedback_finish">See results</string>
 
     <string name="result_title">Quiz complete</string>
     <string name="result_subtitle">Nice work, %1$s!</string>

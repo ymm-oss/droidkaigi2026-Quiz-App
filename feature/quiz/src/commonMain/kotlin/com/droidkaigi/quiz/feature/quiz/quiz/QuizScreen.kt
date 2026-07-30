@@ -1,7 +1,8 @@
 package com.droidkaigi.quiz.feature.quiz.quiz
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,7 @@ import com.droidkaigi.quiz.core.domain.model.Question
 import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.ui.components.ChoiceCard
-import com.droidkaigi.quiz.core.ui.components.QuizFeedbackText
+import com.droidkaigi.quiz.core.ui.components.QuizAnswerFeedbackOverlay
 import com.droidkaigi.quiz.core.ui.components.QuizMarkdownText
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizProgressHeader
@@ -45,13 +46,14 @@ import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_cancel
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_confirm
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_message
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_exit_title
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_feedback_finish
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_feedback_next
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_instruction_choice
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_instruction_reorder
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_no_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_section_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
-import com.droidkaigi.quiz.core.ui.theme.quizShake
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.stringResource
 
@@ -101,6 +103,7 @@ fun QuizScreen(
         onToggleMultiple = { viewModel.onIntent(QuizIntent.ToggleMultiple(it)) },
         onMoveReorder = { from, to -> viewModel.onIntent(QuizIntent.MoveReorder(from, to)) },
         onSubmitAnswer = { viewModel.onIntent(QuizIntent.SubmitAnswer) },
+        onContinueAfterFeedback = { viewModel.onIntent(QuizIntent.ContinueAfterFeedback) },
     )
 
     if (state.showExitConfirm) {
@@ -134,13 +137,9 @@ fun QuizContent(
     onToggleMultiple: (String) -> Unit,
     onMoveReorder: (Int, Int) -> Unit,
     onSubmitAnswer: () -> Unit,
+    onContinueAfterFeedback: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shakeOffset by animateFloatAsState(
-        targetValue = if (state.showFeedback && state.lastAnswerCorrect == false) 8f else 0f,
-        label = "shake",
-    )
-
     QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
@@ -153,7 +152,6 @@ fun QuizContent(
                     .widthIn(max = 640.dp)
                     .fillMaxWidth()
                     .padding(horizontal = QuizTokens.spacingLarge)
-                    .quizShake(shakeOffset)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingLarge),
             ) {
@@ -196,17 +194,30 @@ fun QuizContent(
                         onMoveReorder = onMoveReorder,
                     )
                 }
-                AnimatedVisibility(visible = state.showFeedback && state.lastAnswerCorrect != null) {
-                    state.lastAnswerCorrect?.let { correct ->
-                        QuizFeedbackText(isCorrect = correct)
-                    }
-                }
                 QuizPrimaryButton(
                     text = stringResource(Res.string.quiz_submit),
                     onClick = onSubmitAnswer,
                     enabled = state.canSubmit && !state.showFeedback,
                 )
                 Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+            }
+
+            AnimatedVisibility(
+                visible = state.showFeedback && state.lastAnswerCorrect != null,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                QuizAnswerFeedbackOverlay(
+                    isCorrect = state.lastAnswerCorrect == true,
+                    continueLabel = stringResource(
+                        if (state.isFinishing) {
+                            Res.string.quiz_feedback_finish
+                        } else {
+                            Res.string.quiz_feedback_next
+                        },
+                    ),
+                    onContinue = onContinueAfterFeedback,
+                )
             }
         }
     }

@@ -53,3 +53,9 @@ internal fun QuizComposeRule.waitForAnswerFeedback() {
             onAllNodes(hasText("不正解")).fetchSemanticsNodes().isNotEmpty()
     }
 }
+
+internal fun QuizComposeRule.proceedAfterFeedback() {
+    waitForAnswerFeedback()
+    onNodeWithTag("feedbackContinue", useUnmergedTree = true).performClick()
+    waitForIdle()
+}
