@@ -10,9 +10,7 @@ private fun localStorageGetItem(key: String): String? = js("localStorage.getItem
 
 @OptIn(ExperimentalWasmJsInterop::class)
 @Suppress("UnusedParameter")
-private fun localStorageSetItem(key: String, value: String) {
-    js("localStorage.setItem(key, value)")
-}
+private fun localStorageSetItem(key: String, value: String): Unit = js("localStorage.setItem(key, value)")
 
 private class WasmLocalePreferenceStore : LocalePreferenceStore {
     override fun load(): AppLocalePreference = AppLocalePreference.fromStorageKey(localStorageGetItem(KEY_LOCALE))

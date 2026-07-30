@@ -270,9 +270,10 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。本番未採用（要�
 | `ui-jvm` | `:feature:quiz` の Compose UI スモーク（`xvfb-run`） |
 | `android` | `:androidApp:assembleFakeDebug` |
 | `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Ranking / 中断系。回答フローは CI 不安定のため `@Ignore` / 除外 — ローカルで実行） |
+| `wasm` | `:wasmApp:compileKotlinWasmJs`（fake） |
 | `detekt` | `detektAll` |
 
-CI は **fake** ランタイム（オフライン）。prod ビルドや Wasm は含めない。
+アプリ本体・ビルド設定の変更時のみ起動する（`docs/**` やスクリーンショットのみの PR ではスキップ）。CI は **fake** ランタイム（オフライン）。prod ビルドは含めない。
 
 ### CD（参加者アプリの Release）
 
