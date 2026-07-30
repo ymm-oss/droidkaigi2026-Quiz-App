@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_title">DroidKaigi 2026 Quiz</string>
+
+    <string name="locale_system">システム</string>
+    <string name="locale_japanese">日本語</string>
+    <string name="locale_english">English</string>
+
+    <string name="home_subtitle">ニックネームを入力してクイズを開始</string>
+    <string name="home_badge">会場クイズ</string>
+    <string name="home_player_info">プレイヤー情報</string>
+    <string name="home_nickname">ニックネーム</string>
+    <string name="home_start">クイズを始める</string>
+    <string name="home_error_empty_nickname">ニックネームを入力してください</string>
+    <string name="home_error_load_failed">読み込みに失敗しました</string>
+
+    <string name="nav_home">ホーム</string>
+    <string name="nav_ranking">ランキング</string>
+
+    <string name="quiz_section_question">問題</string>
+    <string name="quiz_instruction_reorder">上から順に並び替えてください</string>
+    <string name="quiz_instruction_choice">回答を選んでください</string>
+    <string name="quiz_submit">回答する</string>
+    <string name="quiz_no_question">問題がありません</string>
+    <string name="quiz_exit_title">クイズを中断しますか？</string>
+    <string name="quiz_exit_message">TOP画面に戻り回答状況が保存されませんが良いでしょうか</string>
+    <string name="quiz_exit_confirm">戻る</string>
+    <string name="quiz_exit_cancel">キャンセル</string>
+
+    <string name="feedback_correct">正解！</string>
+    <string name="feedback_incorrect">不正解</string>
+
+    <string name="result_title">クイズ完了</string>
+    <string name="result_subtitle">おつかれさま、%1$s さん！</string>
+    <string name="result_section">あなたの結果</string>
+    <string name="result_correct_count">%1$d / %2$d 問正解</string>
+    <string name="result_score_label">スコア</string>
+    <string name="result_go_ranking">ランキングを見る</string>
+
+    <string name="ranking_title">今日のランキング</string>
+    <string name="ranking_subtitle">今日のベストスコア</string>
+    <string name="ranking_empty">まだエントリーがありません</string>
+    <string name="ranking_go_home">ホームに戻る</string>
+    <string name="ranking_score">スコア %1$d</string>
+
+    <string name="time_unknown">不明</string>
+    <string name="cd_reorder">並び替え</string>
+    <string name="cd_move_up">上へ</string>
+    <string name="cd_move_down">下へ</string>
+</resources>

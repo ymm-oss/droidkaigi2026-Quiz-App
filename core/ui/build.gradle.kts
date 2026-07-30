@@ -16,6 +16,9 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
+        androidResources {
+            enable = true
+        }
     }
     jvm()
     @OptIn(ExperimentalWasmDsl::class)
@@ -33,9 +36,15 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.compose.ui)
+            implementation(libs.compose.components.resources)
             implementation(libs.compose.reorderable)
             implementation(libs.multiplatform.markdown.renderer)
             implementation(libs.multiplatform.markdown.renderer.m3)
         }
     }
+}
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.droidkaigi.quiz.core.ui.generated.resources"
 }

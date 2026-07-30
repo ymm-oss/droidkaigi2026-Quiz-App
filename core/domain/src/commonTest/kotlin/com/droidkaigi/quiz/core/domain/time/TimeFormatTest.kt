@@ -34,8 +34,8 @@ class TimeFormatTest {
     }
 
     @Test
-    fun formatCompletedAtLabel_missingIsUnknown() {
-        assertEquals("不明", formatCompletedAtLabel(0L))
-        assertEquals("不明", formatCompletedAtLabel(-1L))
+    fun formatCompletedAtLabel_missingIsNull() {
+        assertEquals(null, formatCompletedAtLabel(0L))
+        assertEquals(null, formatCompletedAtLabel(-1L))
     }
 }

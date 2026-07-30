@@ -26,8 +26,16 @@ import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
+import com.droidkaigi.quiz.core.ui.generated.resources.Res
+import com.droidkaigi.quiz.core.ui.generated.resources.result_correct_count
+import com.droidkaigi.quiz.core.ui.generated.resources.result_go_ranking
+import com.droidkaigi.quiz.core.ui.generated.resources.result_score_label
+import com.droidkaigi.quiz.core.ui.generated.resources.result_section
+import com.droidkaigi.quiz.core.ui.generated.resources.result_subtitle
+import com.droidkaigi.quiz.core.ui.generated.resources.result_title
 import com.droidkaigi.quiz.core.ui.theme.QuizMotion
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 
 @Composable
@@ -88,25 +96,25 @@ fun ResultContent(
                 verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingExtraLarge),
             ) {
                 QuizHeroTitle(
-                    title = "クイズ完了",
-                    subtitle = "おつかれさま、$nickname さん！",
+                    title = stringResource(Res.string.result_title),
+                    subtitle = stringResource(Res.string.result_subtitle, nickname),
                     badge = "RESULT",
                 )
                 QuizSurfaceCard {
                     Text(
-                        text = "あなたの結果",
+                        text = stringResource(Res.string.result_section),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
                     Text(
-                        text = "$correctCount / $totalCount 問正解",
+                        text = stringResource(Res.string.result_correct_count, correctCount, totalCount),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
                     Text(
-                        text = "スコア",
+                        text = stringResource(Res.string.result_score_label),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -117,7 +125,7 @@ fun ResultContent(
                     )
                 }
                 QuizPrimaryButton(
-                    text = "ランキングを見る",
+                    text = stringResource(Res.string.result_go_ranking),
                     onClick = onGoToRankingClick,
                 )
             }

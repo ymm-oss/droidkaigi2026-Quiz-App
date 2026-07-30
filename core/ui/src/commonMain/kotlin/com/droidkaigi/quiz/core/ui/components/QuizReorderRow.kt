@@ -17,7 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
+import com.droidkaigi.quiz.core.ui.generated.resources.Res
+import com.droidkaigi.quiz.core.ui.generated.resources.cd_reorder
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun QuizReorderRow(
@@ -54,7 +57,7 @@ fun QuizReorderRow(
             )
             Icon(
                 imageVector = Icons.Filled.Menu,
-                contentDescription = "並び替え",
+                contentDescription = stringResource(Res.string.cd_reorder),
                 modifier = dragHandleModifier
                     .size(48.dp)
                     .padding(QuizTokens.spacingSmall),
