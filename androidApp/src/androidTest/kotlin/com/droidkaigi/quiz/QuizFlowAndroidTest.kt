@@ -61,16 +61,18 @@ class QuizFlowAndroidTest {
         waitForProgress("0 / 3")
         composeRule.clickChoice("Compose Multiplatform")
         composeRule.clickSubmitAnswer()
-        composeRule.waitForAnswerFeedback()
+        composeRule.proceedAfterFeedback()
 
         waitForProgress("1 / 3")
         composeRule.clickChoice("count の変更で UI が再 Composition される")
         composeRule.clickChoice("Button の onClick はユーザー操作で呼ばれる")
         composeRule.clickChoice("Text の内容は状態に連動して更新される")
         composeRule.clickSubmitAnswer()
+        composeRule.proceedAfterFeedback()
 
         waitForProgress("2 / 3")
         composeRule.clickSubmitAnswer()
+        composeRule.proceedAfterFeedback()
         composeRule.waitUntilText("クイズ完了")
     }
 }

@@ -53,3 +53,10 @@ kotlin {
 dependencies {
     androidRuntimeClasspath(libs.compose.ui.tooling)
 }
+
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "quiz.screenshot.dir",
+        rootProject.layout.projectDirectory.dir("docs/screenshots/quiz").asFile.absolutePath,
+    )
+}

@@ -59,6 +59,7 @@ private fun QuizSingleChoicePreview() {
             onToggleMultiple = {},
             onMoveReorder = { _, _ -> },
             onSubmitAnswer = {},
+            onContinueAfterFeedback = {},
         )
     }
 }
@@ -73,6 +74,7 @@ private fun QuizMultipleChoicePreview() {
             onToggleMultiple = {},
             onMoveReorder = { _, _ -> },
             onSubmitAnswer = {},
+            onContinueAfterFeedback = {},
         )
     }
 }
@@ -87,6 +89,7 @@ private fun QuizReorderPreview() {
             onToggleMultiple = {},
             onMoveReorder = { _, _ -> },
             onSubmitAnswer = {},
+            onContinueAfterFeedback = {},
         )
     }
 }
@@ -104,6 +107,7 @@ private fun QuizCorrectFeedbackPreview() {
             onToggleMultiple = {},
             onMoveReorder = { _, _ -> },
             onSubmitAnswer = {},
+            onContinueAfterFeedback = {},
         )
     }
 }
@@ -122,6 +126,7 @@ private fun QuizIncorrectFeedbackPreview() {
             onToggleMultiple = {},
             onMoveReorder = { _, _ -> },
             onSubmitAnswer = {},
+            onContinueAfterFeedback = {},
         )
     }
 }

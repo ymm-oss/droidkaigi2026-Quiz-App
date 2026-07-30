@@ -27,6 +27,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     private val _events = MutableSharedFlow<QuizEvent>()
     val events: SharedFlow<QuizEvent> = _events.asSharedFlow()
 
+    /** Captured when the last answer is submitted so feedback wait time does not reduce timeBonus. */
+    private var finishedAtEpochMillis: Long? = null
+
     init {
         syncFromSession()
     }
@@ -66,6 +69,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             is QuizIntent.ToggleMultiple -> toggleMultiple(intent.id)
             is QuizIntent.MoveReorder -> moveReorder(intent.fromIndex, intent.toIndex)
             QuizIntent.SubmitAnswer -> submitAnswerIfAllowed()
+            QuizIntent.ContinueAfterFeedback -> continueAfterFeedback()
             QuizIntent.RequestExit -> requestExit()
             QuizIntent.DismissExit -> dismissExit()
             QuizIntent.ConfirmExit -> confirmExit()
@@ -137,6 +141,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         var updated = deps.quizEngine.submitAnswer(session, answer)
         updated = deps.quizEngine.advance(updated)
         deps.sessionHolder.currentSession = updated
+        if (updated.isComplete) {
+            finishedAtEpochMillis = deps.instantProvider.nowEpochMillis()
+        }
 
         _uiState.update {
             it.copy(
@@ -149,19 +156,22 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     updated.quizSet.questions.size.coerceAtLeast(1),
             )
         }
+    }
 
-        viewModelScope.launch {
-            kotlinx.coroutines.delay(600)
-            if (updated.isComplete) {
-                finishQuiz(updated)
-            } else {
-                refreshFromSession()
-            }
+    private fun continueAfterFeedback() {
+        if (!_uiState.value.showFeedback) return
+        _uiState.update { it.copy(showFeedback = false) }
+        val session = session() ?: return
+        if (session.isComplete) {
+            finishQuiz(session)
+        } else {
+            refreshFromSession()
         }
     }
 
     private fun finishQuiz(session: com.droidkaigi.quiz.core.domain.model.QuizSession) {
-        val result = QuizScorer.scoreSession(session, deps.instantProvider.nowEpochMillis())
+        val finishedAt = finishedAtEpochMillis ?: deps.instantProvider.nowEpochMillis()
+        val result = QuizScorer.scoreSession(session, finishedAt)
         deps.sessionHolder.lastResult = result
         viewModelScope.launch {
             deps.submitScoreUseCase(result, session.folderId)

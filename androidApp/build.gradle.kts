@@ -85,4 +85,8 @@ dependencies {
     androidTestImplementation(libs.androidx.testExt.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.kotlin.test.junit)
+    // Screenshot tests render feature composables directly (no navigation driving).
+    androidTestImplementation(projects.core.domain)
+    androidTestImplementation(projects.core.ui)
+    androidTestImplementation(projects.feature.quiz)
 }

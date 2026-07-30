@@ -29,6 +29,8 @@
 
     <string name="feedback_correct">正解！</string>
     <string name="feedback_incorrect">不正解</string>
+    <string name="quiz_feedback_next">次の問題へ</string>
+    <string name="quiz_feedback_finish">結果を見る</string>
 
     <string name="result_title">クイズ完了</string>
     <string name="result_subtitle">おつかれさま、%1$s さん！</string>
