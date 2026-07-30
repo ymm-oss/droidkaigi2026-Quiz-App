@@ -2,6 +2,8 @@ package com.droidkaigi.quiz.feature.staff.quiz
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,11 +88,16 @@ fun StaffQuizScreen(
                 },
             )
             if (draft != null) {
-                // Dim the list so the open editor owns focus while the list stays readable for context.
+                // Dim the list and consume pointers so the editor owns focus (old AlertDialog was modal).
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f))
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = {},
+                        ),
                 )
             }
         }
