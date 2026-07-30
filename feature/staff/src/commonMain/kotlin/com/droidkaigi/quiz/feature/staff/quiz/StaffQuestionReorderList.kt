@@ -35,7 +35,7 @@ fun StaffQuestionReorderList(
                     index = index + 1,
                     question = question,
                     isDragging = isDragging,
-                    dragHandleModifier = Modifier.longPressDraggableHandle(),
+                    dragHandleModifier = Modifier.draggableHandle(),
                     onEdit = { onEdit(question) },
                     onDelete = { onRequestDelete(question) },
                 )
