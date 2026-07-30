@@ -89,4 +89,5 @@ dependencies {
     androidTestImplementation(projects.core.domain)
     androidTestImplementation(projects.core.ui)
     androidTestImplementation(projects.feature.quiz)
+    androidTestImplementation(projects.feature.ranking)
 }

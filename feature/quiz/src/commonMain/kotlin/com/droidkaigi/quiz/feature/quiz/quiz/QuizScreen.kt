@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -54,6 +53,8 @@ import com.droidkaigi.quiz.core.ui.generated.resources.quiz_no_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_section_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
+import com.droidkaigi.quiz.core.ui.theme.quizSafeHorizontalPadding
+import com.droidkaigi.quiz.core.ui.theme.quizSafeVerticalPadding
 import kotlinx.coroutines.flow.Flow
 import org.jetbrains.compose.resources.stringResource
 
@@ -144,18 +145,18 @@ fun QuizContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .safeContentPadding(),
+                .quizSafeHorizontalPadding(),
         ) {
             Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .widthIn(max = 640.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = QuizTokens.spacingLarge)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .quizSafeVerticalPadding()
+                    .padding(horizontal = QuizTokens.spacingLarge),
                 verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingLarge),
             ) {
-                Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
                 QuizProgressHeader(
                     progressLabel = state.progress,
                     progressFraction = state.progressFraction,
@@ -199,7 +200,6 @@ fun QuizContent(
                     onClick = onSubmitAnswer,
                     enabled = state.canSubmit && !state.showFeedback,
                 )
-                Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
             }
 
             AnimatedVisibility(
