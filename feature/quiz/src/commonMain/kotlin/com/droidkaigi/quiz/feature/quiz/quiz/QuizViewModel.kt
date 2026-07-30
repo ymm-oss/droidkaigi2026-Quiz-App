@@ -27,6 +27,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     private val _events = MutableSharedFlow<QuizEvent>()
     val events: SharedFlow<QuizEvent> = _events.asSharedFlow()
 
+    /** Captured when the last answer is submitted so feedback wait time does not reduce timeBonus. */
+    private var finishedAtEpochMillis: Long? = null
+
     init {
         syncFromSession()
     }
@@ -138,6 +141,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         var updated = deps.quizEngine.submitAnswer(session, answer)
         updated = deps.quizEngine.advance(updated)
         deps.sessionHolder.currentSession = updated
+        if (updated.isComplete) {
+            finishedAtEpochMillis = deps.instantProvider.nowEpochMillis()
+        }
 
         _uiState.update {
             it.copy(
@@ -164,7 +170,8 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     }
 
     private fun finishQuiz(session: com.droidkaigi.quiz.core.domain.model.QuizSession) {
-        val result = QuizScorer.scoreSession(session, deps.instantProvider.nowEpochMillis())
+        val finishedAt = finishedAtEpochMillis ?: deps.instantProvider.nowEpochMillis()
+        val result = QuizScorer.scoreSession(session, finishedAt)
         deps.sessionHolder.lastResult = result
         viewModelScope.launch {
             deps.submitScoreUseCase(result, session.folderId)

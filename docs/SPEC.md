@@ -25,6 +25,7 @@
 
 - `score = correctCount * 100 + timeBonus`
 - `timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)`
+- 経過時間はクイズ開始〜**最終回答提出時点**（フィードバック閲覧中は含めない）
 
 ## データ・ランキング
 
