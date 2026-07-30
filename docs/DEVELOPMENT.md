@@ -8,7 +8,7 @@
 - `androidApp` — Android エントリ（参加者向け）
 - `desktopApp` — Desktop エントリ（参加者向け）
 - `staffComposeApp` / `staffDesktopApp` — **スタッフ用** Desktop（クイズ内容・ランキング確認、PC 運営向け）
-- `wasmApp` — Web（Wasm）エントリ（未運用）
+- `wasmApp` — Web（Wasm）エントリ（fake で動作。CI でビルド検証。本番配布は未定）
 - `core:domain` / `core:data` / `core:ui`
 - `feature:quiz` / `feature:ranking` / `feature:staff`
 
@@ -72,7 +72,7 @@ flowchart TB
   end
 
   WASM["wasmApp<br/>（Web / Wasm）"]
-  WASM -.->|"未使用（要検討）<br/>QR 配布など"| prodParticipant
+  WASM -.->|"本番配布は未定<br/>QR 配布など"| prodParticipant
 ```
 
 要点:
@@ -82,7 +82,7 @@ flowchart TB
 | **問題データ** | リポジトリ同梱 JSON | **Firestore** `folders/{folderId}` |
 | **問題の編集** | スタッフアプリ → インメモリ（再起動で消える） | **スタッフアプリ** → Firebase Auth 後に Firestore へ保存 |
 | **参加者アプリ** | Android / Desktop（ネット不要） | Android / Desktop（Firestore 必須） |
-| **Wasm** | ビルド可能だが本番未採用 | 同上（要検討） |
+| **Wasm** | 動作対象（CI でビルド検証） | prod は未対応（起動時エラー） |
 
 ### 初期データ（fake）
 
@@ -243,7 +243,7 @@ Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDeskt
 
 ### Web（Wasm）
 
-Chrome 119+ など Wasm GC 対応ブラウザが必要。本番未採用（要検討）。
+Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで動作する対象として整備済み（CI で `:wasmApp:compileKotlinWasmJs` を検証）。本番配布は未定。
 
 ```bash
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun
@@ -270,9 +270,10 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。本番未採用（要�
 | `ui-jvm` | `:feature:quiz` の Compose UI スモーク（`xvfb-run`） |
 | `android` | `:androidApp:assembleFakeDebug` |
 | `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Ranking / 中断系。回答フローは CI 不安定のため `@Ignore` / 除外 — ローカルで実行） |
+| `wasm` | `:wasmApp:compileKotlinWasmJs`（fake） |
 | `detekt` | `detektAll` |
 
-CI は **fake** ランタイム（オフライン）。prod ビルドや Wasm は含めない。
+アプリ本体・ビルド設定の変更時のみ起動する（`docs/**` やスクリーンショットのみの PR ではスキップ）。CI は **fake** ランタイム（オフライン）。prod ビルドは含めない。
 
 ### CD（参加者アプリの Release）
 
