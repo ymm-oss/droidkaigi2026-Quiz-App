@@ -48,8 +48,14 @@ class EdgeToEdgeScreenshotAndroidTest {
     fun enableEdgeToEdgeOnHost() {
         composeRule.runOnUiThread {
             composeRule.activity.enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-                navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                statusBarStyle = SystemBarStyle.auto(
+                    lightScrim = Color.TRANSPARENT,
+                    darkScrim = Color.TRANSPARENT,
+                ),
+                navigationBarStyle = SystemBarStyle.auto(
+                    lightScrim = Color.TRANSPARENT,
+                    darkScrim = Color.TRANSPARENT,
+                ),
             )
         }
     }
