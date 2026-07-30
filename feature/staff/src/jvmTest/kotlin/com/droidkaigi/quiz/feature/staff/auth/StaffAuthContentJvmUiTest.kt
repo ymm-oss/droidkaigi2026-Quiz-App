@@ -7,7 +7,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import com.droidkaigi.quiz.core.ui.theme.QuizTheme
-import com.droidkaigi.quiz.feature.staff.screenshot.saveAsPng
+import com.droidkaigi.quiz.feature.staff.captureSurfacePng
 import kotlin.test.Test
 
 /**
@@ -40,7 +40,7 @@ class StaffAuthContentJvmUiTest {
         onNodeWithText("ログイン").assertIsDisplayed()
         onNodeWithText("デモアカウントでログイン").assertIsDisplayed()
 
-        captureToImage().saveAsPng("staff-auth-fake-quick-login.png")
+        captureSurfacePng("staff-auth-fake-quick-login.png")
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -69,6 +69,6 @@ class StaffAuthContentJvmUiTest {
         onNodeWithText("ログイン").assertIsDisplayed()
         onAllNodesWithText("デモアカウントでログイン").assertCountEquals(0)
 
-        captureToImage().saveAsPng("staff-auth-prod-no-quick-login.png")
+        captureSurfacePng("staff-auth-prod-no-quick-login.png")
     }
 }

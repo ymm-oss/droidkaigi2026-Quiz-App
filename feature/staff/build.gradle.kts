@@ -36,9 +36,9 @@ kotlin {
     }
 }
 
-tasks.named<Test>("jvmTest") {
-    val screenshotDir = System.getProperty("quiz.screenshot.dir")
-        ?: System.getenv("QUIZ_SCREENSHOT_DIR")
-        ?: layout.buildDirectory.dir("screenshots").get().asFile.absolutePath
-    systemProperty("quiz.screenshot.dir", screenshotDir)
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "staff.screenshot.dir",
+        rootProject.layout.projectDirectory.dir("docs/screenshots/staff").asFile.absolutePath,
+    )
 }

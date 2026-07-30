@@ -32,7 +32,7 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 ```
 
 - **認証**（fake）: メール `staff@droidkaigi.local`、パスワード `staff2026`（ローカル固定値・開発専用）で入力ログイン、またはログインボタン下の「デモアカウントでログイン」でワンクリック。成功後にコンソールへ遷移。トップバーの「ログアウト」で認証画面に戻る。prod ではワンクリックボタンは出ない
-- **スクショ（JVM UI テスト）**: `xvfb-run ./gradlew :feature:staff:jvmTest --tests 'com.droidkaigi.quiz.feature.staff.auth.StaffAuthContentJvmUiTest'` → `feature/staff/build/screenshots/staff-auth-fake-quick-login.png`（および prod 相当の非表示版）。参考画像: [docs/screenshots/staff-auth-fake-quick-login.png](screenshots/staff-auth-fake-quick-login.png)
+- **スクショ（JVM UI テスト）**: `xvfb-run ./gradlew :feature:staff:jvmTest --tests 'com.droidkaigi.quiz.feature.staff.auth.StaffAuthContentJvmUiTest'` → `docs/screenshots/staff/staff-auth-fake-quick-login.png`（および prod 相当の非表示版）。全体キャプチャは `StaffScreenshotJvmUiTest`（`docs/screenshots/staff/`）
 
 **本番（prod）**
 
