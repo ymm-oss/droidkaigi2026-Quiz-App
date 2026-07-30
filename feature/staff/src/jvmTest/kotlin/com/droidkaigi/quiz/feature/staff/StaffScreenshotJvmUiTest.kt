@@ -59,9 +59,11 @@ class StaffScreenshotJvmUiTest {
                     password = "********",
                     isLoading = false,
                     errorMessage = null,
+                    showQuickSignIn = true,
                     onEmailChange = {},
                     onPasswordChange = {},
                     onSignInClick = {},
+                    onQuickSignInClick = {},
                 )
             }
         }

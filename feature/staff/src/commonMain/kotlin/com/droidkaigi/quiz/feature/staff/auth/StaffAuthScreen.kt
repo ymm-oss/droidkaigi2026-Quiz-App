@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
 import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
+import com.droidkaigi.quiz.core.ui.components.QuizSecondaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.components.QuizTextField
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
@@ -38,9 +39,11 @@ fun StaffAuthScreen(viewModel: StaffAuthViewModel = viewModel { StaffAuthViewMod
         password = state.password,
         isLoading = state.isLoading,
         errorMessage = state.errorMessage,
+        showQuickSignIn = state.showQuickSignIn,
         onEmailChange = { viewModel.onIntent(StaffAuthIntent.EmailChanged(it)) },
         onPasswordChange = { viewModel.onIntent(StaffAuthIntent.PasswordChanged(it)) },
         onSignInClick = { viewModel.onIntent(StaffAuthIntent.SignIn) },
+        onQuickSignInClick = { viewModel.onIntent(StaffAuthIntent.QuickSignIn) },
     )
 }
 
@@ -50,9 +53,11 @@ fun StaffAuthContent(
     password: String,
     isLoading: Boolean,
     errorMessage: String?,
+    showQuickSignIn: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSignInClick: () -> Unit,
+    onQuickSignInClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     QuizScreenBackground(modifier = modifier) {
@@ -105,11 +110,23 @@ fun StaffAuthContent(
                         )
                     }
                 }
-                QuizPrimaryButton(
-                    text = "ログイン",
-                    onClick = onSignInClick,
-                    loading = isLoading,
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingMedium),
+                ) {
+                    QuizPrimaryButton(
+                        text = "ログイン",
+                        onClick = onSignInClick,
+                        loading = isLoading,
+                    )
+                    if (showQuickSignIn) {
+                        QuizSecondaryButton(
+                            text = "デモアカウントでログイン",
+                            onClick = onQuickSignInClick,
+                            enabled = !isLoading,
+                        )
+                    }
+                }
             }
         }
     }

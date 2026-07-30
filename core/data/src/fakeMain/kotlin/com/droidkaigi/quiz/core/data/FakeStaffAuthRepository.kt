@@ -2,6 +2,7 @@ package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
+import com.droidkaigi.quiz.core.domain.model.StaffQuickSignInCredentials
 import com.droidkaigi.quiz.core.domain.model.StaffSession
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 import dev.zacsweers.metro.ContributesBinding
@@ -23,6 +24,9 @@ class FakeStaffAuthRepository : StaffAuthRepository {
             StaffAuthException("メールアドレスまたはパスワードが正しくありません"),
         )
     }
+
+    override fun quickSignInCredentials(): StaffQuickSignInCredentials =
+        StaffQuickSignInCredentials(email = STAFF_EMAIL, password = STAFF_PASSWORD)
 
     companion object {
         const val STAFF_EMAIL = "staff@droidkaigi.local"

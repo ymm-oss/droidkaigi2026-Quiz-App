@@ -238,7 +238,7 @@ Android Studio の Variant 手順は [Android Build Variant](#android-build-vari
 
 Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDesktop[Prod]`** の切り替えでも fake / prod を選べる（[JVM（Desktop / スタッフ）](#jvmdesktop--スタッフ)）。
 
-- **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
+- **fake**: デモログイン `staff@droidkaigi.local` / `staff2026`（インメモリ）。入力ログインに加え、ログインボタン下の「デモアカウントでログイン」でワンクリック可。参加者アプリとは別プロセスのためランキングはプロセス内のみ。
 - **prod**: [Firebase セットアップ](#firebase-セットアップ) のスタッフ用ログインで認証
 
 ### Web（Wasm）
@@ -267,7 +267,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 | Job | 内容 |
 |-----|------|
 | `jvm` | `:core:domain:jvmTest` / `:core:data:jvmTest` |
-| `ui-jvm` | `:feature:quiz` の Compose UI スモーク（`xvfb-run`） |
+| `ui-jvm` | `:feature:quiz` / `:feature:staff` の Compose UI スモーク（`xvfb-run`）。スタッフ画面は `captureToImage` で PNG を `docs/screenshots/staff/` に出力（上書き先は `-Dstaff.screenshot.dir`） |
 | `android` | `:androidApp:assembleFakeDebug` |
 | `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Ranking / 中断系。回答フローは CI 不安定のため `@Ignore` / 除外 — ローカルで実行） |
 | `wasm` | `:wasmApp:compileKotlinWasmJs`（fake） |

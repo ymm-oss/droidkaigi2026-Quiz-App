@@ -12,4 +12,5 @@ alwaysApply: true
 5. Nav routes in `composeApp` only. Entry points: `:androidApp` (Android), `:desktopApp` (Desktop), `:wasmApp` (Web/Wasm). Do not add `main()` or `MainActivity` to `composeApp`.
 6. Theming: use `QuizTheme { }`; colors from `QuizTokens` / `QuizColors`, not raw `Color(0x…)` in features.
 7. Tests: scoring/date in `commonTest`; UI flows in `androidInstrumentedTest`.
+8. Staff/admin UI PRs: embed screenshots per `.cursor/skills/staff-pr-screenshots/SKILL.md` (required).
 

@@ -29,6 +29,7 @@
 - [ ] [docs/SPEC.md](../docs/SPEC.md) の該当 AC を満たしている
 - [ ] ユニットテスト: `./gradlew :core:domain:jvmTest :core:data:jvmTest`
 - [ ] UI 変更時は `./gradlew :androidApp:connectedDebugAndroidTest`（エミュレータ要）または [docs/VERIFY.md](../docs/VERIFY.md) で手動確認
+- [ ] 管理者アプリ UI 変更時は PR 本文にスクショを埋め込み（比較表・縮小。手順: [.cursor/skills/staff-pr-screenshots/SKILL.md](../.cursor/skills/staff-pr-screenshots/SKILL.md)）
 - [ ] `quiz.runtime` や Firestore 周りを触った場合は prod ビルド・結合確認の手順を PR 説明に記載
 
 <!-- 設計判断・影響範囲・不安な点など、レビュアーに重点的に見てほしい箇所。なければセクションごと削除して OK。 -->
