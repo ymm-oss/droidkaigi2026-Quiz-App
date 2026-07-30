@@ -22,12 +22,13 @@ composeReorderable = "3.1.0"
 metro = "1.1.1"
 markdownRenderer = "0.41.0"
 firebase-gitlive = "2.4.0"
-firebase-bom = "33.7.0"
+firebase-bom = "34.16.0"
 firebase-common = "21.0.0"
 firebase-firestore-ktx = "25.1.1"
 firebase-auth-ktx = "23.1.0"
 firebase-java-sdk = "0.6.2"
 googleServices = "4.4.4"
+firebaseCrashlyticsPlugin = "3.0.7"
 detekt = "2.0.0-alpha.3"
 
 [libraries]
@@ -68,6 +69,7 @@ firebase-app = { module = "dev.gitlive:firebase-app", version.ref = "firebase-gi
 firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-gitlive" }
 firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebase-gitlive" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-common-lib = { module = "com.google.firebase:firebase-common", version.ref = "firebase-common" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "firebase-firestore-ktx" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase-auth-ktx" }
@@ -86,5 +88,6 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 droidkaigiDetekt = { id = "droidkaigi.detekt" }

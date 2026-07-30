@@ -9,8 +9,10 @@ plugins {
 val quizRuntime = rootProject.extra["quizRuntime"] as String
 val appVersion = rootProject.extra["appVersion"] as String
 val appVersionCode = rootProject.extra["appVersionCode"] as Int
-if (quizRuntime == "prod" && file("src/prod/google-services.json").exists()) {
+val hasProdFirebaseConfig = file("src/prod/google-services.json").exists()
+if (quizRuntime == "prod" && hasProdFirebaseConfig) {
     apply(plugin = libs.plugins.googleServices.get().pluginId)
+    apply(plugin = libs.plugins.firebaseCrashlytics.get().pluginId)
 }
 
 kotlin {
@@ -75,6 +77,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
+
+    add("prodImplementation", platform(libs.firebase.bom))
+    add("prodImplementation", libs.firebase.crashlytics)
 
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.testExt.junit)

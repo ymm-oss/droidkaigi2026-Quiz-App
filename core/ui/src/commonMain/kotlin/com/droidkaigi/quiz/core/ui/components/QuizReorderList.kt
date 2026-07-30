@@ -46,7 +46,7 @@ fun QuizReorderList(
                     label = labelForId(id),
                     isDragging = isDragging,
                     dragHandleModifier = if (enabled) {
-                        Modifier.longPressDraggableHandle()
+                        Modifier.draggableHandle()
                     } else {
                         Modifier
                     },
