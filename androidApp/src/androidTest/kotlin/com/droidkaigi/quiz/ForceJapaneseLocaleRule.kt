@@ -11,17 +11,16 @@ import org.junit.runners.model.Statement
  * stay stable on English emulators.
  */
 class ForceJapaneseLocaleRule : TestRule {
-    override fun apply(base: Statement, description: Description): Statement =
-        object : Statement() {
-            override fun evaluate() {
-                val context = InstrumentationRegistry.getInstrumentation().targetContext
-                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    .edit()
-                    .putString(KEY_LOCALE, "ja")
-                    .commit()
-                base.evaluate()
-            }
+    override fun apply(base: Statement, description: Description): Statement = object : Statement() {
+        override fun evaluate() {
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_LOCALE, "ja")
+                .commit()
+            base.evaluate()
         }
+    }
 
     private companion object {
         const val PREFS_NAME = "quiz_locale"

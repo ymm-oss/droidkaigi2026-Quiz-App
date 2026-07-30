@@ -175,9 +175,11 @@ fun QuizContent(
                     Text(
                         text = when (state.question) {
                             is Reorder -> stringResource(Res.string.quiz_instruction_reorder)
+
                             is MultipleChoice,
                             is SingleChoice,
-                            null -> stringResource(Res.string.quiz_instruction_choice)
+                            null,
+                            -> stringResource(Res.string.quiz_instruction_choice)
                         },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

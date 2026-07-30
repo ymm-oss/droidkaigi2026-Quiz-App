@@ -9,9 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 
-class AppLocaleController(
-    private val store: LocalePreferenceStore,
-) {
+class AppLocaleController(private val store: LocalePreferenceStore) {
     var preference by mutableStateOf(store.load())
         private set
 

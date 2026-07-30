@@ -61,7 +61,9 @@ fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { H
 
     val errorMessage = when (val error = state.error) {
         null -> null
+
         HomeError.EmptyNickname -> stringResource(Res.string.home_error_empty_nickname)
+
         is HomeError.LoadFailed -> error.detail?.takeIf { it.isNotBlank() }
             ?: stringResource(Res.string.home_error_load_failed)
     }
