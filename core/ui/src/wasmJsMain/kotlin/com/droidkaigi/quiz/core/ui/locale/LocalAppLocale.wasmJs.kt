@@ -7,6 +7,7 @@ import androidx.compose.ui.text.intl.Locale
 import kotlin.js.ExperimentalWasmJsInterop
 
 @OptIn(ExperimentalWasmJsInterop::class)
+@Suppress("UnusedParameter")
 private fun setCustomLocale(value: String?) {
     js("window.__customLocale = value")
 }
