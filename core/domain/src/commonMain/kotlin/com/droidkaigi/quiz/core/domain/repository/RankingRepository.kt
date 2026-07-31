@@ -5,5 +5,14 @@ import com.droidkaigi.quiz.core.domain.model.RankingEntry
 
 interface RankingRepository {
     suspend fun getTodayRankings(folderId: String): List<RankingEntry>
-    suspend fun submitScore(result: QuizResult, completedAtEpochMillis: Long, folderId: String)
+
+    /**
+     * @param entryId deterministic document id for this quiz completion (idempotent retries)
+     */
+    suspend fun submitScore(
+        result: QuizResult,
+        completedAtEpochMillis: Long,
+        folderId: String,
+        entryId: String,
+    )
 }

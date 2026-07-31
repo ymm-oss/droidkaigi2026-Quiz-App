@@ -4,7 +4,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -19,7 +18,6 @@ class QuizFlowAndroidTest {
 
     private val firstQuestionSnippet = "共通化できる Jetpack ライブラリはどれ？"
 
-    @Ignore("CI: answering via ChoiceCard testTag does not advance under Markdown prompts; run locally")
     @Test
     fun restartQuiz_afterCompletion_showsFirstQuestionFromBeginning() {
         composeRule.startQuizWithNickname("RestartTester")
@@ -38,7 +36,6 @@ class QuizFlowAndroidTest {
         composeRule.onNodeWithText("0 / 3").assertExists()
     }
 
-    @Ignore("CI: answering via ChoiceCard testTag does not advance under Markdown prompts; run locally")
     @Test
     fun fullQuizFlow_reachesRankingWithNickname() {
         composeRule.startQuizWithNickname("FlowTester")

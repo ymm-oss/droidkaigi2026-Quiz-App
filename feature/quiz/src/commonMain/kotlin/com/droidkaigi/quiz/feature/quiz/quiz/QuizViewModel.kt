@@ -6,11 +6,14 @@ import com.droidkaigi.quiz.core.data.AppDependencies
 import com.droidkaigi.quiz.core.domain.model.MultipleChoice
 import com.droidkaigi.quiz.core.domain.model.MultipleChoiceAnswer
 import com.droidkaigi.quiz.core.domain.model.Question
+import com.droidkaigi.quiz.core.domain.model.QuizResult
+import com.droidkaigi.quiz.core.domain.model.QuizSession
 import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.ReorderAnswer
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.domain.model.SingleChoiceAnswer
 import com.droidkaigi.quiz.core.domain.scoring.QuizScorer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,6 +33,9 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     /** Captured when the last answer is submitted so feedback wait time does not reduce timeBonus. */
     private var finishedAtEpochMillis: Long? = null
 
+    /** Scored once at finish; reused on submit retries so timeBonus stays fixed. */
+    private var pendingResult: QuizResult? = null
+
     init {
         syncFromSession()
     }
@@ -45,6 +51,8 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         val session = session() ?: return
         val question = session.currentQuestion
         val total = session.quizSet.questions.size.coerceAtLeast(1)
+        finishedAtEpochMillis = null
+        pendingResult = null
         _uiState.update {
             QuizUiState(
                 prompt = question?.prompt.orEmpty(),
@@ -59,6 +67,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 lastAnswerCorrect = null,
                 showExitConfirm = it.showExitConfirm,
                 isFinishing = false,
+                submitPhase = SubmitPhase.Idle,
             )
         }
     }
@@ -70,6 +79,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             is QuizIntent.MoveReorder -> moveReorder(intent.fromIndex, intent.toIndex)
             QuizIntent.SubmitAnswer -> submitAnswerIfAllowed()
             QuizIntent.ContinueAfterFeedback -> continueAfterFeedback()
+            QuizIntent.RetrySubmitScore -> retrySubmitScore()
             QuizIntent.RequestExit -> requestExit()
             QuizIntent.DismissExit -> dismissExit()
             QuizIntent.ConfirmExit -> confirmExit()
@@ -160,22 +170,48 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
 
     private fun continueAfterFeedback() {
         if (!_uiState.value.showFeedback) return
-        _uiState.update { it.copy(showFeedback = false) }
+        if (_uiState.value.submitPhase == SubmitPhase.Submitting) return
         val session = session() ?: return
         if (session.isComplete) {
-            finishQuiz(session)
+            submitScoreAndFinish(session)
         } else {
+            _uiState.update { it.copy(showFeedback = false) }
             refreshFromSession()
         }
     }
 
-    private fun finishQuiz(session: com.droidkaigi.quiz.core.domain.model.QuizSession) {
-        val finishedAt = finishedAtEpochMillis ?: deps.instantProvider.nowEpochMillis()
-        val result = QuizScorer.scoreSession(session, finishedAt)
+    private fun retrySubmitScore() {
+        if (_uiState.value.submitPhase != SubmitPhase.Failed) return
+        val session = session() ?: return
+        if (!session.isComplete) return
+        submitScoreAndFinish(session)
+    }
+
+    private fun submitScoreAndFinish(session: QuizSession) {
+        if (_uiState.value.submitPhase == SubmitPhase.Submitting) return
+        val finishedAt = finishedAtEpochMillis ?: deps.instantProvider.nowEpochMillis().also {
+            finishedAtEpochMillis = it
+        }
+        val result = pendingResult ?: QuizScorer.scoreSession(session, finishedAt).also {
+            pendingResult = it
+        }
         deps.sessionHolder.lastResult = result
         viewModelScope.launch {
-            deps.submitScoreUseCase(result, session.folderId)
-            _events.emit(QuizEvent.NavigateToResult)
+            _uiState.update { it.copy(submitPhase = SubmitPhase.Submitting) }
+            try {
+                deps.submitScoreUseCase(
+                    result = result,
+                    folderId = session.folderId,
+                    completedAtEpochMillis = finishedAt,
+                    startedAtEpochMillis = session.startedAtEpochMillis,
+                )
+                _uiState.update { it.copy(submitPhase = SubmitPhase.Idle) }
+                _events.emit(QuizEvent.NavigateToResult)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+                _uiState.update { it.copy(submitPhase = SubmitPhase.Failed) }
+            }
         }
     }
 

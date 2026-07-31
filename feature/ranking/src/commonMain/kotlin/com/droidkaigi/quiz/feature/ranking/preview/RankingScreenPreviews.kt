@@ -48,3 +48,36 @@ private fun RankingEmptyPreview() {
         )
     }
 }
+
+@Preview(name = "ランキング（初回失敗）", showBackground = true, heightDp = 700)
+@Composable
+private fun RankingInitialErrorPreview() {
+    QuizPreview {
+        RankingContent(
+            entries = emptyList(),
+            highlightNickname = null,
+            isLoading = false,
+            errorMessage = "ランキングの取得に失敗しました",
+            onRetryClick = {},
+            onGoHomeClick = {},
+        )
+    }
+}
+
+@Preview(name = "ランキング（更新失敗）", showBackground = true, heightDp = 700)
+@Composable
+private fun RankingRefreshErrorPreview() {
+    QuizPreview {
+        RankingContent(
+            entries = listOf(
+                RankingEntry("QuizMaster", 980, 1_700_000_000_000),
+                RankingEntry("Kaigi太郎", 850, 1_700_000_100_000),
+            ),
+            highlightNickname = "Kaigi太郎",
+            isLoading = false,
+            errorMessage = "ランキングの取得に失敗しました",
+            onRetryClick = {},
+            onGoHomeClick = {},
+        )
+    }
+}

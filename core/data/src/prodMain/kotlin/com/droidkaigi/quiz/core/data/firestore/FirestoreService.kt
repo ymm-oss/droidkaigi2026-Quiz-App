@@ -7,6 +7,10 @@ interface FirestoreService {
     suspend fun deleteFolder(folderId: String)
     suspend fun getAppConfig(): AppConfigFirestoreDocument?
     suspend fun setAppConfig(document: AppConfigFirestoreDocument)
-    suspend fun addRanking(folderId: String, document: RankingFirestoreDocument)
+    /**
+     * Writes [document] at a fixed [entryId]. If the document already exists (e.g. a prior
+     * attempt succeeded but the client timed out), treat as success without updating.
+     */
+    suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument)
     suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument>
 }

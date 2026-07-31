@@ -3,6 +3,7 @@ package com.droidkaigi.quiz.core.data.firestore
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.firestore
+import kotlin.coroutines.cancellation.CancellationException
 
 internal class GitLiveFirestoreService : FirestoreService {
     private val db get() = Firebase.firestore
@@ -52,28 +53,47 @@ internal class GitLiveFirestoreService : FirestoreService {
             }
     }
 
-    override suspend fun addRanking(folderId: String, document: RankingFirestoreDocument) {
-        db.collection(FirestorePaths.FOLDERS)
+    override suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) {
+        val ref = db.collection(FirestorePaths.FOLDERS)
             .document(folderId)
             .collection(FirestorePaths.RANKINGS)
-            .add(RankingFirestoreDocument.serializer(), document) {
+            .document(entryId)
+        try {
+            ref.set(RankingFirestoreDocument.serializer(), document) {
                 encodeDefaults = true
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // create-only rules: retry after a successful write looks like a denied update.
+            // Only an identical existing document proves that the previous attempt landed.
+            val existing = runCatching {
+                ref.get()
+                    .takeIf { it.exists }
+                    ?.data(RankingFirestoreDocument.serializer())
+            }.getOrNull()
+            if (existing == document) {
+                return
+            }
+            throw e
+        }
     }
 
     override suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument> {
+        val rankings = db.collection(FirestorePaths.FOLDERS)
+            .document(folderId)
+            .collection(FirestorePaths.RANKINGS)
         val snapshots = try {
-            db.collection(FirestorePaths.FOLDERS)
-                .document(folderId)
-                .collection(FirestorePaths.RANKINGS)
+            rankings
                 .where { "dateKey" equalTo dateKey }
                 .orderBy("score", Direction.DESCENDING)
                 .get()
                 .documents
-        } catch (_: Exception) {
-            db.collection(FirestorePaths.FOLDERS)
-                .document(folderId)
-                .collection(FirestorePaths.RANKINGS)
+        } catch (error: Exception) {
+            if (!error.isFirestoreMissingCompositeIndexError()) throw error
+            // 複合インデックス未デプロイ時のみ: 等値クエリ + クライアント側 score 降順
+            rankings
+                .where { "dateKey" equalTo dateKey }
                 .get()
                 .documents
         }

@@ -191,6 +191,20 @@ androidApp/src/prod/google-services.json
 | [functions/](../functions/) | Cloud Functions 雛形（**未使用**・`firebase.json` 登録済み） |
 | [docs/firestore-seed.json](firestore-seed.json) | fake 問題データの Firestore 形式参考（実行時は未使用） |
 
+### Firestore インデックスのデプロイ
+
+当日ランキング（`dateKey` + `score`）用の複合インデックスは [firestore.indexes.json](../firestore.indexes.json) で管理する。未デプロイだと通常クエリが失敗し、アプリは `dateKey` 等値クエリへフォールバックする（詳細: [FIRESTORE.md#インデックス](FIRESTORE.md#インデックス)）。
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+ルールもまとめて反映する場合:
+
+```bash
+firebase deploy --only firestore
+```
+
 ### prod の起動
 
 ```bash
@@ -280,7 +294,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 | `jvm` | `:core:domain:jvmTest` / `:core:data:jvmTest` |
 | `ui-jvm` | `:feature:quiz` / `:feature:staff` の Compose UI スモーク（`xvfb-run`）。スタッフ画面は `captureToImage` で PNG を `docs/screenshots/staff/` に出力（上書き先は `-Dstaff.screenshot.dir`） |
 | `android` | `:androidApp:assembleFakeDebug` |
-| `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Ranking / 中断系。回答フローは CI 不安定のため `@Ignore` / 除外 — ローカルで実行） |
+| `ui-android` | エミュレータ + `:androidApp:connectedFakeDebugAndroidTest`（Home / Quiz フロー / Ranking / 中断系） |
 | `wasm` | `:wasmApp:compileKotlinWasmJs`（fake） |
 | `detekt` | `detektAll` |
 

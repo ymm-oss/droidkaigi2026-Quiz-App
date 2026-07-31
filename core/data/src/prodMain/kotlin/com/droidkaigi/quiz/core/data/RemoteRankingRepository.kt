@@ -8,6 +8,7 @@ import com.droidkaigi.quiz.core.domain.model.QuizResult
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.time.localDateOfEpochMillis
 import com.droidkaigi.quiz.core.domain.time.todayLocalDate
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
@@ -27,10 +28,12 @@ class RemoteRankingRepository(
         result: QuizResult,
         completedAtEpochMillis: Long,
         folderId: String,
+        entryId: String,
     ) {
-        val dateKey = instantProvider.todayLocalDate().toString()
-        firestore.addRanking(
+        val dateKey = localDateOfEpochMillis(completedAtEpochMillis).toString()
+        firestore.putRanking(
             folderId = folderId,
+            entryId = entryId,
             document = RankingFirestoreDocument(
                 nickname = result.nickname,
                 score = result.score,

@@ -25,7 +25,8 @@ private class UnsupportedFirestoreService : FirestoreService {
 
     override suspend fun setAppConfig(document: AppConfigFirestoreDocument) = unsupported()
 
-    override suspend fun addRanking(folderId: String, document: RankingFirestoreDocument) = unsupported()
+    override suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) =
+        unsupported()
 
     override suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument> =
         unsupported()
