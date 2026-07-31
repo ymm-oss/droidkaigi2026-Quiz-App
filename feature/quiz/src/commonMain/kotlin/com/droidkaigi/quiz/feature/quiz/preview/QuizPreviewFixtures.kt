@@ -7,7 +7,7 @@ import com.droidkaigi.quiz.core.domain.model.ReorderItem
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.feature.quiz.quiz.QuizUiState
 
-internal object QuizPreviewFixtures {
+object QuizPreviewFixtures {
     val singleChoiceQuestion = SingleChoice(
         id = "preview-single",
         prompt = """

@@ -31,6 +31,9 @@
     <string name="feedback_incorrect">不正解</string>
     <string name="quiz_feedback_next">次の問題へ</string>
     <string name="quiz_feedback_finish">結果を見る</string>
+    <string name="quiz_submit_score_failed_title">スコアの送信に失敗しました</string>
+    <string name="quiz_submit_score_failed_message">ネットワーク接続を確認して、もう一度お試しください。</string>
+    <string name="quiz_submit_score_retry">再試行</string>
 
     <string name="result_title">クイズ完了</string>
     <string name="result_subtitle">おつかれさま、%1$s さん！</string>
@@ -42,6 +45,8 @@
     <string name="ranking_title">今日のランキング</string>
     <string name="ranking_subtitle">今日のベストスコア</string>
     <string name="ranking_empty">まだエントリーがありません</string>
+    <string name="ranking_error_load_failed">ランキングの取得に失敗しました</string>
+    <string name="ranking_retry">再試行</string>
     <string name="ranking_go_home">ホームに戻る</string>
     <string name="ranking_score">スコア %1$d</string>
 

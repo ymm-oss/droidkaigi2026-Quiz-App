@@ -8,7 +8,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -64,7 +63,6 @@ class QuizExitAndroidTest {
         assertExitDialogGone()
     }
 
-    @Ignore("CI: answering via ChoiceCard testTag does not advance under Markdown prompts; run locally")
     @Test
     fun afterLastAnswer_backDoesNotShowExitDialog() {
         composeRule.startQuizWithNickname("ExitFinishingTester")
@@ -73,7 +71,7 @@ class QuizExitAndroidTest {
         pressSystemBack()
 
         assertExitDialogGone()
-        composeRule.waitUntilText("クイズ完了")
+        composeRule.waitUntilText("結果を見る")
     }
 
     private fun assertExitDialogGone() {

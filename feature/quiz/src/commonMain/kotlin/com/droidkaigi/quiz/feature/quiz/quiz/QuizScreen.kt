@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.data.AppDependencies
@@ -52,6 +53,9 @@ import com.droidkaigi.quiz.core.ui.generated.resources.quiz_instruction_reorder
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_no_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_section_question
 import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit_score_failed_message
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit_score_failed_title
+import com.droidkaigi.quiz.core.ui.generated.resources.quiz_submit_score_retry
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.core.ui.theme.quizSafeHorizontalPadding
 import com.droidkaigi.quiz.core.ui.theme.quizSafeVerticalPadding
@@ -105,6 +109,7 @@ fun QuizScreen(
         onMoveReorder = { from, to -> viewModel.onIntent(QuizIntent.MoveReorder(from, to)) },
         onSubmitAnswer = { viewModel.onIntent(QuizIntent.SubmitAnswer) },
         onContinueAfterFeedback = { viewModel.onIntent(QuizIntent.ContinueAfterFeedback) },
+        onRetrySubmitScore = { viewModel.onIntent(QuizIntent.RetrySubmitScore) },
     )
 
     if (state.showExitConfirm) {
@@ -139,6 +144,7 @@ fun QuizContent(
     onMoveReorder: (Int, Int) -> Unit,
     onSubmitAnswer: () -> Unit,
     onContinueAfterFeedback: () -> Unit,
+    onRetrySubmitScore: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     QuizScreenBackground(modifier = modifier) {
@@ -199,6 +205,7 @@ fun QuizContent(
                     text = stringResource(Res.string.quiz_submit),
                     onClick = onSubmitAnswer,
                     enabled = state.canSubmit && !state.showFeedback,
+                    modifier = Modifier.testTag("quizSubmit"),
                 )
             }
 
@@ -217,9 +224,30 @@ fun QuizContent(
                         },
                     ),
                     onContinue = onContinueAfterFeedback,
+                    continueEnabled = state.submitPhase != SubmitPhase.Submitting &&
+                        state.submitPhase != SubmitPhase.Failed,
+                    continueLoading = state.submitPhase == SubmitPhase.Submitting,
                 )
             }
         }
+    }
+
+    if (state.submitPhase == SubmitPhase.Failed) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(Res.string.quiz_submit_score_failed_title)) },
+            text = {
+                Text(
+                    text = stringResource(Res.string.quiz_submit_score_failed_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onRetrySubmitScore) {
+                    Text(stringResource(Res.string.quiz_submit_score_retry))
+                }
+            },
+        )
     }
 }
 

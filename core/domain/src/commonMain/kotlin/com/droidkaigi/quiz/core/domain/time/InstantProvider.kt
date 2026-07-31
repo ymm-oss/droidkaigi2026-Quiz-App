@@ -18,7 +18,11 @@ fun InstantProvider.todayLocalDate(timeZone: TimeZone = TimeZone.currentSystemDe
     return instant.toLocalDateTime(timeZone).date
 }
 
+fun localDateOfEpochMillis(
+    epochMillis: Long,
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+): LocalDate = Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(timeZone).date
+
 fun isSameDay(epochMillis: Long, today: LocalDate, timeZone: TimeZone = TimeZone.currentSystemDefault()): Boolean {
-    val date = Instant.fromEpochMilliseconds(epochMillis).toLocalDateTime(timeZone).date
-    return date == today
+    return localDateOfEpochMillis(epochMillis, timeZone) == today
 }

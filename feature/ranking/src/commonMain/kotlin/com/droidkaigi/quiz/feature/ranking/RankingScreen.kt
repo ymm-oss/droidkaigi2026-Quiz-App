@@ -34,13 +34,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.domain.time.formatCompletedAtLabel
 import com.droidkaigi.quiz.core.ui.components.QuizHeroTitle
+import com.droidkaigi.quiz.core.ui.components.QuizPrimaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizRankingRow
 import com.droidkaigi.quiz.core.ui.components.QuizScreenBackground
 import com.droidkaigi.quiz.core.ui.components.QuizSecondaryButton
 import com.droidkaigi.quiz.core.ui.components.QuizSurfaceCard
 import com.droidkaigi.quiz.core.ui.generated.resources.Res
 import com.droidkaigi.quiz.core.ui.generated.resources.ranking_empty
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_error_load_failed
 import com.droidkaigi.quiz.core.ui.generated.resources.ranking_go_home
+import com.droidkaigi.quiz.core.ui.generated.resources.ranking_retry
 import com.droidkaigi.quiz.core.ui.generated.resources.ranking_subtitle
 import com.droidkaigi.quiz.core.ui.generated.resources.ranking_title
 import com.droidkaigi.quiz.core.ui.generated.resources.time_unknown
@@ -60,10 +63,18 @@ fun RankingScreen(onGoHome: () -> Unit, viewModel: RankingViewModel = viewModel 
         }
     }
 
+    val errorMessage = when (val error = state.error) {
+        null -> null
+        is RankingError.LoadFailed -> error.detail?.takeIf { it.isNotBlank() }
+            ?: stringResource(Res.string.ranking_error_load_failed)
+    }
+
     RankingContent(
         entries = state.entries,
         highlightNickname = state.highlightNickname,
         isLoading = state.isLoading,
+        errorMessage = errorMessage,
+        onRetryClick = { viewModel.onIntent(RankingIntent.Refresh) },
         onGoHomeClick = { viewModel.onIntent(RankingIntent.GoHome) },
     )
 }
@@ -75,6 +86,8 @@ fun RankingContent(
     isLoading: Boolean,
     onGoHomeClick: () -> Unit,
     modifier: Modifier = Modifier,
+    errorMessage: String? = null,
+    onRetryClick: (() -> Unit)? = null,
 ) {
     val unknownCompletedAt = stringResource(Res.string.time_unknown)
     QuizScreenBackground(modifier = modifier) {
@@ -125,6 +138,24 @@ fun RankingContent(
                         contentPadding = PaddingValues(bottom = QuizTokens.spacingLarge),
                         verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
                     ) {
+                        if (errorMessage != null) {
+                            item(key = "ranking-error") {
+                                QuizSurfaceCard {
+                                    Text(
+                                        text = errorMessage,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                    if (onRetryClick != null) {
+                                        Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                                        QuizPrimaryButton(
+                                            text = stringResource(Res.string.ranking_retry),
+                                            onClick = onRetryClick,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         itemsIndexed(
                             items = entries,
                             key = { _, e -> "${e.nickname}-${e.completedAtEpochMillis}" },
@@ -143,7 +174,7 @@ fun RankingContent(
                                 )
                             }
                         }
-                        if (entries.isEmpty()) {
+                        if (entries.isEmpty() && errorMessage == null) {
                             item {
                                 QuizSurfaceCard {
                                     Text(

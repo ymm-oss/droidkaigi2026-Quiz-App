@@ -2,6 +2,12 @@ package com.droidkaigi.quiz.feature.quiz.quiz
 
 import com.droidkaigi.quiz.core.domain.model.Question
 
+enum class SubmitPhase {
+    Idle,
+    Submitting,
+    Failed,
+}
+
 data class QuizUiState(
     val prompt: String = "",
     val progress: String = "",
@@ -16,6 +22,7 @@ data class QuizUiState(
     val showExitConfirm: Boolean = false,
     /** 最終問回答後〜Result 遷移前。中断ダイアログ・離脱操作を受け付けない */
     val isFinishing: Boolean = false,
+    val submitPhase: SubmitPhase = SubmitPhase.Idle,
 )
 
 sealed interface QuizIntent {
@@ -24,6 +31,7 @@ sealed interface QuizIntent {
     data class MoveReorder(val fromIndex: Int, val toIndex: Int) : QuizIntent
     data object SubmitAnswer : QuizIntent
     data object ContinueAfterFeedback : QuizIntent
+    data object RetrySubmitScore : QuizIntent
     data object RequestExit : QuizIntent
     data object ConfirmExit : QuizIntent
     data object DismissExit : QuizIntent

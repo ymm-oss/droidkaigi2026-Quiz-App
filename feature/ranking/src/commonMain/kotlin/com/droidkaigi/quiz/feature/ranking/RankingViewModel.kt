@@ -3,6 +3,7 @@ package com.droidkaigi.quiz.feature.ranking
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.droidkaigi.quiz.core.data.AppDependencies
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -32,16 +33,29 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
 
     private fun refresh() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val folderId = deps.sessionHolder.playbackFolderId
-                ?: deps.getActiveQuizFolderIdUseCase()
-            val entries = deps.getTodayRankingsUseCase(folderId)
-            _uiState.update {
-                it.copy(
-                    entries = entries,
-                    highlightNickname = deps.sessionHolder.highlightNickname,
-                    isLoading = false,
-                )
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val folderId = deps.sessionHolder.playbackFolderId
+                    ?: deps.getActiveQuizFolderIdUseCase()
+                val entries = deps.getTodayRankingsUseCase(folderId)
+                _uiState.update {
+                    it.copy(
+                        entries = entries,
+                        highlightNickname = deps.sessionHolder.highlightNickname,
+                        isLoading = false,
+                        error = null,
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                // Keep any previously loaded entries so refresh failures do not wipe the list.
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = RankingError.LoadFailed(e.message),
+                    )
+                }
             }
         }
     }
