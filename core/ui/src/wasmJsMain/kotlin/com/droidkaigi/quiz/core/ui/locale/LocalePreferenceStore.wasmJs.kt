@@ -5,15 +5,16 @@ import androidx.compose.runtime.remember
 import kotlin.js.ExperimentalWasmJsInterop
 
 @OptIn(ExperimentalWasmJsInterop::class)
-@Suppress("UnusedParameter")
-private fun localStorageGetItem(key: String): String? = js("localStorage.getItem(key)")
+private fun localStorageGetItem(key: String): String? =
+    js("localStorage.getItem(key)")
 
 @OptIn(ExperimentalWasmJsInterop::class)
-@Suppress("UnusedParameter")
-private fun localStorageSetItem(key: String, value: String): Unit = js("localStorage.setItem(key, value)")
+private fun localStorageSetItem(key: String, value: String): Unit =
+    js("localStorage.setItem(key, value)")
 
 private class WasmLocalePreferenceStore : LocalePreferenceStore {
-    override fun load(): AppLocalePreference = AppLocalePreference.fromStorageKey(localStorageGetItem(KEY_LOCALE))
+    override fun load(): AppLocalePreference =
+        AppLocalePreference.fromStorageKey(localStorageGetItem(KEY_LOCALE))
 
     override fun save(preference: AppLocalePreference) {
         localStorageSetItem(KEY_LOCALE, preference.storageKey)
@@ -25,4 +26,5 @@ private class WasmLocalePreferenceStore : LocalePreferenceStore {
 }
 
 @Composable
-actual fun rememberLocalePreferenceStore(): LocalePreferenceStore = remember { WasmLocalePreferenceStore() }
+actual fun rememberLocalePreferenceStore(): LocalePreferenceStore =
+    remember { WasmLocalePreferenceStore() }
