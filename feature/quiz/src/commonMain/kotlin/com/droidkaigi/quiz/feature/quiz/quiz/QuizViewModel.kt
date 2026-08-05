@@ -66,8 +66,10 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     isFinishing = true,
                     submitPhase = when {
                         deps.sessionHolder.scoreSubmitInFlight -> SubmitPhase.Submitting
+
                         // pendingResult is set once scoring runs; cleared on successful upload.
                         deps.sessionHolder.pendingResult != null -> SubmitPhase.Failed
+
                         else -> SubmitPhase.Idle
                     },
                 )
@@ -181,6 +183,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     )
                 }
             }
+
             SubmitQuizAnswerResult.Rejected -> Unit
         }
     }
@@ -208,14 +211,16 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         if (_uiState.value.submitPhase == SubmitPhase.Submitting) return
         viewModelScope.launch {
             _uiState.update { it.copy(submitPhase = SubmitPhase.Submitting) }
-            when (val outcome = deps.quizPlayUseCase.completeAndSubmitScore()) {
+            when (deps.quizPlayUseCase.completeAndSubmitScore()) {
                 is CompleteQuizResult.Success -> {
                     _uiState.update { it.copy(submitPhase = SubmitPhase.Idle) }
                     _events.emit(QuizEvent.NavigateToResult)
                 }
+
                 is CompleteQuizResult.Failure -> {
                     _uiState.update { it.copy(submitPhase = SubmitPhase.Failed) }
                 }
+
                 CompleteQuizResult.Ignored -> {
                     if (!deps.sessionHolder.scoreSubmitInFlight) {
                         _uiState.update {
