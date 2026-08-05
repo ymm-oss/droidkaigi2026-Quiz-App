@@ -26,11 +26,13 @@ class QuizPlayUseCase(
      * Rejects stale / double-tap answers whose [Answer.questionId] is not the current question.
      */
     fun submitAnswer(answer: Answer): SubmitQuizAnswerResult {
-        val session = sessionStore.currentSession ?: return SubmitQuizAnswerResult.Rejected
-        if (session.isComplete) return SubmitQuizAnswerResult.Rejected
-        val question = session.currentQuestion ?: return SubmitQuizAnswerResult.Rejected
-        if (answer.questionId != question.id) return SubmitQuizAnswerResult.Rejected
-        if (question.id in session.answers) return SubmitQuizAnswerResult.Rejected
+        val session = sessionStore.currentSession
+        val question = session?.takeUnless { it.isComplete }?.currentQuestion
+        val rejected = session == null ||
+            question == null ||
+            answer.questionId != question.id ||
+            question.id in session.answers
+        if (rejected) return SubmitQuizAnswerResult.Rejected
 
         val isCorrect = QuizScorer.isCorrect(question, answer)
         var updated = quizEngine.submitAnswer(session, answer)
@@ -51,9 +53,10 @@ class QuizPlayUseCase(
      * Safe to call again after [CompleteQuizResult.Failure] (retry) or while Ignored when in-flight.
      */
     suspend fun completeAndSubmitScore(): CompleteQuizResult {
-        val session = sessionStore.currentSession ?: return CompleteQuizResult.Ignored
-        if (!session.isComplete) return CompleteQuizResult.Ignored
-        if (sessionStore.scoreSubmitInFlight) return CompleteQuizResult.Ignored
+        val session = sessionStore.currentSession
+        if (session == null || !session.isComplete || sessionStore.scoreSubmitInFlight) {
+            return CompleteQuizResult.Ignored
+        }
 
         val finishedAt = sessionStore.finishedAtEpochMillis
             ?: instantProvider.nowEpochMillis().also { sessionStore.finishedAtEpochMillis = it }
@@ -84,11 +87,8 @@ class QuizPlayUseCase(
 }
 
 sealed interface SubmitQuizAnswerResult {
-    data class Accepted(
-        val isCorrect: Boolean,
-        val session: QuizSession,
-        val isComplete: Boolean,
-    ) : SubmitQuizAnswerResult
+    data class Accepted(val isCorrect: Boolean, val session: QuizSession, val isComplete: Boolean) :
+        SubmitQuizAnswerResult
 
     /** No session, already complete, wrong question, or already answered. */
     data object Rejected : SubmitQuizAnswerResult
@@ -97,10 +97,7 @@ sealed interface SubmitQuizAnswerResult {
 sealed interface CompleteQuizResult {
     data class Success(val result: QuizResult) : CompleteQuizResult
 
-    data class Failure(
-        val result: QuizResult,
-        val canRetry: Boolean,
-    ) : CompleteQuizResult
+    data class Failure(val result: QuizResult, val canRetry: Boolean) : CompleteQuizResult
 
     /** Not complete, missing session, or submit already in flight. */
     data object Ignored : CompleteQuizResult
