@@ -59,4 +59,8 @@ tasks.withType<Test>().configureEach {
         "quiz.screenshot.dir",
         rootProject.layout.projectDirectory.dir("docs/screenshots/quiz").asFile.absolutePath,
     )
+    systemProperty(
+        "android.screenshot.dir",
+        rootProject.layout.projectDirectory.dir("docs/screenshots/android").asFile.absolutePath,
+    )
 }

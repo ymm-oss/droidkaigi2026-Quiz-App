@@ -39,6 +39,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 
 | ドキュメント | 内容 |
 |--------------|------|
+| [仕様書サイト（VitePress）](https://ymm-oss.github.io/droidkaigi2026-Quiz-App/) | 利用者向け・開発者向け仕様（GitHub Pages） |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 参加方法・PR/Issue・レビュー・AI 開発 |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 環境構築・ビルド・fake/prod・**Firebase セットアップ** |
 | [docs/SPEC.md](docs/SPEC.md) | 画面・問題形式・採点 |

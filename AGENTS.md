@@ -23,6 +23,7 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 
 ## Docs & harness
 
+- Spec site (VitePress / GitHub Pages): [docs/README.md](docs/README.md) · local `cd docs && npm ci && npm run docs:dev`
 - Contributing: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 - Development (build, fake/prod): [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - Spec: [docs/SPEC.md](docs/SPEC.md)
@@ -45,6 +46,7 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 | [`android-compose-screenshot`](.cursor/skills/android-compose-screenshot/SKILL.md) | instrumented テストから Android Compose UI の決定的 PNG を撮る撮影ハーネス |
 | [`staff-pr-screenshots`](.cursor/skills/staff-pr-screenshots/SKILL.md) | スタッフ（管理者）UI 変更 PR にスクショを比較表で埋め込む（必須） |
 | [`jvm-compose-screenshot`](.cursor/skills/jvm-compose-screenshot/SKILL.md) | JVM/Desktop Compose UI テストから決定的 PNG を撮る撮影ハーネス |
+| [`docs-bilingual-sync`](.cursor/skills/docs-bilingual-sync/SKILL.md) | VitePress 仕様書の JA / EN を常に両立させる（ページ追加・更新時） |
 
 ## External skills
 

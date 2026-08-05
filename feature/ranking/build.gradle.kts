@@ -42,9 +42,21 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test.junit4)
+            implementation(compose.desktop.currentOs)
+        }
     }
 }
 
 dependencies {
     androidRuntimeClasspath(libs.compose.ui.tooling)
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "android.screenshot.dir",
+        rootProject.layout.projectDirectory.dir("docs/screenshots/android").asFile.absolutePath,
+    )
 }
