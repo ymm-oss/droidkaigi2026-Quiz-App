@@ -75,6 +75,7 @@ class QuizPlayUseCase(
                 startedAtEpochMillis = session.startedAtEpochMillis,
             )
             sessionStore.scoreSubmitInFlight = false
+            sessionStore.pendingResult = null
             CompleteQuizResult.Success(result)
         } catch (e: CancellationException) {
             sessionStore.scoreSubmitInFlight = false

@@ -153,13 +153,36 @@ class QuizViewModelSubmitScoreTest {
         clock.millis = finishedAt + 90_000L
         val recreated = QuizViewModel(deps)
         assertEquals(true, recreated.uiState.value.isFinishing)
+        assertEquals(true, recreated.uiState.value.lastAnswerCorrect)
+        assertEquals(SubmitPhase.Failed, recreated.uiState.value.submitPhase)
         assertEquals(finishedAt, sessionHolder.finishedAtEpochMillis)
+
+        val navigate = async { recreated.events.first() }
+        recreated.onIntent(QuizIntent.RetrySubmitScore)
+        advanceUntilIdle()
+        assertEquals(QuizEvent.NavigateToResult, navigate.await())
+        assertEquals(listOf(finishedAt, finishedAt), ranking.completedAts)
+    }
+
+    @Test
+    fun viewModelRecreation_beforeSubmit_restoresFeedbackContinue() = runTest(dispatcher) {
+        val ranking = ControllableRankingRepository()
+        val sessionHolder = QuizSessionHolder()
+        val clock = MutableInstantProvider(1_700_000_000_000L)
+        val deps = testAppDependencies(ranking, clock, sessionHolder)
+        createViewModelAtFinalFeedback(deps, sessionHolder, clock)
+        val finishedAt = checkNotNull(sessionHolder.finishedAtEpochMillis)
+
+        val recreated = QuizViewModel(deps)
+        assertEquals(true, recreated.uiState.value.showFeedback)
+        assertEquals(true, recreated.uiState.value.lastAnswerCorrect)
+        assertEquals(SubmitPhase.Idle, recreated.uiState.value.submitPhase)
 
         val navigate = async { recreated.events.first() }
         recreated.onIntent(QuizIntent.ContinueAfterFeedback)
         advanceUntilIdle()
         assertEquals(QuizEvent.NavigateToResult, navigate.await())
-        assertEquals(listOf(finishedAt, finishedAt), ranking.completedAts)
+        assertEquals(listOf(finishedAt), ranking.completedAts)
     }
 
     private fun createViewModelAtFinalFeedback(

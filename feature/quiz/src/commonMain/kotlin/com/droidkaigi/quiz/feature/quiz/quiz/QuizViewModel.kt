@@ -10,6 +10,7 @@ import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.ReorderAnswer
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.domain.model.SingleChoiceAnswer
+import com.droidkaigi.quiz.core.domain.scoring.QuizScorer
 import com.droidkaigi.quiz.core.domain.usecase.CompleteQuizResult
 import com.droidkaigi.quiz.core.domain.usecase.SubmitQuizAnswerResult
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,6 +43,13 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     private fun refreshFromSession() {
         val session = session() ?: return
         if (session.isComplete) {
+            val lastQuestion = session.quizSet.questions.lastOrNull()
+            val lastAnswer = lastQuestion?.let { session.answers[it.id] }
+            val restoredCorrect = if (lastQuestion != null && lastAnswer != null) {
+                QuizScorer.isCorrect(lastQuestion, lastAnswer)
+            } else {
+                _uiState.value.lastAnswerCorrect
+            }
             _uiState.update {
                 QuizUiState(
                     prompt = "",
@@ -53,14 +61,14 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     reorderIds = emptyList(),
                     canSubmit = false,
                     showFeedback = true,
-                    lastAnswerCorrect = it.lastAnswerCorrect,
+                    lastAnswerCorrect = restoredCorrect,
                     showExitConfirm = false,
                     isFinishing = true,
-                    // Failed UI is presentation-local; after recreation, Continue re-enters submit.
-                    submitPhase = if (deps.sessionHolder.scoreSubmitInFlight) {
-                        SubmitPhase.Submitting
-                    } else {
-                        SubmitPhase.Idle
+                    submitPhase = when {
+                        deps.sessionHolder.scoreSubmitInFlight -> SubmitPhase.Submitting
+                        // pendingResult is set once scoring runs; cleared on successful upload.
+                        deps.sessionHolder.pendingResult != null -> SubmitPhase.Failed
+                        else -> SubmitPhase.Idle
                     },
                 )
             }
