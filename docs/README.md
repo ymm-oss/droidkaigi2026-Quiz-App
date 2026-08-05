@@ -29,3 +29,8 @@ npm run docs:preview
 | `en/` | 英語版 |
 | `screenshots/` | 画面キャプチャ（`public/screenshots` から参照） |
 | `public/` | 静的アセット（favicon、screenshots シンボリックリンク） |
+
+## 日英の両立
+
+サイト本文（`user/` / `developer/` / `index.md` と `en/` 配下）は **日本語と英語を同時に更新** する。手順・ルールは [`.cursor/skills/docs-bilingual-sync/SKILL.md`](../.cursor/skills/docs-bilingual-sync/SKILL.md)。
+
