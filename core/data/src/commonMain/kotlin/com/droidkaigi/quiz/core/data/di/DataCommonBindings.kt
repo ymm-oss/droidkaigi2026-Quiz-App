@@ -18,6 +18,7 @@ import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
@@ -48,6 +49,19 @@ object DataCommonBindings {
     fun provideSubmitScoreUseCase(
         rankingRepository: RankingRepository,
     ): SubmitScoreUseCase = SubmitScoreUseCase(rankingRepository)
+
+    @Provides
+    fun provideQuizPlayUseCase(
+        quizEngine: QuizEngine,
+        sessionHolder: QuizSessionHolder,
+        submitScoreUseCase: SubmitScoreUseCase,
+        instantProvider: InstantProvider,
+    ): QuizPlayUseCase = QuizPlayUseCase(
+        quizEngine = quizEngine,
+        sessionStore = sessionHolder,
+        submitScoreUseCase = submitScoreUseCase,
+        instantProvider = instantProvider,
+    )
 
     @Provides
     fun provideGetTodayRankingsUseCase(rankingRepository: RankingRepository): GetTodayRankingsUseCase =

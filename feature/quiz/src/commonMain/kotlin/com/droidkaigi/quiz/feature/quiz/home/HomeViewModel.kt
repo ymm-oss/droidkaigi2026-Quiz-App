@@ -40,14 +40,13 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             try {
                 val folderId = deps.getActiveQuizFolderIdUseCase()
                 val quizSet = deps.getQuizSetForFolderUseCase(folderId)
-                deps.sessionHolder.playbackFolderId = folderId
-                deps.sessionHolder.currentSession = deps.quizEngine.startSession(
+                val session = deps.quizEngine.startSession(
                     folderId = folderId,
                     quizSet = quizSet,
                     nickname = nickname,
                     startedAtEpochMillis = deps.instantProvider.nowEpochMillis(),
                 )
-                deps.sessionHolder.highlightNickname = nickname
+                deps.sessionHolder.beginSession(session)
                 _events.emit(HomeEvent.NavigateToQuiz)
                 // 画面遷移までの隙間で開始ボタンが再押下されないよう、
                 // この画面が composition から外れるまで isLoading=true を維持する。

@@ -22,6 +22,7 @@ import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
@@ -135,6 +136,32 @@ class QuizViewModelSubmitScoreTest {
         )
     }
 
+    @Test
+    fun viewModelRecreation_keepsFinishedAtForRetry() = runTest(dispatcher) {
+        val ranking = ControllableRankingRepository()
+        ranking.nextFailures = 1
+        val sessionHolder = QuizSessionHolder()
+        val clock = MutableInstantProvider(1_700_000_000_000L)
+        val deps = testAppDependencies(ranking, clock, sessionHolder)
+        val firstVm = createViewModelAtFinalFeedback(deps, sessionHolder, clock)
+        val finishedAt = checkNotNull(sessionHolder.finishedAtEpochMillis)
+
+        firstVm.onIntent(QuizIntent.ContinueAfterFeedback)
+        advanceUntilIdle()
+        assertEquals(SubmitPhase.Failed, firstVm.uiState.value.submitPhase)
+
+        clock.millis = finishedAt + 90_000L
+        val recreated = QuizViewModel(deps)
+        assertEquals(true, recreated.uiState.value.isFinishing)
+        assertEquals(finishedAt, sessionHolder.finishedAtEpochMillis)
+
+        val navigate = async { recreated.events.first() }
+        recreated.onIntent(QuizIntent.ContinueAfterFeedback)
+        advanceUntilIdle()
+        assertEquals(QuizEvent.NavigateToResult, navigate.await())
+        assertEquals(listOf(finishedAt, finishedAt), ranking.completedAts)
+    }
+
     private fun createViewModelAtFinalFeedback(
         deps: AppDependencies,
         sessionHolder: QuizSessionHolder,
@@ -146,11 +173,13 @@ class QuizViewModelSubmitScoreTest {
             options = listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B")),
             correctId = "a",
         )
-        sessionHolder.currentSession = deps.quizEngine.startSession(
-            folderId = "folder",
-            quizSet = QuizSet("folder", "Demo", listOf(question)),
-            nickname = "Alice",
-            startedAtEpochMillis = clock.millis,
+        sessionHolder.beginSession(
+            deps.quizEngine.startSession(
+                folderId = "folder",
+                quizSet = QuizSet("folder", "Demo", listOf(question)),
+                nickname = "Alice",
+                startedAtEpochMillis = clock.millis,
+            ),
         )
         val viewModel = QuizViewModel(deps)
         viewModel.onIntent(QuizIntent.SelectSingle("a"))
@@ -234,13 +263,21 @@ class QuizViewModelSubmitScoreTest {
         val staffRepo = unusedStaffRepo()
         val staffStore = unusedSessionStore()
         val signIn = SignInStaffUseCase(staffRepo, staffStore)
+        val quizEngine = QuizEngine()
+        val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
         return AppDependencies(
             instantProvider = instantProvider,
             quizCatalogRepository = catalog,
             rankingRepository = rankingRepository,
-            quizEngine = QuizEngine(),
+            quizEngine = quizEngine,
             sessionHolder = sessionHolder,
-            submitScoreUseCase = SubmitScoreUseCase(rankingRepository),
+            submitScoreUseCase = submitScoreUseCase,
+            quizPlayUseCase = QuizPlayUseCase(
+                quizEngine = quizEngine,
+                sessionStore = sessionHolder,
+                submitScoreUseCase = submitScoreUseCase,
+                instantProvider = instantProvider,
+            ),
             getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
             listQuizFoldersUseCase = ListQuizFoldersUseCase(catalog),
             createQuizFolderUseCase = CreateQuizFolderUseCase(catalog),
