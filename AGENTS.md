@@ -23,6 +23,7 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 
 ## Docs & harness
 
+- Spec site (VitePress / GitHub Pages): [docs/README.md](docs/README.md) · local `cd docs && npm ci && npm run docs:dev`
 - Contributing: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 - Development (build, fake/prod): [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 - Spec: [docs/SPEC.md](docs/SPEC.md)

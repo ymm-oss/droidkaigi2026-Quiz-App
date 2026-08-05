@@ -15,3 +15,8 @@ captures/
 # Firebase
 google-services.json
 firebase-debug.log
+
+# VitePress (docs site)
+docs/node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
