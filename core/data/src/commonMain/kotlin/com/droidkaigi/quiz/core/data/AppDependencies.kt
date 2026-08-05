@@ -15,6 +15,7 @@ import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
@@ -30,6 +31,7 @@ class AppDependencies(
     val quizEngine: QuizEngine,
     val sessionHolder: QuizSessionHolder,
     val submitScoreUseCase: SubmitScoreUseCase,
+    val quizPlayUseCase: QuizPlayUseCase,
     val getTodayRankingsUseCase: GetTodayRankingsUseCase,
     val listQuizFoldersUseCase: ListQuizFoldersUseCase,
     val createQuizFolderUseCase: CreateQuizFolderUseCase,
@@ -56,6 +58,7 @@ class AppDependencies(
                 quizEngine = graph.quizEngine,
                 sessionHolder = graph.sessionHolder,
                 submitScoreUseCase = graph.submitScoreUseCase,
+                quizPlayUseCase = graph.quizPlayUseCase,
                 getTodayRankingsUseCase = graph.getTodayRankingsUseCase,
                 listQuizFoldersUseCase = graph.listQuizFoldersUseCase,
                 createQuizFolderUseCase = graph.createQuizFolderUseCase,

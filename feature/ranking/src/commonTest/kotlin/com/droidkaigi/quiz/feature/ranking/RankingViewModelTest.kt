@@ -21,6 +21,7 @@ import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
@@ -186,13 +187,21 @@ private fun rankingTestDeps(
     val staffAuthHolder = StaffAuthHolder()
     val signInStaffUseCase = SignInStaffUseCase(staffAuthRepository, staffAuthHolder)
 
+    val quizEngine = QuizEngine()
+    val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
     return AppDependencies(
         instantProvider = instantProvider,
         quizCatalogRepository = catalogRepository,
         rankingRepository = rankingRepository,
-        quizEngine = QuizEngine(),
+        quizEngine = quizEngine,
         sessionHolder = sessionHolder,
-        submitScoreUseCase = SubmitScoreUseCase(rankingRepository),
+        submitScoreUseCase = submitScoreUseCase,
+        quizPlayUseCase = QuizPlayUseCase(
+            quizEngine = quizEngine,
+            sessionStore = sessionHolder,
+            submitScoreUseCase = submitScoreUseCase,
+            instantProvider = instantProvider,
+        ),
         getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
         listQuizFoldersUseCase = ListQuizFoldersUseCase(catalogRepository),
         createQuizFolderUseCase = CreateQuizFolderUseCase(catalogRepository),

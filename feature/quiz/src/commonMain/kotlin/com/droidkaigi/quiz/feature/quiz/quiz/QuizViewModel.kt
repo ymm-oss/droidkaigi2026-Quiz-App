@@ -6,14 +6,13 @@ import com.droidkaigi.quiz.core.data.AppDependencies
 import com.droidkaigi.quiz.core.domain.model.MultipleChoice
 import com.droidkaigi.quiz.core.domain.model.MultipleChoiceAnswer
 import com.droidkaigi.quiz.core.domain.model.Question
-import com.droidkaigi.quiz.core.domain.model.QuizResult
-import com.droidkaigi.quiz.core.domain.model.QuizSession
 import com.droidkaigi.quiz.core.domain.model.Reorder
 import com.droidkaigi.quiz.core.domain.model.ReorderAnswer
 import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.domain.model.SingleChoiceAnswer
 import com.droidkaigi.quiz.core.domain.scoring.QuizScorer
-import kotlinx.coroutines.CancellationException
+import com.droidkaigi.quiz.core.domain.usecase.CompleteQuizResult
+import com.droidkaigi.quiz.core.domain.usecase.SubmitQuizAnswerResult
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,12 +29,6 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     private val _events = MutableSharedFlow<QuizEvent>()
     val events: SharedFlow<QuizEvent> = _events.asSharedFlow()
 
-    /** Captured when the last answer is submitted so feedback wait time does not reduce timeBonus. */
-    private var finishedAtEpochMillis: Long? = null
-
-    /** Scored once at finish; reused on submit retries so timeBonus stays fixed. */
-    private var pendingResult: QuizResult? = null
-
     init {
         syncFromSession()
     }
@@ -49,15 +42,46 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
 
     private fun refreshFromSession() {
         val session = session() ?: return
+        if (session.isComplete) {
+            val lastQuestion = session.quizSet.questions.lastOrNull()
+            val lastAnswer = lastQuestion?.let { session.answers[it.id] }
+            val restoredCorrect = if (lastQuestion != null && lastAnswer != null) {
+                QuizScorer.isCorrect(lastQuestion, lastAnswer)
+            } else {
+                _uiState.value.lastAnswerCorrect
+            }
+            _uiState.update {
+                QuizUiState(
+                    prompt = "",
+                    progress = session.progressLabel,
+                    progressFraction = session.progressFraction,
+                    question = null,
+                    selectedSingleId = null,
+                    selectedMultipleIds = emptySet(),
+                    reorderIds = emptyList(),
+                    canSubmit = false,
+                    showFeedback = true,
+                    lastAnswerCorrect = restoredCorrect,
+                    showExitConfirm = false,
+                    isFinishing = true,
+                    submitPhase = when {
+                        deps.sessionHolder.scoreSubmitInFlight -> SubmitPhase.Submitting
+
+                        // pendingResult is set once scoring runs; cleared on successful upload.
+                        deps.sessionHolder.pendingResult != null -> SubmitPhase.Failed
+
+                        else -> SubmitPhase.Idle
+                    },
+                )
+            }
+            return
+        }
         val question = session.currentQuestion
-        val total = session.quizSet.questions.size.coerceAtLeast(1)
-        finishedAtEpochMillis = null
-        pendingResult = null
         _uiState.update {
             QuizUiState(
                 prompt = question?.prompt.orEmpty(),
                 progress = session.progressLabel,
-                progressFraction = session.currentIndex.toFloat() / total,
+                progressFraction = session.progressFraction,
                 question = question,
                 selectedSingleId = null,
                 selectedMultipleIds = emptySet(),
@@ -136,7 +160,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             _uiState.update { it.copy(showExitConfirm = false) }
             return
         }
-        deps.sessionHolder.currentSession = null
+        deps.sessionHolder.clearPlaySession()
         _uiState.update { it.copy(showExitConfirm = false) }
         viewModelScope.launch {
             _events.emit(QuizEvent.NavigateHome)
@@ -144,27 +168,23 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     }
 
     private fun submitAnswer() {
-        val session = session() ?: return
-        val question = session.currentQuestion ?: return
+        val question = session()?.currentQuestion ?: return
         val answer = buildAnswer(question, _uiState.value) ?: return
-        val correct = QuizScorer.isCorrect(question, answer)
-        var updated = deps.quizEngine.submitAnswer(session, answer)
-        updated = deps.quizEngine.advance(updated)
-        deps.sessionHolder.currentSession = updated
-        if (updated.isComplete) {
-            finishedAtEpochMillis = deps.instantProvider.nowEpochMillis()
-        }
+        when (val outcome = deps.quizPlayUseCase.submitAnswer(answer)) {
+            is SubmitQuizAnswerResult.Accepted -> {
+                _uiState.update {
+                    it.copy(
+                        showFeedback = true,
+                        lastAnswerCorrect = outcome.isCorrect,
+                        showExitConfirm = false,
+                        isFinishing = outcome.isComplete,
+                        progress = outcome.session.progressLabel,
+                        progressFraction = outcome.session.progressFraction,
+                    )
+                }
+            }
 
-        _uiState.update {
-            it.copy(
-                showFeedback = true,
-                lastAnswerCorrect = correct,
-                showExitConfirm = false,
-                isFinishing = updated.isComplete,
-                progress = updated.progressLabel,
-                progressFraction = updated.currentIndex.toFloat() /
-                    updated.quizSet.questions.size.coerceAtLeast(1),
-            )
+            SubmitQuizAnswerResult.Rejected -> Unit
         }
     }
 
@@ -173,7 +193,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         if (_uiState.value.submitPhase == SubmitPhase.Submitting) return
         val session = session() ?: return
         if (session.isComplete) {
-            submitScoreAndFinish(session)
+            submitScoreAndFinish()
         } else {
             _uiState.update { it.copy(showFeedback = false) }
             refreshFromSession()
@@ -184,33 +204,36 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         if (_uiState.value.submitPhase != SubmitPhase.Failed) return
         val session = session() ?: return
         if (!session.isComplete) return
-        submitScoreAndFinish(session)
+        submitScoreAndFinish()
     }
 
-    private fun submitScoreAndFinish(session: QuizSession) {
+    private fun submitScoreAndFinish() {
         if (_uiState.value.submitPhase == SubmitPhase.Submitting) return
-        val finishedAt = finishedAtEpochMillis ?: deps.instantProvider.nowEpochMillis().also {
-            finishedAtEpochMillis = it
-        }
-        val result = pendingResult ?: QuizScorer.scoreSession(session, finishedAt).also {
-            pendingResult = it
-        }
-        deps.sessionHolder.lastResult = result
         viewModelScope.launch {
             _uiState.update { it.copy(submitPhase = SubmitPhase.Submitting) }
-            try {
-                deps.submitScoreUseCase(
-                    result = result,
-                    folderId = session.folderId,
-                    completedAtEpochMillis = finishedAt,
-                    startedAtEpochMillis = session.startedAtEpochMillis,
-                )
-                _uiState.update { it.copy(submitPhase = SubmitPhase.Idle) }
-                _events.emit(QuizEvent.NavigateToResult)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
-                _uiState.update { it.copy(submitPhase = SubmitPhase.Failed) }
+            when (deps.quizPlayUseCase.completeAndSubmitScore()) {
+                is CompleteQuizResult.Success -> {
+                    _uiState.update { it.copy(submitPhase = SubmitPhase.Idle) }
+                    _events.emit(QuizEvent.NavigateToResult)
+                }
+
+                is CompleteQuizResult.Failure -> {
+                    _uiState.update { it.copy(submitPhase = SubmitPhase.Failed) }
+                }
+
+                CompleteQuizResult.Ignored -> {
+                    if (!deps.sessionHolder.scoreSubmitInFlight) {
+                        _uiState.update {
+                            it.copy(
+                                submitPhase = if (deps.sessionHolder.pendingResult != null) {
+                                    SubmitPhase.Failed
+                                } else {
+                                    SubmitPhase.Idle
+                                },
+                            )
+                        }
+                    }
+                }
             }
         }
     }
