@@ -23,7 +23,7 @@ class QuizExitAndroidTest {
     @Test
     fun backDuringQuiz_showsExitDialog_cancelKeepsQuiz() {
         composeRule.startQuizWithNickname("ExitCancelTester")
-        waitForProgress("0 / 3")
+        waitForProgress("1 / 3")
 
         pressSystemBack()
 
@@ -31,14 +31,14 @@ class QuizExitAndroidTest {
         composeRule.onNodeWithText("キャンセル").performClick()
 
         assertExitDialogGone()
-        composeRule.onNodeWithText("0 / 3").assertExists()
+        composeRule.onNodeWithText("1 / 3").assertExists()
         composeRule.onNodeWithText("回答する").assertExists()
     }
 
     @Test
     fun backDuringQuiz_confirmReturnsToHome() {
         composeRule.startQuizWithNickname("ExitConfirmTester")
-        waitForProgress("0 / 3")
+        waitForProgress("1 / 3")
 
         pressSystemBack()
         composeRule.onNodeWithText("クイズを中断しますか？").assertIsDisplayed()
@@ -51,14 +51,14 @@ class QuizExitAndroidTest {
     @Test
     fun abandonThenRestart_doesNotShowExitDialogImmediately() {
         composeRule.startQuizWithNickname("ExitRestartTester")
-        waitForProgress("0 / 3")
+        waitForProgress("1 / 3")
 
         pressSystemBack()
         composeRule.onNode(hasText("中断する") and hasAnyAncestor(isDialog())).performClick()
         composeRule.waitUntilText("クイズを始める")
 
         composeRule.onNodeWithText("クイズを始める").performClick()
-        waitForProgress("0 / 3")
+        waitForProgress("1 / 3")
 
         assertExitDialogGone()
     }
@@ -93,19 +93,19 @@ class QuizExitAndroidTest {
     }
 
     private fun answerThroughLastQuestionSubmit() {
-        waitForProgress("0 / 3")
+        waitForProgress("1 / 3")
         composeRule.clickChoice("Compose Multiplatform")
         composeRule.clickSubmitAnswer()
         composeRule.proceedAfterFeedback()
 
-        waitForProgress("1 / 3")
+        waitForProgress("2 / 3")
         composeRule.clickChoice("count の変更で UI が再 Composition される")
         composeRule.clickChoice("Button の onClick はユーザー操作で呼ばれる")
         composeRule.clickChoice("Text の内容は状態に連動して更新される")
         composeRule.clickSubmitAnswer()
         composeRule.proceedAfterFeedback()
 
-        waitForProgress("2 / 3")
+        waitForProgress("3 / 3")
         composeRule.clickSubmitAnswer()
         composeRule.waitForAnswerFeedback()
         composeRule.waitForIdle()

@@ -32,10 +32,7 @@ internal fun QuizComposeRule.waitUntilText(
     }
 }
 
-internal fun QuizComposeRule.waitUntilTag(
-    tag: String,
-    timeoutMillis: Long = UI_WAIT_MS,
-) {
+internal fun QuizComposeRule.waitUntilTag(tag: String, timeoutMillis: Long = UI_WAIT_MS) {
     waitUntil(timeoutMillis = timeoutMillis) {
         try {
             onAllNodes(hasTestTag(tag), useUnmergedTree = true)
@@ -54,7 +51,7 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
     onNodeWithText("クイズを始める").performClick()
     waitForIdle()
     // Markdown プロンプトは分割されることがあるので進捗ラベルで開始を確認する
-    waitUntilText("0 / 3")
+    waitUntilText("1 / 3")
 }
 
 /** ChoiceCard の testTag で選択肢をタップする（プロンプト内の同文言と区別）。 */

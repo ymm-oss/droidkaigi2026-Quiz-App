@@ -30,10 +30,10 @@ class QuizFlowAndroidTest {
 
         composeRule.waitUntilText("クイズを始める")
         composeRule.onNodeWithText("クイズを始める").performClick()
-        composeRule.waitUntilText("0 / 3")
+        composeRule.waitUntilText("1 / 3")
 
         composeRule.waitUntilText(firstQuestionSnippet, substring = true)
-        composeRule.onNodeWithText("0 / 3").assertExists()
+        composeRule.onNodeWithText("1 / 3").assertExists()
     }
 
     @Test
@@ -55,19 +55,19 @@ class QuizFlowAndroidTest {
      * 単一・複数選択は正解で回答。並び替えは UI 操作（ドラッグ）をテストしない。
      */
     private fun answerQuizThroughResult() {
-        waitForProgress("0 / 3")
+        waitForProgress("1 / 3")
         composeRule.clickChoice("Compose Multiplatform")
         composeRule.clickSubmitAnswer()
         composeRule.proceedAfterFeedback()
 
-        waitForProgress("1 / 3")
+        waitForProgress("2 / 3")
         composeRule.clickChoice("count の変更で UI が再 Composition される")
         composeRule.clickChoice("Button の onClick はユーザー操作で呼ばれる")
         composeRule.clickChoice("Text の内容は状態に連動して更新される")
         composeRule.clickSubmitAnswer()
         composeRule.proceedAfterFeedback()
 
-        waitForProgress("2 / 3")
+        waitForProgress("3 / 3")
         composeRule.clickSubmitAnswer()
         composeRule.proceedAfterFeedback()
         composeRule.waitUntilText("クイズ完了")
