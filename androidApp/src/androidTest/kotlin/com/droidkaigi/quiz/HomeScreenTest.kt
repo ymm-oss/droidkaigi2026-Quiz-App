@@ -25,7 +25,7 @@ class HomeScreenTest {
     @Test
     fun startQuiz_navigatesToFirstQuestion() {
         androidComposeRule.startQuizWithNickname("TestPlayer")
-        androidComposeRule.onNodeWithText("0 / 3").assertExists()
+        androidComposeRule.onNodeWithText("1 / 3").assertExists()
         androidComposeRule.waitUntilText("共通化できる Jetpack ライブラリはどれ？", substring = true)
     }
 }
