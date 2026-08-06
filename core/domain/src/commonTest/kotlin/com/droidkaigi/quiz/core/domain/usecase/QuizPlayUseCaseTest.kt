@@ -228,5 +228,9 @@ class QuizPlayUseCaseTest {
                 error("network down")
             }
         }
+
+        override suspend fun deleteEntry(folderId: String, entryId: String) = Unit
+
+        override suspend fun clearTodayRankings(folderId: String) = Unit
     }
 }

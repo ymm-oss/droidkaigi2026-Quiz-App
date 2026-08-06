@@ -74,7 +74,7 @@ firebase deploy --only firestore:indexes
 要点:
 
 - `folders` / `appConfig`: 読み取り全員、書き込み `request.auth != null`（スタッフ）
-- `rankings`: 読み取り全員、`create` のみ（参加者のスコア送信）、`update`/`delete` 不可
+- `rankings`: 読み取り全員、`create`（参加者のスコア送信）、`delete` はログイン済みスタッフのみ、`update` 不可
 
 ## アプリからのマッピング
 
@@ -89,6 +89,8 @@ firebase deploy --only firestore:indexes
 
 - `QuizRepository` / `getDefaultQuizSet` は使わない。参加者・スタッフとも `QuizCatalogRepository` 経由。
 - `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える（インデックス不足時の挙動は [クエリとフォールバック](#クエリとフォールバックgitlivefirestoreservicelistrankingsfordate)）。
+
+`firestore.rules` の本番反映は `master` マージ時の CD（[DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ](DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ)）を使う。
 
 ### prod 実装クラス（`core:data`）
 

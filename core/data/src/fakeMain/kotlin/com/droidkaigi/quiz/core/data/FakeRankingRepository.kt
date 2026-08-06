@@ -36,6 +36,28 @@ class FakeRankingRepository(private val instantProvider: InstantProvider, privat
             nickname = result.nickname,
             score = result.score,
             completedAtEpochMillis = completedAtEpochMillis,
+            id = entryId,
         )
+    }
+
+    override suspend fun deleteEntry(folderId: String, entryId: String) {
+        catalog.withLock {
+            rankingsFor(folderId).removeAll { it.id == entryId }
+            submittedEntryKeys.remove("$folderId/$entryId")
+        }
+    }
+
+    override suspend fun clearTodayRankings(folderId: String) {
+        catalog.withLock {
+            val today = instantProvider.todayLocalDate()
+            val list = rankingsFor(folderId)
+            val toRemove = list.filter { isSameDay(it.completedAtEpochMillis, today) }
+            toRemove.forEach { entry ->
+                if (entry.id.isNotBlank()) {
+                    submittedEntryKeys.remove("$folderId/${entry.id}")
+                }
+            }
+            list.removeAll { isSameDay(it.completedAtEpochMillis, today) }
+        }
     }
 }

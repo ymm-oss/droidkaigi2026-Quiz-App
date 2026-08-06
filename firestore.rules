@@ -13,7 +13,8 @@ service cloud.firestore {
           && request.resource.data.nickname.size() <= 32
           && request.resource.data.score is int
           && request.resource.data.score >= 0;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if request.auth != null;
       }
     }
     match /appConfig/{docId} {

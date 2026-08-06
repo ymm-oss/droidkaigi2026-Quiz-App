@@ -30,6 +30,7 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
             implementation(libs.compose.ui.test.junit4)
             implementation(compose.desktop.currentOs)
             // Ranking rows format completion times through core:domain, whose deps are not
