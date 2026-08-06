@@ -46,6 +46,8 @@ data class FolderFirestoreDocument(
 @Serializable
 data class AppConfigFirestoreDocument(
     val activeFolderId: String = "",
+    /** When false, participant apps show Home as closed (default for new configs). */
+    val sitePublished: Boolean = false,
     val updatedAtEpochMillis: Long? = null,
 )
 

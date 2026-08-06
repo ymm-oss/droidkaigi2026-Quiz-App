@@ -24,12 +24,23 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         when (intent) {
             is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
             HomeIntent.StartQuiz -> startQuiz()
-            HomeIntent.Shown -> _uiState.update { it.copy(isLoading = false) }
+            HomeIntent.Shown -> {
+                _uiState.update { it.copy(isLoading = false) }
+                refreshSitePublished()
+            }
+        }
+    }
+
+    private fun refreshSitePublished() {
+        viewModelScope.launch {
+            val published = runCatching { deps.getSitePublishedUseCase() }.getOrDefault(false)
+            _uiState.update { it.copy(sitePublished = published) }
         }
     }
 
     private fun startQuiz() {
         if (_uiState.value.isLoading) return
+        if (!_uiState.value.isSiteOpen) return
         val nickname = _uiState.value.nickname.trim()
         if (nickname.isEmpty()) {
             _uiState.update { it.copy(error = HomeError.EmptyNickname) }

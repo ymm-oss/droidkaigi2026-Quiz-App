@@ -22,7 +22,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
+class QuizViewModel(
+    private val deps: AppDependencies = AppDependencies.shared,
+    private val submitScore: Boolean = true,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
@@ -211,7 +214,7 @@ class QuizViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         if (_uiState.value.submitPhase == SubmitPhase.Submitting) return
         viewModelScope.launch {
             _uiState.update { it.copy(submitPhase = SubmitPhase.Submitting) }
-            when (deps.quizPlayUseCase.completeAndSubmitScore()) {
+            when (deps.quizPlayUseCase.completeAndSubmitScore(submitScore = submitScore)) {
                 is CompleteQuizResult.Success -> {
                     _uiState.update { it.copy(submitPhase = SubmitPhase.Idle) }
                     _events.emit(QuizEvent.NavigateToResult)

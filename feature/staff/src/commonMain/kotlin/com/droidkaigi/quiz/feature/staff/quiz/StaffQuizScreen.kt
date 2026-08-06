@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +62,7 @@ fun StaffQuizScreen(
     folderId: String,
     folderName: String,
     folderDescription: String,
+    onPreview: () -> Unit = {},
     viewModel: StaffQuizViewModel = viewModel(key = folderId) { StaffQuizViewModel(folderId) },
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -80,6 +82,7 @@ fun StaffQuizScreen(
                 isLoading = state.isLoading,
                 errorMessage = state.errorMessage,
                 onRefresh = { viewModel.onIntent(StaffQuizIntent.Refresh) },
+                onPreview = onPreview,
                 onAddQuestion = { viewModel.onIntent(StaffQuizIntent.AddQuestion) },
                 onEditQuestion = { viewModel.onIntent(StaffQuizIntent.EditQuestion(it)) },
                 onRequestDeleteQuestion = { questionToDelete = it },
@@ -140,11 +143,13 @@ fun StaffQuizContent(
     onEditQuestion: (Question) -> Unit,
     onRequestDeleteQuestion: (Question) -> Unit,
     onReorderQuestions: (fromIndex: Int, toIndex: Int) -> Unit,
+    onPreview: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     StaffContentPane(modifier = modifier.fillMaxSize()) {
         StaffSectionHeader(title = quizTitle ?: "クイズ内容", subtitle = quizSubtitle) {
             StaffTextButton(text = "再読込", icon = Icons.Default.Refresh, onClick = onRefresh)
+            StaffTextButton(text = "プレビュー", icon = Icons.Default.Visibility, onClick = onPreview)
             StaffFilledButton(text = "問題を追加", icon = Icons.Default.Add, onClick = onAddQuestion)
         }
         Spacer(modifier = Modifier.height(QuizTokens.spacingExtraLarge))

@@ -14,9 +14,11 @@ data class StaffShellUiState(
     val folders: List<QuizFolder> = emptyList(),
     val selectedFolderId: String? = null,
     val activeFolderId: String? = null,
+    val sitePublished: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val showCreateFolderDialog: Boolean = false,
+    val showSitePublishConfirm: Boolean = false,
 )
 
 sealed interface StaffShellIntent {
@@ -26,6 +28,9 @@ sealed interface StaffShellIntent {
     data object DismissCreateFolderDialog : StaffShellIntent
     data class CreateFolder(val name: String, val description: String) : StaffShellIntent
     data object PublishSelectedFolder : StaffShellIntent
+    data object RequestToggleSitePublished : StaffShellIntent
+    data object DismissSitePublishConfirm : StaffShellIntent
+    data object ConfirmToggleSitePublished : StaffShellIntent
 }
 
 class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
@@ -44,6 +49,11 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             StaffShellIntent.DismissCreateFolderDialog -> _uiState.update { it.copy(showCreateFolderDialog = false) }
             is StaffShellIntent.CreateFolder -> createFolder(intent.name, intent.description)
             StaffShellIntent.PublishSelectedFolder -> publishSelected()
+            StaffShellIntent.RequestToggleSitePublished ->
+                _uiState.update { it.copy(showSitePublishConfirm = true) }
+            StaffShellIntent.DismissSitePublishConfirm ->
+                _uiState.update { it.copy(showSitePublishConfirm = false) }
+            StaffShellIntent.ConfirmToggleSitePublished -> toggleSitePublished()
         }
     }
 
@@ -56,20 +66,25 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                 val activeId = runCatching { deps.getActiveQuizFolderIdUseCase() }
                     .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
                     .getOrNull()
+                val sitePublished = runCatching { deps.getSitePublishedUseCase() }
+                    .onFailure { staffLog("getSitePublished failed: ${it.message}") }
+                    .getOrDefault(false)
                 val selected = _uiState.value.selectedFolderId
                     ?: activeId?.takeIf { id -> folders.any { it.id == id } }
                     ?: folders.firstOrNull()?.id
                 staffLog(
-                    "refresh ok folders=${folders.size} activeId=$activeId selected=$selected " +
+                    "refresh ok folders=${folders.size} activeId=$activeId sitePublished=$sitePublished " +
+                        "selected=$selected " +
                         folders.joinToString { "${it.id}:${it.displayName}" },
                 )
-                Triple(folders, activeId, selected)
-            }.onSuccess { (folders, activeId, selected) ->
+                RefreshPayload(folders, activeId, selected, sitePublished)
+            }.onSuccess { payload ->
                 _uiState.update {
                     it.copy(
-                        folders = folders,
-                        activeFolderId = activeId,
-                        selectedFolderId = selected,
+                        folders = payload.folders,
+                        activeFolderId = payload.activeId,
+                        selectedFolderId = payload.selected,
+                        sitePublished = payload.sitePublished,
                         isLoading = false,
                     )
                 }
@@ -110,6 +125,21 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
         }
     }
 
+    private fun toggleSitePublished() {
+        val next = !_uiState.value.sitePublished
+        viewModelScope.launch {
+            _uiState.update { it.copy(showSitePublishConfirm = false) }
+            runCatching { deps.setSitePublishedUseCase(next) }
+                .onSuccess { refresh() }
+                .onFailure { error ->
+                    staffLog("setSitePublished failed: ${error.message}")
+                    _uiState.update {
+                        it.copy(errorMessage = error.message ?: "サイト公開状態の更新に失敗しました")
+                    }
+                }
+        }
+    }
+
     private companion object {
         fun staffLog(message: String) {
             println("[StaffShell] $message")
@@ -123,4 +153,11 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                 .onSuccess { refresh() }
         }
     }
+
+    private data class RefreshPayload(
+        val folders: List<QuizFolder>,
+        val activeId: String?,
+        val selected: String?,
+        val sitePublished: Boolean,
+    )
 }

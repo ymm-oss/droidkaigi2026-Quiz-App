@@ -43,4 +43,12 @@ class InMemoryQuizCatalogRepository(
     }
 
     override suspend fun setActiveFolderId(folderId: String) = catalog.withLock { setActiveFolderId(folderId) }
+
+    override suspend fun getSitePublished(): Boolean {
+        ensureSeeded()
+        return catalog.withLock { getSitePublished() }
+    }
+
+    override suspend fun setSitePublished(published: Boolean) =
+        catalog.withLock { setSitePublished(published) }
 }

@@ -12,4 +12,6 @@ interface QuizCatalogRepository {
     suspend fun saveQuizSet(quizSet: QuizSet)
     suspend fun getActiveFolderId(): String
     suspend fun setActiveFolderId(folderId: String)
+    suspend fun getSitePublished(): Boolean
+    suspend fun setSitePublished(published: Boolean)
 }
