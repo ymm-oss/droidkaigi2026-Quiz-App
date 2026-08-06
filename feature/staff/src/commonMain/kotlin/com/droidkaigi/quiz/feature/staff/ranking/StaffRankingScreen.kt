@@ -156,7 +156,12 @@ fun StaffRankingContent(
 
                 else -> {
                     LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                        itemsIndexed(entries, key = { _, entry -> entry.id.ifBlank { "${entry.nickname}-${entry.completedAtEpochMillis}" } }) { index, entry ->
+                        itemsIndexed(
+                            items = entries,
+                            key = { _, entry ->
+                                entry.id.ifBlank { "${entry.nickname}-${entry.completedAtEpochMillis}" }
+                            },
+                        ) { index, entry ->
                             StaffRankingRow(
                                 rank = index + 1,
                                 entry = entry,
