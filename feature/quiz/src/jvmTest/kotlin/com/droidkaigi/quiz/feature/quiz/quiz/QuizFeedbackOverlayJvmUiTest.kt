@@ -1,9 +1,14 @@
 package com.droidkaigi.quiz.feature.quiz.quiz
 
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -75,5 +80,44 @@ class QuizFeedbackOverlayJvmUiTest {
         onNodeWithText("結果を見る").assertIsDisplayed()
         onNodeWithTag("feedbackContinue", useUnmergedTree = true).performClick()
         assertTrue(continued)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun correctFeedback_doesNotFlashIncorrectDuringDismiss() = runComposeUiTest {
+        mainClock.autoAdvance = false
+        var state by mutableStateOf(
+            QuizPreviewFixtures.singleChoiceState(
+                showFeedback = true,
+                lastAnswerCorrect = true,
+            ),
+        )
+        setContent {
+            CompositionLocalProvider(LocalAppLocale provides "ja") {
+                key("ja") {
+                    QuizTheme {
+                        QuizContent(
+                            state = state,
+                            onSelectSingle = {},
+                            onToggleMultiple = {},
+                            onMoveReorder = { _, _ -> },
+                            onSubmitAnswer = {},
+                            onContinueAfterFeedback = {},
+                        )
+                    }
+                }
+            }
+        }
+
+        mainClock.advanceTimeByFrame()
+        onNodeWithText("正解！").assertIsDisplayed()
+
+        state = QuizPreviewFixtures.singleChoiceState(
+            showFeedback = false,
+            lastAnswerCorrect = null,
+        )
+        mainClock.advanceTimeByFrame()
+
+        onAllNodesWithText("不正解").assertCountEquals(0)
     }
 }
