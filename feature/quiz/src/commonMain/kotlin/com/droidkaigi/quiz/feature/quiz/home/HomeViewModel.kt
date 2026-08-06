@@ -49,6 +49,12 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
+                // Re-check at start so a stale open UI after staff unpublish cannot begin a session.
+                val published = runCatching { deps.getSitePublishedUseCase() }.getOrDefault(false)
+                if (!published) {
+                    _uiState.update { it.copy(isLoading = false, sitePublished = false) }
+                    return@launch
+                }
                 val folderId = deps.getActiveQuizFolderIdUseCase()
                 val quizSet = deps.getQuizSetForFolderUseCase(folderId)
                 val session = deps.quizEngine.startSession(

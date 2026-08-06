@@ -36,6 +36,7 @@ sealed interface StaffShellIntent {
 class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(StaffShellUiState())
     val uiState: StateFlow<StaffShellUiState> = _uiState.asStateFlow()
+    private var sitePublishInFlight: Boolean = false
 
     init {
         refresh()
@@ -126,17 +127,23 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     }
 
     private fun toggleSitePublished() {
+        if (sitePublishInFlight) return
         val next = !_uiState.value.sitePublished
         viewModelScope.launch {
+            sitePublishInFlight = true
             _uiState.update { it.copy(showSitePublishConfirm = false) }
-            runCatching { deps.setSitePublishedUseCase(next) }
-                .onSuccess { refresh() }
-                .onFailure { error ->
-                    staffLog("setSitePublished failed: ${error.message}")
-                    _uiState.update {
-                        it.copy(errorMessage = error.message ?: "サイト公開状態の更新に失敗しました")
+            try {
+                runCatching { deps.setSitePublishedUseCase(next) }
+                    .onSuccess { refresh() }
+                    .onFailure { error ->
+                        staffLog("setSitePublished failed: ${error.message}")
+                        _uiState.update {
+                            it.copy(errorMessage = error.message ?: "サイト公開状態の更新に失敗しました")
+                        }
                     }
-                }
+            } finally {
+                sitePublishInFlight = false
+            }
         }
     }
 

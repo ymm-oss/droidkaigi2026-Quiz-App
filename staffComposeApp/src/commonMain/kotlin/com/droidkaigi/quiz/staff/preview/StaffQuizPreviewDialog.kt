@@ -48,11 +48,13 @@ fun StaffQuizPreviewDialog(
 ) {
     var phase by remember(folderId) { mutableStateOf(PreviewPhase.Loading) }
     var errorMessage by remember(folderId) { mutableStateOf<String?>(null) }
+    var previewResult by remember(folderId) { mutableStateOf<QuizResult?>(null) }
     val deps = AppDependencies.shared
 
     LaunchedEffect(folderId) {
         phase = PreviewPhase.Loading
         errorMessage = null
+        previewResult = null
         runCatching {
             val quizSet = deps.getQuizSetForFolderUseCase(folderId)
             require(quizSet.questions.isNotEmpty()) { "プレビューする問題がありません" }
@@ -122,10 +124,13 @@ fun StaffQuizPreviewDialog(
                         PreviewBody(
                             phase = phase,
                             errorMessage = errorMessage,
-                            onFinished = { phase = PreviewPhase.Result },
+                            previewResult = previewResult,
+                            onFinished = {
+                                previewResult = deps.sessionHolder.lastResult
+                                phase = PreviewPhase.Result
+                            },
                             onAbandoned = onDismiss,
                             onCloseResult = onDismiss,
-                            lastResult = deps.sessionHolder.lastResult,
                         )
                     }
                 }
@@ -139,10 +144,10 @@ fun StaffQuizPreviewDialog(
 private fun PreviewBody(
     phase: PreviewPhase,
     errorMessage: String?,
+    previewResult: QuizResult?,
     onFinished: () -> Unit,
     onAbandoned: () -> Unit,
     onCloseResult: () -> Unit,
-    lastResult: QuizResult?,
 ) {
     when (phase) {
         PreviewPhase.Loading -> {
@@ -181,7 +186,7 @@ private fun PreviewBody(
         }
 
         PreviewPhase.Result -> {
-            if (lastResult == null) {
+            if (previewResult == null) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -194,10 +199,10 @@ private fun PreviewBody(
                 }
             } else {
                 ResultContent(
-                    nickname = lastResult.nickname,
-                    correctCount = lastResult.correctCount,
-                    totalCount = lastResult.totalCount,
-                    targetScore = lastResult.score,
+                    nickname = previewResult.nickname,
+                    correctCount = previewResult.correctCount,
+                    totalCount = previewResult.totalCount,
+                    targetScore = previewResult.score,
                     onGoToRankingClick = onCloseResult,
                     animateScore = false,
                     primaryActionLabel = "閉じる",

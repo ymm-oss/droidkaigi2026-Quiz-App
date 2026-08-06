@@ -122,47 +122,59 @@ fun HomeContent(
                     subtitle = stringResource(Res.string.home_subtitle),
                     badge = stringResource(Res.string.home_badge),
                 )
-                if (!siteOpen) {
-                    QuizSurfaceCard {
-                        Text(
-                            text = stringResource(Res.string.home_site_closed_message),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
+                when {
+                    sitePublished == null -> {
+                        QuizPrimaryButton(
+                            text = stringResource(Res.string.home_start),
+                            onClick = {},
+                            enabled = false,
+                            loading = true,
                         )
                     }
-                    QuizPrimaryButton(
-                        text = stringResource(Res.string.home_site_closed_button),
-                        onClick = {},
-                        enabled = false,
-                        loading = sitePublished == null,
-                    )
-                } else {
-                    QuizSurfaceCard {
-                        Text(
-                            text = stringResource(Res.string.home_player_info),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                        QuizTextField(
-                            value = nickname,
-                            onValueChange = onNicknameChange,
-                            label = stringResource(Res.string.home_nickname),
-                        )
-                        errorMessage?.let { msg ->
+
+                    !siteOpen -> {
+                        QuizSurfaceCard {
                             Text(
-                                text = msg,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(top = QuizTokens.spacingSmall),
+                                text = stringResource(Res.string.home_site_closed_message),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
+                        QuizPrimaryButton(
+                            text = stringResource(Res.string.home_site_closed_button),
+                            onClick = {},
+                            enabled = false,
+                        )
                     }
-                    QuizPrimaryButton(
-                        text = stringResource(Res.string.home_start),
-                        onClick = onStartClick,
-                        loading = isLoading,
-                    )
+
+                    else -> {
+                        QuizSurfaceCard {
+                            Text(
+                                text = stringResource(Res.string.home_player_info),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                            QuizTextField(
+                                value = nickname,
+                                onValueChange = onNicknameChange,
+                                label = stringResource(Res.string.home_nickname),
+                            )
+                            errorMessage?.let { msg ->
+                                Text(
+                                    text = msg,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = QuizTokens.spacingSmall),
+                                )
+                            }
+                        }
+                        QuizPrimaryButton(
+                            text = stringResource(Res.string.home_start),
+                            onClick = onStartClick,
+                            loading = isLoading,
+                        )
+                    }
                 }
             }
         }
