@@ -1,7 +1,8 @@
 package com.droidkaigi.quiz.core.data.auth
 
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
+import com.droidkaigi.quiz.core.domain.auth.StaffAuthFailureReason
 
 internal actual suspend fun staffSignInWithEmailPassword(email: String, password: String): StaffSignInResult {
-    throw StaffAuthException("Wasm の prod ではスタッフ認証に未対応です。Desktop をご利用ください。")
+    throw StaffAuthException(StaffAuthFailureReason.Unsupported)
 }

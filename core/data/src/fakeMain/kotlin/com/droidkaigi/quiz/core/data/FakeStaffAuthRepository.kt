@@ -2,6 +2,7 @@ package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
+import com.droidkaigi.quiz.core.domain.auth.StaffAuthFailureReason
 import com.droidkaigi.quiz.core.domain.model.StaffQuickSignInCredentials
 import com.droidkaigi.quiz.core.domain.model.StaffSession
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
@@ -21,7 +22,7 @@ class FakeStaffAuthRepository : StaffAuthRepository {
             )
         }
         return Result.failure(
-            StaffAuthException("メールアドレスまたはパスワードが正しくありません"),
+            StaffAuthException(StaffAuthFailureReason.InvalidCredentials),
         )
     }
 
