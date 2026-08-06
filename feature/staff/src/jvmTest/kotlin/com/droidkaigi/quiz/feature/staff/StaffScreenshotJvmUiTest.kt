@@ -100,11 +100,14 @@ class StaffScreenshotJvmUiTest {
                         isLoading = false,
                         errorMessage = null,
                         onRefresh = {},
+                        onRequestDeleteEntry = {},
+                        onRequestClearToday = {},
                     )
                 }
             }
         }
         onNodeWithText("本日のランキング").assertIsDisplayed()
+        onNodeWithText("すべて削除").assertIsDisplayed()
         captureSurfacePng("03-console-ranking.png")
     }
 
@@ -289,6 +292,64 @@ class StaffScreenshotJvmUiTest {
         onNodeWithText("フォルダを選択してください").assertIsDisplayed()
         captureSurfacePng("09-no-folder-selected.png")
     }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureRankingDeleteConfirmDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(selectedTab = StaffTab.Ranking) {
+                    StaffRankingContent(
+                        entries = sampleRanking,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onRequestDeleteEntry = {},
+                        onRequestClearToday = {},
+                    )
+                }
+                StaffConfirmDialog(
+                    title = "ランキングを削除",
+                    message = "「Alice」のスコアを削除しますか？\nこの操作は取り消せません。",
+                    confirmLabel = "削除",
+                    onConfirm = {},
+                    onDismiss = {},
+                    destructive = true,
+                )
+            }
+        }
+        onNodeWithText("ランキングを削除").assertIsDisplayed()
+        captureSurfacePng("10-ranking-delete-confirm.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureRankingClearTodayConfirmDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(selectedTab = StaffTab.Ranking) {
+                    StaffRankingContent(
+                        entries = sampleRanking,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onRequestDeleteEntry = {},
+                        onRequestClearToday = {},
+                    )
+                }
+                StaffConfirmDialog(
+                    title = "本日のランキングをすべて削除",
+                    message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
+                    confirmLabel = "すべて削除",
+                    onConfirm = {},
+                    onDismiss = {},
+                    destructive = true,
+                )
+            }
+        }
+        onNodeWithText("本日のランキングをすべて削除").assertIsDisplayed()
+        captureSurfacePng("11-ranking-clear-confirm.png")
+    }
 }
 
 @Composable
@@ -393,9 +454,9 @@ private val sampleQuestions = listOf(
 private const val SAMPLE_COMPLETED_AT = 1_783_607_520_000L
 
 private val sampleRanking = listOf(
-    RankingEntry(nickname = "Alice", score = 320, completedAtEpochMillis = SAMPLE_COMPLETED_AT),
-    RankingEntry(nickname = "Bob", score = 280, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 420_000L),
-    RankingEntry(nickname = "Carol", score = 250, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 1_020_000L),
+    RankingEntry(nickname = "Alice", score = 320, completedAtEpochMillis = SAMPLE_COMPLETED_AT, id = "alice"),
+    RankingEntry(nickname = "Bob", score = 280, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 420_000L, id = "bob"),
+    RankingEntry(nickname = "Carol", score = 250, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 1_020_000L, id = "carol"),
 )
 
 private val sampleEditorDraft = StaffQuestionDraft(

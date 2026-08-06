@@ -79,7 +79,10 @@ internal class GitLiveFirestoreService : FirestoreService {
         }
     }
 
-    override suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument> {
+    override suspend fun listRankingsForDate(
+        folderId: String,
+        dateKey: String,
+    ): List<Pair<String, RankingFirestoreDocument>> {
         val rankings = db.collection(FirestorePaths.FOLDERS)
             .document(folderId)
             .collection(FirestorePaths.RANKINGS)
@@ -98,10 +101,26 @@ internal class GitLiveFirestoreService : FirestoreService {
                 .documents
         }
         return snapshots
-            .mapNotNull {
-                runCatching { it.data(RankingFirestoreDocument.serializer()) }.getOrNull()
+            .mapNotNull { snapshot ->
+                val document = runCatching { snapshot.data(RankingFirestoreDocument.serializer()) }.getOrNull()
+                    ?: return@mapNotNull null
+                if (!document.isComplete() || document.dateKey != dateKey) return@mapNotNull null
+                snapshot.id to document
             }
-            .filter { it.isComplete() && it.dateKey == dateKey }
-            .sortedByDescending { it.score }
+            .sortedByDescending { it.second.score }
+    }
+
+    override suspend fun deleteRanking(folderId: String, entryId: String) {
+        db.collection(FirestorePaths.FOLDERS)
+            .document(folderId)
+            .collection(FirestorePaths.RANKINGS)
+            .document(entryId)
+            .delete()
+    }
+
+    override suspend fun deleteRankingsForDate(folderId: String, dateKey: String) {
+        listRankingsForDate(folderId, dateKey).forEach { (entryId, _) ->
+            deleteRanking(folderId, entryId)
+        }
     }
 }

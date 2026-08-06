@@ -58,9 +58,9 @@ internal object FakeQuizCatalogSeeder {
                     },
                 ),
                 demoRankings = listOf(
-                    RankingEntry("KotlinFan", 350, now - 3_600_000),
-                    RankingEntry("ComposePro", 320, now - 7_200_000),
-                    RankingEntry("NavExplorer", 290, now - 10_800_000),
+                    RankingEntry("KotlinFan", 350, now - 3_600_000, id = "seed-kotlinfan"),
+                    RankingEntry("ComposePro", 320, now - 7_200_000, id = "seed-composepro"),
+                    RankingEntry("NavExplorer", 290, now - 10_800_000, id = "seed-navexplorer"),
                 ),
             )
             seedFolder(

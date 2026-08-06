@@ -15,4 +15,10 @@ interface RankingRepository {
         folderId: String,
         entryId: String,
     )
+
+    /** Deletes a single ranking document. */
+    suspend fun deleteEntry(folderId: String, entryId: String)
+
+    /** Deletes all ranking documents for the device "today" in [folderId]. */
+    suspend fun clearTodayRankings(folderId: String)
 }

@@ -12,5 +12,7 @@ interface FirestoreService {
      * attempt succeeded but the client timed out), treat as success without updating.
      */
     suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument)
-    suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument>
+    suspend fun listRankingsForDate(folderId: String, dateKey: String): List<Pair<String, RankingFirestoreDocument>>
+    suspend fun deleteRanking(folderId: String, entryId: String)
+    suspend fun deleteRankingsForDate(folderId: String, dateKey: String)
 }

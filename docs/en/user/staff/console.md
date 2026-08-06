@@ -30,6 +30,16 @@ Configure single / multi / reorder questions and preview explanations.
 | Empty questions | <img src="/screenshots/staff/08-empty-questions.png" alt="Empty" width="360" /> |
 | No folder selected | <img src="/screenshots/staff/09-no-folder-selected.png" alt="None" width="360" /> |
 
-## Ranking
+## Ranking management
 
-<img src="/screenshots/staff/03-console-ranking.png" alt="Ranking" width="640" />
+View and delete today's rankings for the selected folder.
+
+- **Delete one**: trash icon on a row → confirm dialog → delete
+- **Delete all today**: 「すべて削除」→ confirm dialog → clear today's entries
+
+<img src="/screenshots/staff/03-console-ranking.png" alt="Ranking management" width="640" />
+
+| Confirm | Preview |
+|---------|---------|
+| Delete one | <img src="/screenshots/staff/10-ranking-delete-confirm.png" alt="Delete one confirm" width="360" /> |
+| Clear today | <img src="/screenshots/staff/11-ranking-clear-confirm.png" alt="Clear today confirm" width="360" /> |

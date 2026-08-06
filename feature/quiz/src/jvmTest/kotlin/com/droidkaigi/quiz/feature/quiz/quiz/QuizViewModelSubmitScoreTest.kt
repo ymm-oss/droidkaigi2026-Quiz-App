@@ -14,8 +14,10 @@ import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
@@ -255,6 +257,10 @@ class QuizViewModelSubmitScoreTest {
                 }
             }
         }
+
+        override suspend fun deleteEntry(folderId: String, entryId: String) = Unit
+
+        override suspend fun clearTodayRankings(folderId: String) = Unit
     }
 
     private fun unusedCatalog(): QuizCatalogRepository = object : QuizCatalogRepository {
@@ -302,6 +308,8 @@ class QuizViewModelSubmitScoreTest {
                 instantProvider = instantProvider,
             ),
             getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
+            deleteRankingEntryUseCase = DeleteRankingEntryUseCase(rankingRepository),
+            clearTodayRankingsUseCase = ClearTodayRankingsUseCase(rankingRepository),
             listQuizFoldersUseCase = ListQuizFoldersUseCase(catalog),
             createQuizFolderUseCase = CreateQuizFolderUseCase(catalog),
             updateQuizFolderUseCase = UpdateQuizFolderUseCase(catalog),

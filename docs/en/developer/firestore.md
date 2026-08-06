@@ -25,7 +25,7 @@ Folder id and quiz-set id are **1:1**.
 | Path | Read | Write |
 |------|------|-------|
 | `folders` / `appConfig` | Everyone | Authenticated staff |
-| `rankings` | Everyone | `create` only (participant scores) |
+| `rankings` | Everyone | `create` (participant scores); `delete` authenticated staff; no `update` |
 
 ## App mapping
 

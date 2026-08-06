@@ -68,6 +68,8 @@
 | **fake**（開発） | ローカル固定アカウント（`FakeStaffAuthRepository`）。入力ログインに加え「デモアカウントでログイン」ワンクリック可 | インメモリ（`InMemoryQuizCatalog`） |
 | **prod**（本番） | Firebase Authentication（`ProdStaffAuthRepository`） | Firestore（[docs/FIRESTORE.md](FIRESTORE.md)） |
 
+スタッフは当日ランキングの個別削除・本日分一括削除ができる（いずれも確認ダイアログ必須）。prod では `request.auth != null` のときのみ Firestore 上で削除可。
+
 `quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。
 
 ## 将来（Phase 2 候補）

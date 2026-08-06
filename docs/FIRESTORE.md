@@ -73,7 +73,7 @@ firebase deploy --only firestore:indexes
 要点:
 
 - `folders` / `appConfig`: 読み取り全員、書き込み `request.auth != null`（スタッフ）
-- `rankings`: 読み取り全員、`create` のみ（参加者のスコア送信）、`update`/`delete` 不可
+- `rankings`: 読み取り全員、`create`（参加者のスコア送信）、`delete` はログイン済みスタッフのみ、`update` 不可
 
 ## アプリからのマッピング
 

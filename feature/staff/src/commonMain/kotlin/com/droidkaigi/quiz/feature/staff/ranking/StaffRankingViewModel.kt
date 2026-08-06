@@ -21,6 +21,8 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     fun onIntent(intent: StaffRankingIntent) {
         when (intent) {
             StaffRankingIntent.Refresh -> refresh()
+            is StaffRankingIntent.DeleteEntry -> deleteEntry(intent.entryId)
+            StaffRankingIntent.ClearToday -> clearToday()
         }
     }
 
@@ -39,6 +41,49 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                             entries = emptyList(),
                             isLoading = false,
                             errorMessage = error.message ?: "Failed to load rankings",
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun deleteEntry(entryId: String) {
+        if (entryId.isBlank()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isMutating = true, errorMessage = null) }
+            runCatching { deps.deleteRankingEntryUseCase(folderId, entryId) }
+                .onSuccess {
+                    val entries = deps.getTodayRankingsUseCase(folderId)
+                    _uiState.update {
+                        it.copy(entries = entries, isMutating = false, errorMessage = null)
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isMutating = false,
+                            errorMessage = error.message ?: "Failed to delete ranking",
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun clearToday() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isMutating = true, errorMessage = null) }
+            runCatching { deps.clearTodayRankingsUseCase(folderId) }
+                .onSuccess {
+                    val entries = deps.getTodayRankingsUseCase(folderId)
+                    _uiState.update {
+                        it.copy(entries = entries, isMutating = false, errorMessage = null)
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isMutating = false,
+                            errorMessage = error.message ?: "Failed to clear rankings",
                         )
                     }
                 }

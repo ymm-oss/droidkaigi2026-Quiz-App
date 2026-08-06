@@ -36,10 +36,11 @@ internal fun QuizFolder.toFirestoreDocument(quizSet: QuizSet, updatedAtEpochMill
         updatedAtEpochMillis = updatedAtEpochMillis,
     )
 
-internal fun RankingFirestoreDocument.toDomain(): RankingEntry = RankingEntry(
+internal fun RankingFirestoreDocument.toDomain(entryId: String): RankingEntry = RankingEntry(
     nickname = nickname,
     score = score,
     completedAtEpochMillis = completedAtEpochMillis,
+    id = entryId,
 )
 
 private fun Question.toQuestionDto(): com.droidkaigi.quiz.core.data.dto.QuestionDto = when (this) {

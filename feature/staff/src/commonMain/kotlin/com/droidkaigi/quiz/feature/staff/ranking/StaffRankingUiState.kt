@@ -5,9 +5,12 @@ import com.droidkaigi.quiz.core.domain.model.RankingEntry
 data class StaffRankingUiState(
     val entries: List<RankingEntry> = emptyList(),
     val isLoading: Boolean = true,
+    val isMutating: Boolean = false,
     val errorMessage: String? = null,
 )
 
 sealed interface StaffRankingIntent {
     data object Refresh : StaffRankingIntent
+    data class DeleteEntry(val entryId: String) : StaffRankingIntent
+    data object ClearToday : StaffRankingIntent
 }

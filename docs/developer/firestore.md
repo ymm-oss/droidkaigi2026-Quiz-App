@@ -25,7 +25,7 @@ folders/{folderId}/rankings/{entryId}
 | パス | 読取 | 書込 |
 |------|------|------|
 | `folders` / `appConfig` | 全員 | 認証済みスタッフのみ |
-| `rankings` | 全員 | `create` のみ（参加者スコア）。更新・削除不可 |
+| `rankings` | 全員 | `create`（参加者スコア）。`delete` は認証済みスタッフのみ。`update` 不可 |
 
 ## アプリからのマッピング
 

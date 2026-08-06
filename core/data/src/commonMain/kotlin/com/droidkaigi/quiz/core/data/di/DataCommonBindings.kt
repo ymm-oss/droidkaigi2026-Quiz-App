@@ -8,8 +8,10 @@ import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.time.SystemInstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
@@ -66,6 +68,14 @@ object DataCommonBindings {
     @Provides
     fun provideGetTodayRankingsUseCase(rankingRepository: RankingRepository): GetTodayRankingsUseCase =
         GetTodayRankingsUseCase(rankingRepository)
+
+    @Provides
+    fun provideDeleteRankingEntryUseCase(rankingRepository: RankingRepository): DeleteRankingEntryUseCase =
+        DeleteRankingEntryUseCase(rankingRepository)
+
+    @Provides
+    fun provideClearTodayRankingsUseCase(rankingRepository: RankingRepository): ClearTodayRankingsUseCase =
+        ClearTodayRankingsUseCase(rankingRepository)
 
     @Provides
     fun provideListQuizFoldersUseCase(quizCatalogRepository: QuizCatalogRepository): ListQuizFoldersUseCase =

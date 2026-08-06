@@ -115,7 +115,7 @@ fun StaffTextButton(
     }
 }
 
-/** Outlined action pinned to the sidebar footer ("参加者向けに公開"). */
+/** Outlined action ("参加者向けに公開", "すべて削除"). */
 @Composable
 fun StaffOutlinedButton(
     text: String,
@@ -123,14 +123,20 @@ fun StaffOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    destructive: Boolean = false,
 ) {
+    val contentColor = if (destructive) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.height(40.dp),
         enabled = enabled,
         shape = RoundedCornerShape(QuizTokens.cornerSmall),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+        border = BorderStroke(1.dp, if (destructive) contentColor else MaterialTheme.colorScheme.outline),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = contentColor),
         contentPadding = PaddingValues(horizontal = QuizTokens.spacingMedium, vertical = 0.dp),
     ) {
         Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(16.dp))

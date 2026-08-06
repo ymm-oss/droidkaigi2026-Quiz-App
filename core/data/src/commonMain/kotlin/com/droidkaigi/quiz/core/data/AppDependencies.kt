@@ -5,8 +5,10 @@ import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
@@ -33,6 +35,8 @@ class AppDependencies(
     val submitScoreUseCase: SubmitScoreUseCase,
     val quizPlayUseCase: QuizPlayUseCase,
     val getTodayRankingsUseCase: GetTodayRankingsUseCase,
+    val deleteRankingEntryUseCase: DeleteRankingEntryUseCase,
+    val clearTodayRankingsUseCase: ClearTodayRankingsUseCase,
     val listQuizFoldersUseCase: ListQuizFoldersUseCase,
     val createQuizFolderUseCase: CreateQuizFolderUseCase,
     val updateQuizFolderUseCase: UpdateQuizFolderUseCase,
@@ -60,6 +64,8 @@ class AppDependencies(
                 submitScoreUseCase = graph.submitScoreUseCase,
                 quizPlayUseCase = graph.quizPlayUseCase,
                 getTodayRankingsUseCase = graph.getTodayRankingsUseCase,
+                deleteRankingEntryUseCase = graph.deleteRankingEntryUseCase,
+                clearTodayRankingsUseCase = graph.clearTodayRankingsUseCase,
                 listQuizFoldersUseCase = graph.listQuizFoldersUseCase,
                 createQuizFolderUseCase = graph.createQuizFolderUseCase,
                 updateQuizFolderUseCase = graph.updateQuizFolderUseCase,
