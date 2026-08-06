@@ -296,7 +296,6 @@ class QuizViewModelSubmitScoreTest {
         val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
         return AppDependencies(
             instantProvider = instantProvider,
-            quizCatalogRepository = catalog,
             quizEngine = quizEngine,
             sessionHolder = sessionHolder,
             submitScoreUseCase = submitScoreUseCase,

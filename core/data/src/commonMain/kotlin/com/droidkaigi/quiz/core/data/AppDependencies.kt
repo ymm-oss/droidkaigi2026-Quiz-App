@@ -1,7 +1,6 @@
 package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.QuizAppGraph
-import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
@@ -27,7 +26,6 @@ import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
  */
 class AppDependencies(
     val instantProvider: InstantProvider,
-    val quizCatalogRepository: QuizCatalogRepository,
     val quizEngine: QuizEngine,
     val sessionHolder: QuizSessionHolder,
     val submitScoreUseCase: SubmitScoreUseCase,
@@ -55,7 +53,6 @@ class AppDependencies(
         fun init(graph: QuizAppGraph) {
             shared = AppDependencies(
                 instantProvider = graph.instantProvider,
-                quizCatalogRepository = graph.quizCatalogRepository,
                 quizEngine = graph.quizEngine,
                 sessionHolder = graph.sessionHolder,
                 submitScoreUseCase = graph.submitScoreUseCase,

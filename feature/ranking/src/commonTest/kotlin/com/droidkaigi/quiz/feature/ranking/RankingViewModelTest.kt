@@ -197,7 +197,6 @@ private fun rankingTestDeps(
     val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
     return AppDependencies(
         instantProvider = instantProvider,
-        quizCatalogRepository = catalogRepository,
         quizEngine = quizEngine,
         sessionHolder = sessionHolder,
         submitScoreUseCase = submitScoreUseCase,
