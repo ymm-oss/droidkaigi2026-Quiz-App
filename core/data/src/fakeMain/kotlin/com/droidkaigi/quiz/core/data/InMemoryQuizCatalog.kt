@@ -15,6 +15,7 @@ class InMemoryQuizCatalog {
     private val quizSets = mutableMapOf<String, QuizSet>()
     private val rankingsByFolder = mutableMapOf<String, MutableList<RankingEntry>>()
     private var activeFolderId: String = ""
+
     /** Fake default after seed is true for easier local play-through; unset catalog stays false. */
     private var sitePublished: Boolean = false
 

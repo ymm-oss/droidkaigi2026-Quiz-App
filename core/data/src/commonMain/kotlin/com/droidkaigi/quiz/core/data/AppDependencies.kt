@@ -13,11 +13,11 @@ import com.droidkaigi.quiz.core.domain.usecase.GetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetSitePublishedUseCase
-import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
-import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
@@ -43,13 +43,17 @@ class AppDependencies(
     val saveQuizSetUseCase: SaveQuizSetUseCase,
     val getActiveQuizFolderIdUseCase: GetActiveQuizFolderIdUseCase,
     val setActiveQuizFolderUseCase: SetActiveQuizFolderUseCase,
-    val getSitePublishedUseCase: GetSitePublishedUseCase,
-    val setSitePublishedUseCase: SetSitePublishedUseCase,
     val signInStaffUseCase: SignInStaffUseCase,
     val quickSignInStaffUseCase: QuickSignInStaffUseCase,
     val getStaffAuthStateUseCase: GetStaffAuthStateUseCase,
     val signOutStaffUseCase: SignOutStaffUseCase,
 ) {
+    val getSitePublishedUseCase: GetSitePublishedUseCase
+        get() = GetSitePublishedUseCase(quizCatalogRepository)
+
+    val setSitePublishedUseCase: SetSitePublishedUseCase
+        get() = SetSitePublishedUseCase(quizCatalogRepository)
+
     companion object {
         lateinit var shared: AppDependencies
             private set
@@ -72,8 +76,6 @@ class AppDependencies(
                 saveQuizSetUseCase = graph.saveQuizSetUseCase,
                 getActiveQuizFolderIdUseCase = graph.getActiveQuizFolderIdUseCase,
                 setActiveQuizFolderUseCase = graph.setActiveQuizFolderUseCase,
-                getSitePublishedUseCase = graph.getSitePublishedUseCase,
-                setSitePublishedUseCase = graph.setSitePublishedUseCase,
                 signInStaffUseCase = graph.signInStaffUseCase,
                 quickSignInStaffUseCase = graph.quickSignInStaffUseCase,
                 getStaffAuthStateUseCase = graph.getStaffAuthStateUseCase,

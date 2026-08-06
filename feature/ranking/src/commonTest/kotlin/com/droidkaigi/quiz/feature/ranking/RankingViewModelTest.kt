@@ -17,7 +17,6 @@ import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
-import com.droidkaigi.quiz.core.domain.usecase.GetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
@@ -25,7 +24,6 @@ import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
-import com.droidkaigi.quiz.core.domain.usecase.SetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
@@ -43,6 +41,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RankingViewModelTest {
@@ -217,8 +216,6 @@ private fun rankingTestDeps(
         saveQuizSetUseCase = SaveQuizSetUseCase(catalogRepository),
         getActiveQuizFolderIdUseCase = GetActiveQuizFolderIdUseCase(catalogRepository),
         setActiveQuizFolderUseCase = SetActiveQuizFolderUseCase(catalogRepository),
-        getSitePublishedUseCase = GetSitePublishedUseCase(catalogRepository),
-        setSitePublishedUseCase = SetSitePublishedUseCase(catalogRepository),
         signInStaffUseCase = signInStaffUseCase,
         quickSignInStaffUseCase = QuickSignInStaffUseCase(staffAuthRepository, signInStaffUseCase),
         getStaffAuthStateUseCase = GetStaffAuthStateUseCase(staffAuthHolder),

@@ -49,6 +49,5 @@ class InMemoryQuizCatalogRepository(
         return catalog.withLock { getSitePublished() }
     }
 
-    override suspend fun setSitePublished(published: Boolean) =
-        catalog.withLock { setSitePublished(published) }
+    override suspend fun setSitePublished(published: Boolean) = catalog.withLock { setSitePublished(published) }
 }

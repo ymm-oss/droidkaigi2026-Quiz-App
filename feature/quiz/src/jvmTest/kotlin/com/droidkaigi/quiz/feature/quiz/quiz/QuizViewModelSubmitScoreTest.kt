@@ -18,7 +18,6 @@ import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
-import com.droidkaigi.quiz.core.domain.usecase.GetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
@@ -26,7 +25,6 @@ import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
-import com.droidkaigi.quiz.core.domain.usecase.SetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.StaffAuthSessionStore
@@ -314,8 +312,6 @@ class QuizViewModelSubmitScoreTest {
             saveQuizSetUseCase = SaveQuizSetUseCase(catalog),
             getActiveQuizFolderIdUseCase = GetActiveQuizFolderIdUseCase(catalog),
             setActiveQuizFolderUseCase = SetActiveQuizFolderUseCase(catalog),
-            getSitePublishedUseCase = GetSitePublishedUseCase(catalog),
-            setSitePublishedUseCase = SetSitePublishedUseCase(catalog),
             signInStaffUseCase = signIn,
             quickSignInStaffUseCase = QuickSignInStaffUseCase(staffRepo, signIn),
             getStaffAuthStateUseCase = GetStaffAuthStateUseCase(staffStore),
