@@ -54,8 +54,8 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
             runCatching { deps.deleteRankingEntryUseCase(folderId, entryId) }
                 .onSuccess {
                     val entries = deps.getTodayRankingsUseCase(folderId)
-                    _uiState.update {
-                        it.copy(entries = entries, isMutating = false, errorMessage = null)
+                    _uiState.update { state ->
+                        state.copy(entries = entries, isMutating = false, errorMessage = null)
                     }
                 }
                 .onFailure { error ->
@@ -75,8 +75,8 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
             runCatching { deps.clearTodayRankingsUseCase(folderId) }
                 .onSuccess {
                     val entries = deps.getTodayRankingsUseCase(folderId)
-                    _uiState.update {
-                        it.copy(entries = entries, isMutating = false, errorMessage = null)
+                    _uiState.update { state ->
+                        state.copy(entries = entries, isMutating = false, errorMessage = null)
                     }
                 }
                 .onFailure { error ->
