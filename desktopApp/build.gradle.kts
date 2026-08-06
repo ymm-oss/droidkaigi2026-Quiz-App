@@ -1,4 +1,3 @@
-import org.gradle.api.tasks.JavaExec
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -13,6 +12,8 @@ val appVersion = rootProject.extra["appVersion"] as String
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
 }
+apply(from = "${rootDir}/gradle/desktop-jlink-modules.gradle.kts")
+val desktopJlinkModules = rootProject.extra["desktopJlinkModules"] as List<String>
 
 kotlin {
     jvmToolchain(17)
@@ -34,17 +35,10 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.droidkaigi.quiz"
             packageVersion = appVersion
+            // See gradle/desktop-jlink-modules.gradle.kts
+            modules(*desktopJlinkModules.toTypedArray())
         }
     }
 }
 
-val rootFirebaseConfig =
-    rootProject.layout.projectDirectory.file("androidApp/src/prod/google-services.json")
-tasks.withType<JavaExec>().configureEach {
-    if (name == "run") {
-        workingDir = rootProject.layout.projectDirectory.asFile
-        if (rootFirebaseConfig.asFile.isFile) {
-            systemProperty("droidkaigi.firebase.config", rootFirebaseConfig.asFile.absolutePath)
-        }
-    }
-}
+apply(from = "${rootDir}/gradle/firebase-google-services.desktop.gradle.kts")

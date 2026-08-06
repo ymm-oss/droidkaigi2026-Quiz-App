@@ -14,6 +14,7 @@ import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
@@ -45,6 +46,7 @@ class AppDependencies(
     val setActiveQuizFolderUseCase: SetActiveQuizFolderUseCase,
     val signInStaffUseCase: SignInStaffUseCase,
     val quickSignInStaffUseCase: QuickSignInStaffUseCase,
+    val restoreStaffAuthSessionUseCase: RestoreStaffAuthSessionUseCase,
     val getStaffAuthStateUseCase: GetStaffAuthStateUseCase,
     val signOutStaffUseCase: SignOutStaffUseCase,
 ) {
@@ -78,6 +80,7 @@ class AppDependencies(
                 setActiveQuizFolderUseCase = graph.setActiveQuizFolderUseCase,
                 signInStaffUseCase = graph.signInStaffUseCase,
                 quickSignInStaffUseCase = graph.quickSignInStaffUseCase,
+                restoreStaffAuthSessionUseCase = graph.restoreStaffAuthSessionUseCase,
                 getStaffAuthStateUseCase = graph.getStaffAuthStateUseCase,
                 signOutStaffUseCase = graph.signOutStaffUseCase,
             )

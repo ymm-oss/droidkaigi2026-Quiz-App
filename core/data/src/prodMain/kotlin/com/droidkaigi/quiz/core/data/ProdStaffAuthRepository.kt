@@ -1,6 +1,9 @@
 package com.droidkaigi.quiz.core.data
 
+import com.droidkaigi.quiz.core.data.auth.restoreStaffSessionFromFirebase
 import com.droidkaigi.quiz.core.data.auth.staffSignInWithEmailPassword
+import com.droidkaigi.quiz.core.data.auth.staffSignOutFromFirebase
+import com.droidkaigi.quiz.core.data.firestore.FirestoreBootstrap
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
 import com.droidkaigi.quiz.core.domain.model.StaffSession
@@ -33,4 +36,19 @@ class ProdStaffAuthRepository(
                 ),
             )
         }
+
+    override suspend fun restorePersistedSession(): StaffSession? {
+        FirestoreBootstrap.ensureInitialized()
+        val result = restoreStaffSessionFromFirebase() ?: return null
+        staffAuthHolder.firebaseIdToken = result.idToken
+        return StaffSession(
+            email = result.email,
+            displayName = result.displayName,
+        )
+    }
+
+    override suspend fun signOut() {
+        FirestoreBootstrap.ensureInitialized()
+        staffSignOutFromFirebase()
+    }
 }

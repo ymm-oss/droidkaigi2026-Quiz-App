@@ -13,7 +13,7 @@ captures/
 .artifacts/
 
 # Firebase
-google-services.json
+androidApp/src/prod/google-services.json
 firebase-debug.log
 
 # VitePress (docs site)

@@ -7,3 +7,7 @@ internal data class StaffSignInResult(
 )
 
 internal expect suspend fun staffSignInWithEmailPassword(email: String, password: String): StaffSignInResult
+
+internal expect suspend fun restoreStaffSessionFromFirebase(): StaffSignInResult?
+
+internal expect suspend fun staffSignOutFromFirebase()
