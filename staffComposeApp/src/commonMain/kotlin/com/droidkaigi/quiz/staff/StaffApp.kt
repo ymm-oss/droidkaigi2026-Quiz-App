@@ -23,7 +23,10 @@ fun StaffApp() {
         var previewFolderId by remember { mutableStateOf<String?>(null) }
         if (authState.isAuthenticated) {
             StaffShell(
-                onSignOut = { authViewModel.onSignOut() },
+                onSignOut = {
+                    previewFolderId = null
+                    authViewModel.onSignOut()
+                },
                 onPreviewFolder = { folderId -> previewFolderId = folderId },
             )
             previewFolderId?.let { folderId ->
