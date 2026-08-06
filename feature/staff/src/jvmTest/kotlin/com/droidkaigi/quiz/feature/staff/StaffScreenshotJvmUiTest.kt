@@ -339,7 +339,16 @@ private val sampleShellState = StaffShellUiState(
 private val sampleQuestions = listOf(
     SingleChoice(
         id = "q1",
-        prompt = "DroidKaigi の開催都市は？",
+        prompt = """
+            次のコードの `Text` は **Compose Multiplatform** のコンポーネントです。
+
+            ```kotlin
+            @Composable
+            fun Greeting() {
+                Text("Hello, DroidKaigi!")
+            }
+            ```
+        """.trimIndent(),
         explanationMarkdown = "DroidKaigi 2024 は東京で開催されます。",
         options = listOf(
             ChoiceOption("opt1", "東京"),
@@ -350,7 +359,11 @@ private val sampleQuestions = listOf(
     ),
     MultipleChoice(
         id = "q2",
-        prompt = "Compose の特徴として正しいものをすべて選べ",
+        prompt = """
+            次の **Compose** コードについて、正しい説明をすべて選んでください。
+
+            `var count by remember { mutableStateOf(0) }`
+        """.trimIndent(),
         explanationMarkdown = "UI 構築の基本原則に関する問題",
         options = listOf(
             ChoiceOption("opt1", "宣言的 UI"),
@@ -361,7 +374,11 @@ private val sampleQuestions = listOf(
     ),
     Reorder(
         id = "q3",
-        prompt = "アプリ起動の流れを正しい順に並べ替えよ",
+        prompt = """
+            # Activity 起動〜描画
+
+            アプリ起動の流れを正しい順に並べ替えてください。
+        """.trimIndent(),
         explanationMarkdown = "Android のライフサイクルと初期化プロセス",
         items = listOf(
             ReorderItem("i1", "Application.onCreate"),
@@ -383,8 +400,8 @@ private val sampleRanking = listOf(
 
 private val sampleEditorDraft = StaffQuestionDraft(
     id = "q1",
-    prompt = "DroidKaigi の開催都市は？",
-    explanationMarkdown = "東京で開催されます。",
+    prompt = "**DroidKaigi** の開催都市は？",
+    explanationMarkdown = "東京で開催されます。`venue` は会場側の設定です。",
     type = StaffQuestionType.SingleChoice,
     items = listOf(
         StaffListItem("opt1", "東京"),

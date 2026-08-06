@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -44,13 +47,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.droidkaigi.quiz.core.domain.model.MultipleChoice
 import com.droidkaigi.quiz.core.domain.model.Question
 import com.droidkaigi.quiz.core.domain.model.Reorder
+import com.droidkaigi.quiz.core.domain.model.SingleChoice
+import com.droidkaigi.quiz.core.ui.components.QuizMarkdownText
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.feature.staff.StaffConfirmDialog
-import com.droidkaigi.quiz.feature.staff.components.StaffBadge
 import com.droidkaigi.quiz.feature.staff.components.StaffContentPane
 import com.droidkaigi.quiz.feature.staff.components.StaffFilledButton
+import com.droidkaigi.quiz.feature.staff.components.StaffQuestionTypeChip
+import com.droidkaigi.quiz.feature.staff.components.StaffQuestionTypeTone
 import com.droidkaigi.quiz.feature.staff.components.StaffSectionHeader
 import com.droidkaigi.quiz.feature.staff.components.StaffTextButton
 import com.droidkaigi.quiz.feature.staff.components.staffDividerColor
@@ -237,11 +244,12 @@ internal fun StaffQuestionCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = 192.dp)
             .shadow(if (isDragging) 8.dp else 0.dp, RoundedCornerShape(QuizTokens.cornerMedium))
             .clip(RoundedCornerShape(QuizTokens.cornerMedium))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .border(1.dp, staffDividerColor(), RoundedCornerShape(QuizTokens.cornerMedium))
-            .padding(QuizTokens.spacingMedium - 4.dp),
+            .padding(QuizTokens.spacingMedium),
         verticalAlignment = Alignment.Top,
     ) {
         Icon(
@@ -261,7 +269,10 @@ internal fun StaffQuestionCard(
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
-                StaffBadge(text = questionTypeLabel(question))
+                StaffQuestionTypeChip(
+                    text = questionTypeLabel(question),
+                    type = questionTypeTone(question),
+                )
             }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
@@ -272,27 +283,16 @@ internal fun StaffQuestionCard(
             )
         }
         Spacer(modifier = Modifier.width(QuizTokens.spacingMedium))
-        Column(modifier = Modifier.weight(2f)) {
-            Text(
-                text = question.prompt,
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (question.explanationMarkdown.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = question.explanationMarkdown,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
+        StaffQuestionMarkdownViewport(
+            prompt = question.prompt,
+            explanation = question.explanationMarkdown,
+            modifier = Modifier
+                .weight(1.5f)
+                .height(160.dp),
+        )
         Spacer(modifier = Modifier.width(QuizTokens.spacingMedium))
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1.5f),
             horizontalAlignment = Alignment.End,
         ) {
             StaffCorrectAnswerChip(question = question)
@@ -315,12 +315,13 @@ private fun StaffCorrectAnswerChip(question: Question) {
     val answer = correctAnswerText(question)
     Column(
         modifier = Modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
             .padding(horizontal = QuizTokens.spacingSmall, vertical = 4.dp),
         horizontalAlignment = Alignment.End,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.Top) {
             Icon(
                 imageVector = if (question is Reorder) {
                     Icons.Default.FormatListNumbered
@@ -329,26 +330,56 @@ private fun StaffCorrectAnswerChip(question: Question) {
                 },
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .size(14.dp),
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = if (question is Reorder) "正解順:" else "正解: $answer",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = if (question is Reorder) "正解順:" else "正解:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = answer,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                    softWrap = true,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
-        if (question is Reorder) {
+    }
+}
+
+@Composable
+private fun StaffQuestionMarkdownViewport(prompt: String, explanation: String, modifier: Modifier = Modifier) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(QuizTokens.cornerSmall))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.16f))
+            .border(1.dp, staffDividerColor(0.12f), RoundedCornerShape(QuizTokens.cornerSmall))
+            .verticalScroll(scrollState)
+            .padding(horizontal = QuizTokens.spacingSmall, vertical = 6.dp),
+    ) {
+        QuizMarkdownText(prompt)
+        if (explanation.isNotBlank()) {
+            Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
             Text(
-                text = answer,
+                text = explanation,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
+}
+
+private fun questionTypeTone(question: Question): StaffQuestionTypeTone = when (question) {
+    is SingleChoice -> StaffQuestionTypeTone.SingleChoice
+    is MultipleChoice -> StaffQuestionTypeTone.MultipleChoice
+    is Reorder -> StaffQuestionTypeTone.Reorder
 }

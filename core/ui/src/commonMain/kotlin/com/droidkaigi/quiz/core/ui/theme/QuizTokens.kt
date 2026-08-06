@@ -85,7 +85,7 @@ object QuizTokens {
     // Staff console layout metrics (1440x900 desktop reference).
     val staffNavRailWidth = 80.dp
     val staffSidebarWidth = 260.dp
-    val staffEditorPanelWidth = 450.dp
+    val staffEditorPanelWidth = 560.dp
     val staffContentMaxWidth = 1000.dp
     val staffTopBarHeight = 64.dp
     val staffTableRowHeight = 56.dp
