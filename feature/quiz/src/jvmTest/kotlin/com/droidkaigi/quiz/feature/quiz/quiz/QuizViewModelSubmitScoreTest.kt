@@ -297,7 +297,6 @@ class QuizViewModelSubmitScoreTest {
         return AppDependencies(
             instantProvider = instantProvider,
             quizCatalogRepository = catalog,
-            rankingRepository = rankingRepository,
             quizEngine = quizEngine,
             sessionHolder = sessionHolder,
             submitScoreUseCase = submitScoreUseCase,

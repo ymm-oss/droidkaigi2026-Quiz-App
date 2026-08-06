@@ -198,7 +198,6 @@ private fun rankingTestDeps(
     return AppDependencies(
         instantProvider = instantProvider,
         quizCatalogRepository = catalogRepository,
-        rankingRepository = rankingRepository,
         quizEngine = quizEngine,
         sessionHolder = sessionHolder,
         submitScoreUseCase = submitScoreUseCase,
