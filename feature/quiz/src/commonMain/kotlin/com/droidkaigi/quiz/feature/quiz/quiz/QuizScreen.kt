@@ -217,10 +217,10 @@ fun QuizContent(
 
             val answerCorrect = state.lastAnswerCorrect
             val showFeedbackOverlay = state.showFeedback && answerCorrect != null
-            var feedbackIsCorrect by remember { mutableStateOf(false) }
-            LaunchedEffect(showFeedbackOverlay, answerCorrect) {
-                if (showFeedbackOverlay) {
-                    feedbackIsCorrect = answerCorrect
+            var cachedFeedbackCorrect by remember { mutableStateOf(false) }
+            LaunchedEffect(answerCorrect) {
+                if (answerCorrect != null) {
+                    cachedFeedbackCorrect = answerCorrect
                 }
             }
             AnimatedVisibility(
@@ -229,7 +229,7 @@ fun QuizContent(
                 exit = fadeOut(),
             ) {
                 QuizAnswerFeedbackOverlay(
-                    isCorrect = feedbackIsCorrect,
+                    isCorrect = answerCorrect ?: cachedFeedbackCorrect,
                     continueLabel = stringResource(
                         if (state.isFinishing) {
                             Res.string.quiz_feedback_finish

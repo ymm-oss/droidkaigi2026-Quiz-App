@@ -85,6 +85,7 @@ class QuizFeedbackOverlayJvmUiTest {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun correctFeedback_doesNotFlashIncorrectDuringDismiss() = runComposeUiTest {
+        mainClock.autoAdvance = false
         var state by mutableStateOf(
             QuizPreviewFixtures.singleChoiceState(
                 showFeedback = true,
@@ -108,13 +109,14 @@ class QuizFeedbackOverlayJvmUiTest {
             }
         }
 
+        mainClock.advanceTimeByFrame()
         onNodeWithText("正解！").assertIsDisplayed()
 
         state = QuizPreviewFixtures.singleChoiceState(
             showFeedback = false,
             lastAnswerCorrect = null,
         )
-        waitForIdle()
+        mainClock.advanceTimeByFrame()
 
         onAllNodesWithText("不正解").assertCountEquals(0)
     }
