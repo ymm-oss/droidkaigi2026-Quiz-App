@@ -20,6 +20,7 @@ folders/{folderId}
 
 appConfig/default              # ドキュメント ID 固定
   activeFolderId: string        # 参加者向けに公開中のフォルダ
+  sitePublished: boolean        # サイト／受付の公開可否（既定 false）
   updatedAtEpochMillis: number?
 
 folders/{folderId}/rankings/{entryId}
@@ -79,9 +80,10 @@ firebase deploy --only firestore:indexes
 
 | Repository | Firestore |
 |------------|-----------|
-| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` |
+| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`activeFolderId` / `sitePublished`） |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | 参加者クイズ取得 | `getActiveQuizFolderIdUseCase` → `getQuizSetForFolderUseCase`（`folders/{activeFolderId}`） |
+| サイト公開 | `getSitePublishedUseCase` / `setSitePublishedUseCase`（`appConfig/default.sitePublished`） |
 
 **prod のデータ取得**
 

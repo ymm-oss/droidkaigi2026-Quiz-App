@@ -266,6 +266,8 @@ class QuizViewModelSubmitScoreTest {
         override suspend fun saveQuizSet(quizSet: QuizSet) = fail("unused")
         override suspend fun getActiveFolderId(): String = fail("unused")
         override suspend fun setActiveFolderId(folderId: String) = fail("unused")
+        override suspend fun getSitePublished(): Boolean = fail("unused")
+        override suspend fun setSitePublished(published: Boolean) = fail("unused")
     }
 
     private fun unusedStaffRepo(): StaffAuthRepository = object : StaffAuthRepository {

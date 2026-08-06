@@ -6,8 +6,9 @@ Desktop console for venue staff to manage quiz sets and publish state.
 
 | Feature | Description |
 |---------|-------------|
-| **Quiz management** | Add/edit questions, explanations, per-type settings |
+| **Quiz management** | Add/edit questions, explanations, per-type settings. Participant preview (phone frame) |
 | **Folder management** | Split sets by date/level; switch the active (published) folder |
+| **Site publish** | Open/close participant intake (`sitePublished`; separate from folder publish) |
 | **Ranking** | View today's ranking per folder |
 
 ## Screens

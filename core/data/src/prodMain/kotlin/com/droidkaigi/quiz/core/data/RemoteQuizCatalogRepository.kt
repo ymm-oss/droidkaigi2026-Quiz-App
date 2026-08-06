@@ -50,7 +50,9 @@ class RemoteQuizCatalogRepository(
         firestore.setFolder(folderId, document)
         FirestoreDiagnostics.log("QuizCatalog", "createFolder wrote folderId=$folderId")
         if (existing.isEmpty()) {
-            firestore.setAppConfig(AppConfigFirestoreDocument(activeFolderId = folderId, updatedAtEpochMillis = now))
+            writeAppConfig { current ->
+                current.copy(activeFolderId = folderId, updatedAtEpochMillis = now)
+            }
         }
         return document.toQuizFolder(folderId)
     }
@@ -76,12 +78,12 @@ class RemoteQuizCatalogRepository(
         if (config?.activeFolderId == folderId) {
             val fallback = listFolders().firstOrNull()?.id.orEmpty()
             if (fallback.isNotEmpty()) {
-                firestore.setAppConfig(
-                    AppConfigFirestoreDocument(
+                writeAppConfig { current ->
+                    current.copy(
                         activeFolderId = fallback,
                         updatedAtEpochMillis = instantProvider.nowEpochMillis(),
-                    ),
-                )
+                    )
+                }
             }
         }
     }
@@ -112,11 +114,29 @@ class RemoteQuizCatalogRepository(
 
     override suspend fun setActiveFolderId(folderId: String) {
         require(firestore.getFolder(folderId) != null) { "Unknown folder: $folderId" }
-        firestore.setAppConfig(
-            AppConfigFirestoreDocument(
+        writeAppConfig { current ->
+            current.copy(
                 activeFolderId = folderId,
                 updatedAtEpochMillis = instantProvider.nowEpochMillis(),
-            ),
-        )
+            )
+        }
+    }
+
+    override suspend fun getSitePublished(): Boolean =
+        firestore.getAppConfig()?.sitePublished ?: false
+
+    override suspend fun setSitePublished(published: Boolean) {
+        writeAppConfig { current ->
+            current.copy(
+                sitePublished = published,
+                updatedAtEpochMillis = instantProvider.nowEpochMillis(),
+            )
+        }
+    }
+
+    /** Preserves other [AppConfigFirestoreDocument] fields across partial updates. */
+    private suspend fun writeAppConfig(transform: (AppConfigFirestoreDocument) -> AppConfigFirestoreDocument) {
+        val current = firestore.getAppConfig() ?: AppConfigFirestoreDocument()
+        firestore.setAppConfig(transform(current))
     }
 }

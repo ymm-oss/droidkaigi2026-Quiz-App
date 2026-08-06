@@ -10,7 +10,7 @@
 
 | 画面 | 説明 |
 |------|------|
-| Home | ニックネーム入力、クイズ開始 |
+| Home | ニックネーム入力、クイズ開始。`sitePublished == false` のときは受付前メッセージを表示し開始不可 |
 | Quiz | 問題形式に応じた UI、進捗（1-based `n / N`）、回答。回答後は全画面フィードバック → タップで次へ／結果へ |
 | Result | スコア表示（アニメーション）、ランキングへ |
 | Ranking | 当日 Top N、自分の行をハイライト、各エントリの回答完了日時（`MM/dd HH:mm`、欠落時は「不明」）を表示 |
@@ -34,6 +34,7 @@
 ### 本番（`quiz.runtime=prod`）
 
 - **問題**: `QuizCatalogRepository` 経由でリモート（`getActiveFolderId` → `getQuizSet`）。
+- **サイト公開**: `appConfig.sitePublished`（スタッフが ON/OFF）。参加者 Home は起動時に参照し、非公開なら開始不可。
 - **ランキング**: リモートから当日分を取得。クイズ完了時に `SubmitScoreUseCase` で送信。
 - **ネットワーク必須**。取得・送信失敗時はエラー表示（同梱 JSON やインメモリへのサイレントフォールバックなし）。
 
@@ -67,6 +68,12 @@
 |------------|------|--------|
 | **fake**（開発） | ローカル固定アカウント（`FakeStaffAuthRepository`）。入力ログインに加え「デモアカウントでログイン」ワンクリック可 | インメモリ（`InMemoryQuizCatalog`） |
 | **prod**（本番） | Firebase Authentication（`ProdStaffAuthRepository`） | Firestore（[docs/FIRESTORE.md](FIRESTORE.md)） |
+
+主な運営操作:
+
+- **公開中フォルダ**の切替（`activeFolderId`）
+- **サイト公開**の ON/OFF（`sitePublished`。参加者受付の可否）
+- 選択フォルダの **参加者プレビュー**（スマホ枠ダイアログで Quiz→Result。ランキング送信なし）
 
 `quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。
 

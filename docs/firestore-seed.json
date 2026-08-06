@@ -46,7 +46,8 @@
   },
   "appConfig": {
     "default": {
-      "activeFolderId": "droidkaigi2026-demo"
+      "activeFolderId": "droidkaigi2026-demo",
+      "sitePublished": false
     }
   }
 }

@@ -1,6 +1,14 @@
 package com.droidkaigi.quiz.feature.quiz.home
 
-data class HomeUiState(val nickname: String = "", val isLoading: Boolean = false, val error: HomeError? = null)
+data class HomeUiState(
+    val nickname: String = "",
+    val isLoading: Boolean = false,
+    /** null while checking; false = closed (safe default while loading). */
+    val sitePublished: Boolean? = null,
+    val error: HomeError? = null,
+) {
+    val isSiteOpen: Boolean get() = sitePublished == true
+}
 
 sealed interface HomeError {
     data object EmptyNickname : HomeError

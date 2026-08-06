@@ -153,6 +153,29 @@ class QuizPlayUseCaseTest {
         assertEquals("Bob", store.highlightNickname)
     }
 
+    @Test
+    fun completeAndSubmitScore_withoutSubmitDoesNotCallRanking() = runBlocking {
+        val store = InMemoryQuizSessionStore()
+        val ranking = ControllableRankingRepository()
+        val clock = MutableClock(1_000L)
+        val useCase = newUseCase(store, ranking, clock)
+        store.beginSession(
+            QuizEngine().startSession(
+                folderId = "folder",
+                quizSet = quizSet,
+                nickname = "Preview",
+                startedAtEpochMillis = 500L,
+            ),
+        )
+        useCase.submitAnswer(SingleChoiceAnswer("q1", "a"))
+
+        val result = useCase.completeAndSubmitScore(submitScore = false)
+        assertIs<CompleteQuizResult.Success>(result)
+        assertEquals(0, ranking.submitCount)
+        assertNotNull(store.lastResult)
+        assertNull(store.pendingResult)
+    }
+
     private fun newUseCase(
         store: QuizSessionStore,
         ranking: RankingRepository,

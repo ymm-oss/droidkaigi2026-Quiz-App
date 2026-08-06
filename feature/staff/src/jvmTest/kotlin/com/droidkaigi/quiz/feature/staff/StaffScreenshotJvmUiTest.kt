@@ -302,7 +302,11 @@ private fun StaffConsolePreview(
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(modifier = Modifier.fillMaxSize()) {
-            StaffTopBar(onSignOut = {})
+            StaffTopBar(
+                sitePublished = shellState.sitePublished,
+                onToggleSitePublished = {},
+                onSignOut = {},
+            )
             Row(modifier = Modifier.fillMaxSize()) {
                 StaffNavigationRail(selectedTab = selectedTab, onSelectTab = {})
                 StaffFolderSidebar(
@@ -333,6 +337,7 @@ private val sampleShellState = StaffShellUiState(
     ),
     selectedFolderId = "day1-easy",
     activeFolderId = "day1-easy",
+    sitePublished = false,
     isLoading = false,
 )
 

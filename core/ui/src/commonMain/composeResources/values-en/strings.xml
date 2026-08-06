@@ -13,6 +13,8 @@
     <string name="home_start">Start quiz</string>
     <string name="home_error_empty_nickname">Please enter a nickname</string>
     <string name="home_error_load_failed">Failed to load</string>
+    <string name="home_site_closed_message">The quiz is not open yet. Please wait until it is published.</string>
+    <string name="home_site_closed_button">Not open yet</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_ranking">Ranking</string>

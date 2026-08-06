@@ -68,12 +68,14 @@ fun ResultContent(
     onGoToRankingClick: () -> Unit,
     modifier: Modifier = Modifier,
     animateScore: Boolean = true,
+    primaryActionLabel: String? = null,
 ) {
     val displayedScore = if (animateScore) {
         QuizMotion.animateScore(targetScore)
     } else {
         targetScore
     }
+    val actionLabel = primaryActionLabel ?: stringResource(Res.string.result_go_ranking)
 
     QuizScreenBackground(modifier = modifier) {
         Box(
@@ -124,7 +126,7 @@ fun ResultContent(
                     )
                 }
                 QuizPrimaryButton(
-                    text = stringResource(Res.string.result_go_ranking),
+                    text = actionLabel,
                     onClick = onGoToRankingClick,
                 )
             }

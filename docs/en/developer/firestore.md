@@ -12,6 +12,7 @@ folders/{folderId}
 
 appConfig/default
   activeFolderId
+  sitePublished           # site/reception open flag (default false)
   updatedAtEpochMillis?
 
 folders/{folderId}/rankings/{entryId}
@@ -31,7 +32,7 @@ Folder id and quiz-set id are **1:1**.
 
 | Repository | Firestore |
 |------------|-----------|
-| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` |
+| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` (`activeFolderId` / `sitePublished`) |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 
 Participant load is two reads: `getActiveFolderId` → `getQuizSet`.

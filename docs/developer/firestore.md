@@ -12,6 +12,7 @@ folders/{folderId}
 
 appConfig/default
   activeFolderId          # 参加者向け公開中フォルダ
+  sitePublished           # サイト／受付の公開可否（既定 false）
   updatedAtEpochMillis?
 
 folders/{folderId}/rankings/{entryId}
@@ -31,7 +32,7 @@ folders/{folderId}/rankings/{entryId}
 
 | Repository | Firestore |
 |------------|-----------|
-| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` |
+| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`activeFolderId` / `sitePublished`） |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 
 参加者の問題取得は `getActiveFolderId` → `getQuizSet` の **2 読み取り**で足ります。
