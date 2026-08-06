@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz.core.data
 
+import com.droidkaigi.quiz.core.data.auth.StaffAuthErrorMapper
 import com.droidkaigi.quiz.core.data.auth.staffSignInWithEmailPassword
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
@@ -26,11 +27,6 @@ class ProdStaffAuthRepository(
         } catch (e: StaffAuthException) {
             Result.failure(e)
         } catch (e: Exception) {
-            Result.failure(
-                StaffAuthException(
-                    e.message?.takeIf { it.isNotBlank() }
-                        ?: "メールアドレスまたはパスワードが正しくありません",
-                ),
-            )
+            Result.failure(StaffAuthErrorMapper.toException(e))
         }
 }
