@@ -205,6 +205,22 @@ firebase deploy --only firestore:indexes
 firebase deploy --only firestore
 ```
 
+### CD（master マージ時のルール自動デプロイ）
+
+`firestore.rules` が `master` に入ると [.github/workflows/deploy-firestore-rules.yml](../.github/workflows/deploy-firestore-rules.yml) が `firebase deploy --only firestore:rules` を実行する（手動は Actions の **Deploy Firestore rules** → **Run workflow**）。
+
+| GitHub Secret | 内容 |
+|---------------|------|
+| `FIREBASE_SERVICE_ACCOUNT` | GCP サービスアカウントの **JSON 鍵全文**（`.firebaserc` のプロジェクト `droidkaigi26`） |
+
+**サービスアカウントの用意（初回のみ）**
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@droidkaigi26.iam.gserviceaccount.com`）
+2. ロール **Firebase Rules Admin**（`roles/firebaserules.admin`）を付与（最小権限。運用簡略化なら **Firebase Admin** でも可）
+3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
+
+`GOOGLE_SERVICES_JSON`（アプリ用クライアント設定）とは別物。インデックスの自動デプロイはこの workflow の対象外（必要なら手動で `firebase deploy --only firestore:indexes`）。
+
 ### prod の起動
 
 ```bash

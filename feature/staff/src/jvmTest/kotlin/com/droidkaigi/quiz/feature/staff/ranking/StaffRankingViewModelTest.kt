@@ -1,4 +1,4 @@
-package com.droidkaigi.quiz.feature.ranking
+package com.droidkaigi.quiz.feature.staff.ranking
 
 import com.droidkaigi.quiz.core.data.AppDependencies
 import com.droidkaigi.quiz.core.data.QuizSessionHolder
@@ -30,6 +30,7 @@ import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
 import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -40,12 +41,12 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RankingViewModelTest {
+class StaffRankingViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @BeforeTest
@@ -59,98 +60,110 @@ class RankingViewModelTest {
     }
 
     @Test
-    fun initialLoad_success_showsEntries() = runTest {
-        val entries = listOf(RankingEntry("Alice", 100, 1_700_000_000_000))
-        val viewModel = RankingViewModel(
-            rankingTestDeps(
-                rankings = { entries },
-            ),
-        )
-
-        val state = viewModel.uiState.value
-        assertEquals(false, state.isLoading)
-        assertNull(state.error)
-        assertEquals(entries, state.entries)
-    }
-
-    @Test
-    fun initialLoad_failure_showsErrorWithoutEntries() = runTest {
-        val viewModel = RankingViewModel(
-            rankingTestDeps(
-                rankings = { error("network down") },
-            ),
-        )
-
-        val state = viewModel.uiState.value
-        assertEquals(false, state.isLoading)
-        assertTrue(state.entries.isEmpty())
-        val error = assertIs<RankingError.LoadFailed>(state.error)
-        assertEquals("network down", error.detail)
-    }
-
-    @Test
-    fun retryAfterInitialFailure_success_clearsError() = runTest {
-        var failOnce = true
-        val entries = listOf(RankingEntry("Bob", 200, 1_700_000_000_100))
-        val viewModel = RankingViewModel(
-            rankingTestDeps(
+    fun refreshFailure_keepsPreviouslyLoadedEntries() = runTest {
+        val entries = listOf(RankingEntry("Alice", 100, 1_700_000_000_000, id = "entry-1"))
+        var shouldFail = false
+        val viewModel = StaffRankingViewModel(
+            folderId = "folder-1",
+            deps = staffRankingTestDeps(
                 rankings = {
-                    if (failOnce) {
-                        failOnce = false
-                        error("temporary")
-                    } else {
-                        entries
-                    }
-                },
-            ),
-        )
-
-        assertIs<RankingError.LoadFailed>(viewModel.uiState.value.error)
-
-        viewModel.onIntent(RankingIntent.Refresh)
-
-        val state = viewModel.uiState.value
-        assertEquals(false, state.isLoading)
-        assertNull(state.error)
-        assertEquals(entries, state.entries)
-    }
-
-    @Test
-    fun refreshAfterSuccess_failure_keepsEntriesAndShowsError() = runTest {
-        var call = 0
-        val entries = listOf(RankingEntry("Carol", 300, 1_700_000_000_200))
-        val viewModel = RankingViewModel(
-            rankingTestDeps(
-                rankings = {
-                    call += 1
-                    if (call == 1) {
-                        entries
-                    } else {
-                        error("refresh failed")
-                    }
+                    if (shouldFail) error("network down") else entries
                 },
             ),
         )
 
         assertEquals(entries, viewModel.uiState.value.entries)
-        assertNull(viewModel.uiState.value.error)
 
-        viewModel.onIntent(RankingIntent.Refresh)
+        shouldFail = true
+        viewModel.onIntent(StaffRankingIntent.Refresh)
 
         val state = viewModel.uiState.value
-        assertEquals(false, state.isLoading)
         assertEquals(entries, state.entries)
-        val error = assertIs<RankingError.LoadFailed>(state.error)
-        assertEquals("refresh failed", error.detail)
+        assertEquals("network down", state.loadError)
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun deleteSuccess_reloadFailure_optimisticallyRemovesEntryAndResetsMutating() = runTest {
+        val entries = listOf(RankingEntry("Alice", 100, 1_700_000_000_000, id = "entry-1"))
+        var failReloadAfterDelete = false
+        val viewModel = StaffRankingViewModel(
+            folderId = "folder-1",
+            deps = staffRankingTestDeps(
+                rankings = {
+                    if (failReloadAfterDelete) error("reload failed") else entries
+                },
+                onDelete = { failReloadAfterDelete = true },
+            ),
+        )
+
+        viewModel.onIntent(StaffRankingIntent.DeleteEntry("entry-1"))
+
+        val state = viewModel.uiState.value
+        assertTrue(state.entries.isEmpty())
+        assertEquals("操作は完了しましたが、一覧の更新に失敗しました", state.mutationError)
+        assertFalse(state.isMutating)
+    }
+
+    @Test
+    fun deleteFailure_keepsEntriesAndResetsMutating() = runTest {
+        val entries = listOf(RankingEntry("Alice", 100, 1_700_000_000_000, id = "entry-1"))
+        val viewModel = StaffRankingViewModel(
+            folderId = "folder-1",
+            deps = staffRankingTestDeps(
+                rankings = { entries },
+                onDelete = { error("delete failed") },
+            ),
+        )
+
+        viewModel.onIntent(StaffRankingIntent.DeleteEntry("entry-1"))
+
+        val state = viewModel.uiState.value
+        assertEquals(entries, state.entries)
+        assertEquals("delete failed", state.mutationError)
+        assertFalse(state.isMutating)
+    }
+
+    @Test
+    fun staleRefresh_doesNotOverwriteAfterDelete() = runTest {
+        val original = listOf(RankingEntry("Alice", 100, 1_700_000_000_000, id = "entry-1"))
+        val refreshed = listOf(
+            RankingEntry("Alice", 100, 1_700_000_000_000, id = "entry-1"),
+            RankingEntry("Bob", 90, 1_700_000_000_100, id = "entry-2"),
+        )
+        val refreshGate = CompletableDeferred<Unit>()
+        var refreshCount = 0
+        val viewModel = StaffRankingViewModel(
+            folderId = "folder-1",
+            deps = staffRankingTestDeps(
+                rankings = {
+                    refreshCount += 1
+                    when (refreshCount) {
+                        1 -> original
+                        2 -> {
+                            refreshGate.await()
+                            refreshed
+                        }
+                        else -> emptyList()
+                    }
+                },
+            ),
+        )
+        assertEquals(original, viewModel.uiState.value.entries)
+
+        viewModel.onIntent(StaffRankingIntent.Refresh)
+        viewModel.onIntent(StaffRankingIntent.DeleteEntry("entry-1"))
+        refreshGate.complete(Unit)
+
+        assertTrue(viewModel.uiState.value.entries.isEmpty())
+        assertNull(viewModel.uiState.value.mutationError)
     }
 }
 
-private fun rankingTestDeps(
+private fun staffRankingTestDeps(
     rankings: suspend (String) -> List<RankingEntry>,
-    sessionHolder: QuizSessionHolder = QuizSessionHolder().apply {
-        playbackFolderId = "folder-1"
-        highlightNickname = "Alice"
-    },
+    onDelete: suspend (String) -> Unit = {},
+    onClear: suspend () -> Unit = {},
 ): AppDependencies {
     val rankingRepository = object : RankingRepository {
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = rankings(folderId)
@@ -162,9 +175,13 @@ private fun rankingTestDeps(
             entryId: String,
         ) = Unit
 
-        override suspend fun deleteEntry(folderId: String, entryId: String) = Unit
+        override suspend fun deleteEntry(folderId: String, entryId: String) {
+            onDelete(entryId)
+        }
 
-        override suspend fun clearTodayRankings(folderId: String) = Unit
+        override suspend fun clearTodayRankings(folderId: String) {
+            onClear()
+        }
     }
     val catalogRepository = object : QuizCatalogRepository {
         override suspend fun listFolders(): List<QuizFolder> = error("unused")
@@ -185,7 +202,7 @@ private fun rankingTestDeps(
 
         override suspend fun getSitePublished(): Boolean = true
 
-        override suspend fun setSitePublished(published: Boolean) = error("unused")
+        override suspend fun setSitePublished(published: Boolean) = Unit
     }
     val instantProvider = object : InstantProvider {
         override fun nowEpochMillis(): Long = 0L
@@ -196,8 +213,8 @@ private fun rankingTestDeps(
     }
     val staffAuthHolder = StaffAuthHolder()
     val signInStaffUseCase = SignInStaffUseCase(staffAuthRepository, staffAuthHolder)
-
     val quizEngine = QuizEngine()
+    val sessionHolder = QuizSessionHolder()
     val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
     return AppDependencies(
         instantProvider = instantProvider,

@@ -28,6 +28,12 @@ private class UnsupportedFirestoreService : FirestoreService {
     override suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) =
         unsupported()
 
-    override suspend fun listRankingsForDate(folderId: String, dateKey: String): List<RankingFirestoreDocument> =
-        unsupported()
+    override suspend fun listRankingsForDate(
+        folderId: String,
+        dateKey: String,
+    ): List<Pair<String, RankingFirestoreDocument>> = unsupported()
+
+    override suspend fun deleteRanking(folderId: String, entryId: String) = unsupported()
+
+    override suspend fun deleteRankingsForDate(folderId: String, dateKey: String) = unsupported()
 }

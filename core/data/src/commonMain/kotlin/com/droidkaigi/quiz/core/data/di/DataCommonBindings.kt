@@ -3,7 +3,6 @@ package com.droidkaigi.quiz.core.data.di
 import com.droidkaigi.quiz.core.data.QuizSessionHolder
 import com.droidkaigi.quiz.core.data.StaffAuthHolder
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
-import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
@@ -13,7 +12,6 @@ import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
-import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
@@ -46,10 +44,6 @@ object DataCommonBindings {
     fun provideInstantProvider(): InstantProvider = SystemInstantProvider()
 
     @Provides
-    fun provideSubmitScoreUseCase(rankingRepository: RankingRepository): SubmitScoreUseCase =
-        SubmitScoreUseCase(rankingRepository)
-
-    @Provides
     fun provideQuizPlayUseCase(
         quizEngine: QuizEngine,
         sessionHolder: QuizSessionHolder,
@@ -61,10 +55,6 @@ object DataCommonBindings {
         submitScoreUseCase = submitScoreUseCase,
         instantProvider = instantProvider,
     )
-
-    @Provides
-    fun provideGetTodayRankingsUseCase(rankingRepository: RankingRepository): GetTodayRankingsUseCase =
-        GetTodayRankingsUseCase(rankingRepository)
 
     @Provides
     fun provideListQuizFoldersUseCase(quizCatalogRepository: QuizCatalogRepository): ListQuizFoldersUseCase =

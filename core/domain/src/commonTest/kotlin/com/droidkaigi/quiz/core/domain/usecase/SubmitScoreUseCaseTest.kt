@@ -24,6 +24,10 @@ class SubmitScoreUseCaseTest {
                 ) {
                     calls += SubmitCall(result, completedAtEpochMillis, folderId, entryId)
                 }
+
+                override suspend fun deleteEntry(folderId: String, entryId: String) = Unit
+
+                override suspend fun clearTodayRankings(folderId: String) = Unit
             },
         )
         val result = QuizResult("Alice", 2, 3, 240, 10_000)

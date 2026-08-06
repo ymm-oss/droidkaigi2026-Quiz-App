@@ -74,6 +74,7 @@
 - **公開中フォルダ**の切替（`activeFolderId`）
 - **サイト公開**の ON/OFF（`sitePublished`。参加者受付の可否）
 - 選択フォルダの **参加者プレビュー**（スマホ枠ダイアログで Quiz→Result。ランキング送信なし）
+- 当日ランキングの **個別削除・本日分一括削除**（いずれも確認ダイアログ必須。prod では `request.auth != null` のときのみ Firestore 上で削除可）
 
 `quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。
 

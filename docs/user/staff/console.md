@@ -34,8 +34,16 @@
 | 問題が空 | <img src="/screenshots/staff/08-empty-questions.png" alt="問題なし" width="360" /> |
 | フォルダ未選択 | <img src="/screenshots/staff/09-no-folder-selected.png" alt="未選択" width="360" /> |
 
-## ランキング参照
+## ランキング管理
 
-選択中フォルダの当日ランキングを確認できます。
+選択中フォルダの当日ランキングを確認・削除できます。
 
-<img src="/screenshots/staff/03-console-ranking.png" alt="ランキング参照" width="640" />
+- **個別削除**: 各行のゴミ箱アイコン → 確認ダイアログ後に削除
+- **一括削除**: 「すべて削除」→ 確認ダイアログ後に本日分をすべて削除
+
+<img src="/screenshots/staff/03-console-ranking.png" alt="ランキング管理" width="640" />
+
+| 確認 | イメージ |
+|------|----------|
+| 個別削除 | <img src="/screenshots/staff/10-ranking-delete-confirm.png" alt="個別削除確認" width="360" /> |
+| すべて削除 | <img src="/screenshots/staff/11-ranking-clear-confirm.png" alt="一括削除確認" width="360" /> |
