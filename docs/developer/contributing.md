@@ -6,12 +6,11 @@
 
 | 手段 | 向いていること |
 |------|----------------|
-| Slack `#191_eve_droidkaigi` | 手早い質問・運営まわり |
-| [GitHub Issues](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues) | 設計議論・バグ・機能トラッキング |
+| [GitHub Issues](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues) | 手早い質問、設計議論、バグ・機能トラッキング |
 
 ## 作業の流れ
 
-1. Issue / Slack で必要なら相談
+1. Issue で必要なら相談
 2. `master` から feature ブランチ
 3. fake ランタイムで実装・検証
 4. テスト・手動確認
