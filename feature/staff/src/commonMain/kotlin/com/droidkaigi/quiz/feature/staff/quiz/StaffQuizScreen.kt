@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
@@ -39,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,10 +54,10 @@ import com.droidkaigi.quiz.core.domain.model.SingleChoice
 import com.droidkaigi.quiz.core.ui.components.QuizMarkdownText
 import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.feature.staff.StaffConfirmDialog
+import com.droidkaigi.quiz.feature.staff.components.StaffContentPane
 import com.droidkaigi.quiz.feature.staff.components.StaffFilledButton
 import com.droidkaigi.quiz.feature.staff.components.StaffQuestionTypeChip
 import com.droidkaigi.quiz.feature.staff.components.StaffQuestionTypeTone
-import com.droidkaigi.quiz.feature.staff.components.StaffContentPane
 import com.droidkaigi.quiz.feature.staff.components.StaffSectionHeader
 import com.droidkaigi.quiz.feature.staff.components.StaffTextButton
 import com.droidkaigi.quiz.feature.staff.components.staffDividerColor
@@ -243,11 +244,12 @@ internal fun StaffQuestionCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = 192.dp)
             .shadow(if (isDragging) 8.dp else 0.dp, RoundedCornerShape(QuizTokens.cornerMedium))
             .clip(RoundedCornerShape(QuizTokens.cornerMedium))
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .border(1.dp, staffDividerColor(), RoundedCornerShape(QuizTokens.cornerMedium))
-            .padding(QuizTokens.spacingMedium - 4.dp),
+            .padding(QuizTokens.spacingMedium),
         verticalAlignment = Alignment.Top,
     ) {
         Icon(
@@ -281,24 +283,13 @@ internal fun StaffQuestionCard(
             )
         }
         Spacer(modifier = Modifier.width(QuizTokens.spacingMedium))
-        Column(
+        StaffQuestionMarkdownViewport(
+            prompt = question.prompt,
+            explanation = question.explanationMarkdown,
             modifier = Modifier
                 .weight(1.5f)
-                .heightIn(max = 96.dp)
-                .clipToBounds(),
-        ) {
-            QuizMarkdownText(question.prompt)
-            if (question.explanationMarkdown.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = question.explanationMarkdown,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
+                .height(160.dp),
+        )
         Spacer(modifier = Modifier.width(QuizTokens.spacingMedium))
         Column(
             modifier = Modifier.weight(1.5f),
@@ -356,8 +347,33 @@ private fun StaffCorrectAnswerChip(question: Question) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                     softWrap = true,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun StaffQuestionMarkdownViewport(prompt: String, explanation: String, modifier: Modifier = Modifier) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(QuizTokens.cornerSmall))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.16f))
+            .border(1.dp, staffDividerColor(0.12f), RoundedCornerShape(QuizTokens.cornerSmall))
+            .verticalScroll(scrollState)
+            .padding(horizontal = QuizTokens.spacingSmall, vertical = 6.dp),
+    ) {
+        QuizMarkdownText(prompt)
+        if (explanation.isNotBlank()) {
+            Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+            Text(
+                text = explanation,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

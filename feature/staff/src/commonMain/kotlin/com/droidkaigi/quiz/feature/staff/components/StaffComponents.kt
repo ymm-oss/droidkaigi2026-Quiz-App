@@ -139,22 +139,6 @@ fun StaffOutlinedButton(
     }
 }
 
-/** Neutral metadata chip (question id, etc.). */
-@Composable
-fun StaffBadge(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        fontSize = 10.sp,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .border(1.dp, staffDividerColor(), RoundedCornerShape(4.dp))
-            .padding(horizontal = QuizTokens.spacingSmall, vertical = 2.dp),
-    )
-}
-
 /**
  * Color-coded question-type chip (Stitch: larger pill, distinct container tones).
  * Single → primaryContainer · Multiple → secondary · Reorder → tertiaryContainer.
@@ -163,8 +147,10 @@ fun StaffBadge(text: String, modifier: Modifier = Modifier) {
 fun StaffQuestionTypeChip(text: String, type: StaffQuestionTypeTone, modifier: Modifier = Modifier) {
     val background = when (type) {
         StaffQuestionTypeTone.SingleChoice -> MaterialTheme.colorScheme.primaryContainer
+
         // secondaryContainer matches question-card fill; use secondary for contrast on cards.
         StaffQuestionTypeTone.MultipleChoice -> MaterialTheme.colorScheme.secondary
+
         StaffQuestionTypeTone.Reorder -> MaterialTheme.colorScheme.tertiaryContainer
     }
     val content = when (type) {
