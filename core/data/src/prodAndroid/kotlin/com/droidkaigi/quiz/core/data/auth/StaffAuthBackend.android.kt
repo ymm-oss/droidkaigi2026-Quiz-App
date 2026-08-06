@@ -1,13 +1,14 @@
 package com.droidkaigi.quiz.core.data.auth
 
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
+import com.droidkaigi.quiz.core.domain.auth.StaffAuthFailureReason
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 
 internal actual suspend fun staffSignInWithEmailPassword(email: String, password: String): StaffSignInResult = try {
     Firebase.auth.signInWithEmailAndPassword(email, password)
     val user = Firebase.auth.currentUser
-        ?: throw StaffAuthException("ログインに失敗しました")
+        ?: throw StaffAuthException(StaffAuthFailureReason.Unknown)
     val idToken = user.getIdToken(false)
     StaffSignInResult(
         email = user.email ?: email,
@@ -17,9 +18,7 @@ internal actual suspend fun staffSignInWithEmailPassword(email: String, password
 } catch (e: StaffAuthException) {
     throw e
 } catch (e: Exception) {
-    throw StaffAuthException(
-        e.message?.takeIf { it.isNotBlank() } ?: "メールアドレスまたはパスワードが正しくありません",
-    )
+    throw StaffAuthErrorMapper.toException(e)
 }
 
 internal actual suspend fun restoreStaffSessionFromFirebase(): StaffSignInResult? {

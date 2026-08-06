@@ -1,10 +1,11 @@
 package com.droidkaigi.quiz.core.data
 
+import com.droidkaigi.quiz.core.data.auth.StaffAuthErrorMapper
 import com.droidkaigi.quiz.core.data.auth.restoreStaffSessionFromFirebase
 import com.droidkaigi.quiz.core.data.auth.staffSignInWithEmailPassword
 import com.droidkaigi.quiz.core.data.auth.staffSignOutFromFirebase
-import com.droidkaigi.quiz.core.data.firestore.FirestoreBootstrap
 import com.droidkaigi.quiz.core.data.di.AppScope
+import com.droidkaigi.quiz.core.data.firestore.FirestoreBootstrap
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
 import com.droidkaigi.quiz.core.domain.model.StaffSession
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
@@ -29,12 +30,7 @@ class ProdStaffAuthRepository(
         } catch (e: StaffAuthException) {
             Result.failure(e)
         } catch (e: Exception) {
-            Result.failure(
-                StaffAuthException(
-                    e.message?.takeIf { it.isNotBlank() }
-                        ?: "メールアドレスまたはパスワードが正しくありません",
-                ),
-            )
+            Result.failure(StaffAuthErrorMapper.toException(e))
         }
 
     override suspend fun restorePersistedSession(): StaffSession? {
