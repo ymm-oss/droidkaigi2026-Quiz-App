@@ -31,7 +31,11 @@ import com.droidkaigi.quiz.feature.staff.quiz.StaffQuizScreen
 import com.droidkaigi.quiz.feature.staff.ranking.StaffRankingScreen
 
 @Composable
-fun StaffShell(onSignOut: () -> Unit, shellViewModel: StaffShellViewModel = viewModel { StaffShellViewModel() }) {
+fun StaffShell(
+    onSignOut: () -> Unit,
+    onPreviewFolder: (folderId: String) -> Unit = {},
+    shellViewModel: StaffShellViewModel = viewModel { StaffShellViewModel() },
+) {
     val shellState by shellViewModel.uiState.collectAsState()
     var selectedTab by rememberSaveable { mutableStateOf(StaffTab.Quiz) }
     var newFolderName by rememberSaveable { mutableStateOf("") }
@@ -40,7 +44,13 @@ fun StaffShell(onSignOut: () -> Unit, shellViewModel: StaffShellViewModel = view
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(modifier = Modifier.fillMaxSize()) {
-            StaffTopBar(onSignOut = onSignOut)
+            StaffTopBar(
+                sitePublished = shellState.sitePublished,
+                onToggleSitePublished = {
+                    shellViewModel.onIntent(StaffShellIntent.RequestToggleSitePublished)
+                },
+                onSignOut = onSignOut,
+            )
             Row(modifier = Modifier.fillMaxSize()) {
                 StaffNavigationRail(
                     selectedTab = selectedTab,
@@ -67,6 +77,7 @@ fun StaffShell(onSignOut: () -> Unit, shellViewModel: StaffShellViewModel = view
                                 folderId = selectedFolder.id,
                                 folderName = selectedFolder.displayName,
                                 folderDescription = selectedFolder.description,
+                                onPreview = { onPreviewFolder(selectedFolder.id) },
                             )
 
                             StaffTab.Ranking -> StaffRankingScreen(folderId = selectedFolder.id)
@@ -75,6 +86,21 @@ fun StaffShell(onSignOut: () -> Unit, shellViewModel: StaffShellViewModel = view
                 }
             }
         }
+    }
+
+    if (shellState.showSitePublishConfirm) {
+        val publishing = !shellState.sitePublished
+        StaffConfirmDialog(
+            title = if (publishing) "サイトを公開" else "サイトを非公開にする",
+            message = if (publishing) {
+                "参加者アプリでクイズ受付を開始します。よろしいですか？\n（公開中フォルダの切替とは別の設定です）"
+            } else {
+                "参加者アプリでのクイズ受付を停止します。よろしいですか？"
+            },
+            confirmLabel = if (publishing) "公開する" else "非公開にする",
+            onConfirm = { shellViewModel.onIntent(StaffShellIntent.ConfirmToggleSitePublished) },
+            onDismiss = { shellViewModel.onIntent(StaffShellIntent.DismissSitePublishConfirm) },
+        )
     }
 }
 

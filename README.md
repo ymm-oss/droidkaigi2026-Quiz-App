@@ -51,7 +51,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 
 ## 開発者向け
 
-**誰でも PR 歓迎**です。疑問・不具合・新機能は [GitHub Issue](https://github.com/h-ideura/droidkaigi2026-Quiz-App/issues) または PR、相談は [Slack `#191_eve_droidkaigi`](https://accenture.enterprise.slack.com/archives/C0AMEMFCL4T) でどうぞ。
+**誰でも PR 歓迎**です。疑問・不具合・新機能は [GitHub Issue](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues) または PR でどうぞ。
 
 | やりたいこと | 読むドキュメント |
 |--------------|------------------|

@@ -43,6 +43,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RankingViewModelTest {
@@ -182,6 +183,10 @@ private fun rankingTestDeps(
         override suspend fun getActiveFolderId(): String = "active-folder"
 
         override suspend fun setActiveFolderId(folderId: String) = error("unused")
+
+        override suspend fun getSitePublished(): Boolean = true
+
+        override suspend fun setSitePublished(published: Boolean) = error("unused")
     }
     val instantProvider = object : InstantProvider {
         override fun nowEpochMillis(): Long = 0L
@@ -197,9 +202,9 @@ private fun rankingTestDeps(
     val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
     return AppDependencies(
         instantProvider = instantProvider,
+        quizCatalogRepository = catalogRepository,
         quizEngine = quizEngine,
         sessionHolder = sessionHolder,
-        submitScoreUseCase = submitScoreUseCase,
         quizPlayUseCase = QuizPlayUseCase(
             quizEngine = quizEngine,
             sessionStore = sessionHolder,

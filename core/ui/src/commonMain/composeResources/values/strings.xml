@@ -13,6 +13,8 @@
     <string name="home_start">クイズを始める</string>
     <string name="home_error_empty_nickname">ニックネームを入力してください</string>
     <string name="home_error_load_failed">読み込みに失敗しました</string>
+    <string name="home_site_closed_message">現在は公開されていません。公開までお待ちください。</string>
+    <string name="home_site_closed_button">受付開始前</string>
 
     <string name="nav_home">ホーム</string>
     <string name="nav_ranking">ランキング</string>

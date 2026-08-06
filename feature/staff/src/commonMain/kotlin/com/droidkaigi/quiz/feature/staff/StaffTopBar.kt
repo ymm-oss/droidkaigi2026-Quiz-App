@@ -25,7 +25,12 @@ import com.droidkaigi.quiz.feature.staff.components.StaffHorizontalDivider
 import com.droidkaigi.quiz.feature.staff.components.StaffTextButton
 
 @Composable
-fun StaffTopBar(onSignOut: () -> Unit, modifier: Modifier = Modifier) {
+fun StaffTopBar(
+    sitePublished: Boolean,
+    onToggleSitePublished: () -> Unit,
+    onSignOut: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -53,12 +58,30 @@ fun StaffTopBar(onSignOut: () -> Unit, modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            StaffTextButton(
-                text = "Logout",
-                icon = Icons.AutoMirrored.Filled.Logout,
-                onClick = onSignOut,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = if (sitePublished) "サイト: 公開中" else "サイト: 非公開",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (sitePublished) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+                Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
+                StaffTextButton(
+                    text = if (sitePublished) "サイトを非公開にする" else "サイトを公開",
+                    icon = null,
+                    onClick = onToggleSitePublished,
+                )
+                Spacer(modifier = Modifier.width(QuizTokens.spacingMedium))
+                StaffTextButton(
+                    text = "Logout",
+                    icon = Icons.AutoMirrored.Filled.Logout,
+                    onClick = onSignOut,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         StaffHorizontalDivider()
     }

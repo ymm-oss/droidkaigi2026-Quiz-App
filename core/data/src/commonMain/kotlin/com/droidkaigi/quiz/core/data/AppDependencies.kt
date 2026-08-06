@@ -1,6 +1,7 @@
 package com.droidkaigi.quiz.core.data
 
 import com.droidkaigi.quiz.core.data.di.QuizAppGraph
+import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
@@ -9,16 +10,17 @@ import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.GetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
-import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
-import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.SetSitePublishedUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignOutStaffUseCase
-import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
 import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
 
 /**
@@ -26,9 +28,9 @@ import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
  */
 class AppDependencies(
     val instantProvider: InstantProvider,
+    private val quizCatalogRepository: QuizCatalogRepository,
     val quizEngine: QuizEngine,
     val sessionHolder: QuizSessionHolder,
-    val submitScoreUseCase: SubmitScoreUseCase,
     val quizPlayUseCase: QuizPlayUseCase,
     val getTodayRankingsUseCase: GetTodayRankingsUseCase,
     val deleteRankingEntryUseCase: DeleteRankingEntryUseCase,
@@ -46,6 +48,12 @@ class AppDependencies(
     val getStaffAuthStateUseCase: GetStaffAuthStateUseCase,
     val signOutStaffUseCase: SignOutStaffUseCase,
 ) {
+    val getSitePublishedUseCase: GetSitePublishedUseCase
+        get() = GetSitePublishedUseCase(quizCatalogRepository)
+
+    val setSitePublishedUseCase: SetSitePublishedUseCase
+        get() = SetSitePublishedUseCase(quizCatalogRepository)
+
     companion object {
         lateinit var shared: AppDependencies
             private set
@@ -53,9 +61,9 @@ class AppDependencies(
         fun init(graph: QuizAppGraph) {
             shared = AppDependencies(
                 instantProvider = graph.instantProvider,
+                quizCatalogRepository = graph.quizCatalogRepository,
                 quizEngine = graph.quizEngine,
                 sessionHolder = graph.sessionHolder,
-                submitScoreUseCase = graph.submitScoreUseCase,
                 quizPlayUseCase = graph.quizPlayUseCase,
                 getTodayRankingsUseCase = graph.getTodayRankingsUseCase,
                 deleteRankingEntryUseCase = graph.deleteRankingEntryUseCase,

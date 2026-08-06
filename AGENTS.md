@@ -19,7 +19,7 @@ Package: `com.droidkaigi.quiz`
 | `:feature:ranking` | Ranking list |
 | `:feature:staff` | Staff console (quiz preview + rankings) — JVM only |
 
-Dependency direction: `feature → core:ui, domain` · `data → domain` · `composeApp → feature` · `staffComposeApp → feature:staff` (no reverse).
+Dependency direction: `feature → core:ui, domain` · `data → domain` · `composeApp → feature` · `staffComposeApp → feature:staff, feature:quiz`（プレビューホスト。feature 同士の逆依存なし）.
 
 ## Docs & harness
 

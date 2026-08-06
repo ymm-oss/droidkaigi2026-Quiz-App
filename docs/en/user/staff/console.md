@@ -4,7 +4,7 @@ Main screen after sign-in: quiz editing and ranking.
 
 ## Quiz management
 
-Select a folder (quiz set), edit questions, and switch publish state.
+Select a folder (quiz set), edit questions, and switch folder publish state. The top bar toggles site-wide intake (`sitePublished`); **Preview** on the question list plays the participant UI.
 
 <img src="/screenshots/staff/02-console-quiz.png" alt="Quiz console" width="640" />
 

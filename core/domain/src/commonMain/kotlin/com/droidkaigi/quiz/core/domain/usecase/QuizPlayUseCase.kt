@@ -49,10 +49,12 @@ class QuizPlayUseCase(
     }
 
     /**
-     * Scores a completed session (once) and uploads the score.
+     * Scores a completed session (once) and optionally uploads the score.
      * Safe to call again after [CompleteQuizResult.Failure] (retry) or while Ignored when in-flight.
+     *
+     * @param submitScore when false (staff preview), scores locally without calling ranking.
      */
-    suspend fun completeAndSubmitScore(): CompleteQuizResult {
+    suspend fun completeAndSubmitScore(submitScore: Boolean = true): CompleteQuizResult {
         val session = sessionStore.currentSession
         if (session == null || !session.isComplete || sessionStore.scoreSubmitInFlight) {
             return CompleteQuizResult.Ignored
@@ -65,6 +67,11 @@ class QuizPlayUseCase(
                 sessionStore.pendingResult = it
                 sessionStore.lastResult = it
             }
+
+        if (!submitScore) {
+            sessionStore.pendingResult = null
+            return CompleteQuizResult.Success(result)
+        }
 
         sessionStore.scoreSubmitInFlight = true
         return try {

@@ -68,10 +68,13 @@ fun QuizScreen(
     onAbandoned: () -> Unit,
     leaveRequest: Flow<Unit>,
     onExitEnabledChange: (Boolean) -> Unit = {},
+    submitScore: Boolean = true,
 ) {
     val sessionKey = AppDependencies.shared.sessionHolder.currentSession?.startedAtEpochMillis
-    val viewModel: QuizViewModel = viewModel(key = sessionKey?.toString() ?: "no-session") {
-        QuizViewModel()
+    val viewModel: QuizViewModel = viewModel(
+        key = "${sessionKey?.toString() ?: "no-session"}-submit=$submitScore",
+    ) {
+        QuizViewModel(submitScore = submitScore)
     }
     val state by viewModel.uiState.collectAsState()
 

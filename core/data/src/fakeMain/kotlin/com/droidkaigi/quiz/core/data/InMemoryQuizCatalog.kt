@@ -16,6 +16,9 @@ class InMemoryQuizCatalog {
     private val rankingsByFolder = mutableMapOf<String, MutableList<RankingEntry>>()
     private var activeFolderId: String = ""
 
+    /** Fake default after seed is true for easier local play-through; unset catalog stays false. */
+    private var sitePublished: Boolean = false
+
     suspend fun <T> withLock(block: suspend InMemoryQuizCatalog.() -> T): T = mutex.withLock { block() }
 
     fun listFolders(): List<QuizFolder> = folders.sortedBy { it.sortOrder }
@@ -66,6 +69,12 @@ class InMemoryQuizCatalog {
     fun setActiveFolderId(folderId: String) {
         require(folders.any { it.id == folderId }) { "Unknown folder: $folderId" }
         activeFolderId = folderId
+    }
+
+    fun getSitePublished(): Boolean = sitePublished
+
+    fun setSitePublished(published: Boolean) {
+        sitePublished = published
     }
 
     fun seedFolder(folder: QuizFolder, quizSet: QuizSet, demoRankings: List<RankingEntry> = emptyList()) {

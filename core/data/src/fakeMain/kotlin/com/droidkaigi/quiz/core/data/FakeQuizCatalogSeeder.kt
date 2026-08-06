@@ -77,6 +77,8 @@ internal object FakeQuizCatalogSeeder {
                 ),
             )
             seeded = true
+            // Fake harness: open the site so participant Home Start works without staff toggle.
+            setSitePublished(true)
         }
     }
 }
