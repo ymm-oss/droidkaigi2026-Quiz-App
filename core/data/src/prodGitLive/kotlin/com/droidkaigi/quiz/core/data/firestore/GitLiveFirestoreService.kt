@@ -119,8 +119,19 @@ internal class GitLiveFirestoreService : FirestoreService {
     }
 
     override suspend fun deleteRankingsForDate(folderId: String, dateKey: String) {
-        listRankingsForDate(folderId, dateKey).forEach { (entryId, _) ->
-            deleteRanking(folderId, entryId)
+        repeat(MAX_CLEAR_PASSES) {
+            val entries = listRankingsForDate(folderId, dateKey)
+            if (entries.isEmpty()) return
+            entries.forEach { (entryId, _) ->
+                deleteRanking(folderId, entryId)
+            }
         }
+        if (listRankingsForDate(folderId, dateKey).isNotEmpty()) {
+            error("Could not clear all rankings for $dateKey")
+        }
+    }
+
+    private companion object {
+        private const val MAX_CLEAR_PASSES = 5
     }
 }

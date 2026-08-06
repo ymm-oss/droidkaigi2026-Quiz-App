@@ -98,7 +98,7 @@ class StaffScreenshotJvmUiTest {
                     StaffRankingContent(
                         entries = sampleRanking,
                         isLoading = false,
-                        errorMessage = null,
+                        loadError = null,
                         onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},
@@ -302,7 +302,7 @@ class StaffScreenshotJvmUiTest {
                     StaffRankingContent(
                         entries = sampleRanking,
                         isLoading = false,
-                        errorMessage = null,
+                        loadError = null,
                         onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},
@@ -331,7 +331,7 @@ class StaffScreenshotJvmUiTest {
                     StaffRankingContent(
                         entries = sampleRanking,
                         isLoading = false,
-                        errorMessage = null,
+                        loadError = null,
                         onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},

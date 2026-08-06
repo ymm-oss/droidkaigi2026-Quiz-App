@@ -66,7 +66,8 @@ fun StaffRankingScreen(
         entries = state.entries,
         isLoading = state.isLoading,
         isMutating = state.isMutating,
-        errorMessage = state.errorMessage,
+        loadError = state.loadError,
+        mutationError = state.mutationError,
         onRefresh = { viewModel.onIntent(StaffRankingIntent.Refresh) },
         onRequestDeleteEntry = { entryToDelete = it },
         onRequestClearToday = { showClearTodayConfirm = true },
@@ -106,10 +107,11 @@ fun StaffRankingScreen(
 fun StaffRankingContent(
     entries: List<RankingEntry>,
     isLoading: Boolean,
-    errorMessage: String?,
+    loadError: String?,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     isMutating: Boolean = false,
+    mutationError: String? = null,
     onRequestDeleteEntry: (RankingEntry) -> Unit = {},
     onRequestClearToday: () -> Unit = {},
 ) {
@@ -140,8 +142,12 @@ fun StaffRankingContent(
         ) {
             StaffRankingHeaderRow()
             StaffHorizontalDivider()
+            mutationError?.let { message ->
+                StaffRankingNote(text = message, isError = true)
+                StaffHorizontalDivider(alpha = 0.15f)
+            }
             when {
-                isLoading -> Box(
+                isLoading && entries.isEmpty() -> Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(QuizTokens.spacingExtraLarge),
@@ -150,11 +156,15 @@ fun StaffRankingContent(
                     CircularProgressIndicator()
                 }
 
-                errorMessage != null -> StaffRankingNote(text = errorMessage, isError = true)
+                entries.isEmpty() && loadError != null -> StaffRankingNote(text = loadError, isError = true)
 
                 entries.isEmpty() -> StaffRankingNote(text = "本日のスコアはまだありません")
 
                 else -> {
+                    if (loadError != null) {
+                        StaffRankingNote(text = loadError, isError = true)
+                        StaffHorizontalDivider(alpha = 0.15f)
+                    }
                     LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                         itemsIndexed(
                             items = entries,

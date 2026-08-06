@@ -6,7 +6,8 @@ data class StaffRankingUiState(
     val entries: List<RankingEntry> = emptyList(),
     val isLoading: Boolean = true,
     val isMutating: Boolean = false,
-    val errorMessage: String? = null,
+    val loadError: String? = null,
+    val mutationError: String? = null,
 )
 
 sealed interface StaffRankingIntent {
