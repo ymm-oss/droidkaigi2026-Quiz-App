@@ -13,4 +13,5 @@ alwaysApply: true
 6. Theming: use `QuizTheme { }`; colors from `QuizTokens` / `QuizColors`, not raw `Color(0x…)` in features.
 7. Tests: scoring/date in `commonTest`; UI flows in `androidInstrumentedTest`.
 8. UI PRs must embed screenshots (required): user-facing Android UI per `.cursor/skills/android-pr-screenshots/SKILL.md`, staff/admin UI per `.cursor/skills/staff-pr-screenshots/SKILL.md`.
+9. Visual UI changes: Stitch first — see `quiz-stitch-source` (feedback → Stitch → implement from Stitch → screenshots).
 

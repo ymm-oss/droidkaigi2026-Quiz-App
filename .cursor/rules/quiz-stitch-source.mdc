@@ -1,0 +1,11 @@
+---
+description: UI 見た目変更は Stitch を原本とし、指摘→Stitch→実装の順で進める
+alwaysApply: true
+---
+
+# Stitch as design source
+
+1. Visual UI changes (participant or staff): **feedback → update Stitch → implement from Stitch’s proposal → PR screenshots**. Do not invent final layout/spacing/colors in code first.
+2. Prefer Stitch’s proposed design over pre-decided mock sizes. Still obey module boundaries, `QuizTokens` / theme colors, and existing PR screenshot rules.
+3. Staff console: Stitch project **DroidKaigi Quiz — Staff Console UI** (`projects/9203597364242936696`). Participant UI: use the matching Stitch project if known; otherwise ask before designing.
+4. Skip Stitch for non-visual work (copy-only typos with no layout change, DI, domain/data-only, docs-only).

@@ -64,6 +64,7 @@ fun StaffQuestionEditorPanel(
 ) {
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var showPromptPreview by remember { mutableStateOf(false) }
+    var showExplanationPreview by remember { mutableStateOf(false) }
 
     val borderColor = staffDividerColor()
     Column(
@@ -171,7 +172,7 @@ fun StaffQuestionEditorPanel(
                     colors = staffFieldColors(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(96.dp),
+                        .height(144.dp),
                 )
                 if (showPromptPreview && draft.prompt.isNotBlank()) {
                     QuizMarkdownText(draft.prompt)
@@ -189,7 +190,18 @@ fun StaffQuestionEditorPanel(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
-                StaffFieldLabel(text = "解説", hint = "(Markdown)")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    StaffFieldLabel(text = "解説", hint = "(Markdown)")
+                    StaffTextButton(
+                        text = "プレビュー",
+                        icon = Icons.Default.Visibility,
+                        onClick = { showExplanationPreview = !showExplanationPreview },
+                    )
+                }
                 OutlinedTextField(
                     value = draft.explanationMarkdown,
                     onValueChange = { onDraftChange(draft.copy(explanationMarkdown = it)) },
@@ -197,8 +209,11 @@ fun StaffQuestionEditorPanel(
                     colors = staffFieldColors(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),
+                        .height(120.dp),
                 )
+                if (showExplanationPreview && draft.explanationMarkdown.isNotBlank()) {
+                    QuizMarkdownText(draft.explanationMarkdown)
+                }
             }
         }
         StaffHorizontalDivider(alpha = 0.15f)

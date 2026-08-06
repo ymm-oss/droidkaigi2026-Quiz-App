@@ -339,7 +339,7 @@ private val sampleShellState = StaffShellUiState(
 private val sampleQuestions = listOf(
     SingleChoice(
         id = "q1",
-        prompt = "DroidKaigi の開催都市は？",
+        prompt = "**DroidKaigi** の開催都市は？",
         explanationMarkdown = "DroidKaigi 2024 は東京で開催されます。",
         options = listOf(
             ChoiceOption("opt1", "東京"),
@@ -383,8 +383,8 @@ private val sampleRanking = listOf(
 
 private val sampleEditorDraft = StaffQuestionDraft(
     id = "q1",
-    prompt = "DroidKaigi の開催都市は？",
-    explanationMarkdown = "東京で開催されます。",
+    prompt = "**DroidKaigi** の開催都市は？",
+    explanationMarkdown = "東京で開催されます。`venue` は会場側の設定です。",
     type = StaffQuestionType.SingleChoice,
     items = listOf(
         StaffListItem("opt1", "東京"),

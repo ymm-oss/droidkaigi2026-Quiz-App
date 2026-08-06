@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -138,7 +139,7 @@ fun StaffOutlinedButton(
     }
 }
 
-/** Neutral metadata chip (question type, question id). */
+/** Neutral metadata chip (question id, etc.). */
 @Composable
 fun StaffBadge(text: String, modifier: Modifier = Modifier) {
     Text(
@@ -152,6 +153,43 @@ fun StaffBadge(text: String, modifier: Modifier = Modifier) {
             .border(1.dp, staffDividerColor(), RoundedCornerShape(4.dp))
             .padding(horizontal = QuizTokens.spacingSmall, vertical = 2.dp),
     )
+}
+
+/**
+ * Color-coded question-type chip (Stitch: larger pill, distinct container tones).
+ * Single → primaryContainer · Multiple → secondary · Reorder → tertiaryContainer.
+ */
+@Composable
+fun StaffQuestionTypeChip(text: String, type: StaffQuestionTypeTone, modifier: Modifier = Modifier) {
+    val background = when (type) {
+        StaffQuestionTypeTone.SingleChoice -> MaterialTheme.colorScheme.primaryContainer
+        // secondaryContainer matches question-card fill; use secondary for contrast on cards.
+        StaffQuestionTypeTone.MultipleChoice -> MaterialTheme.colorScheme.secondary
+        StaffQuestionTypeTone.Reorder -> MaterialTheme.colorScheme.tertiaryContainer
+    }
+    val content = when (type) {
+        StaffQuestionTypeTone.SingleChoice -> MaterialTheme.colorScheme.onPrimaryContainer
+        StaffQuestionTypeTone.MultipleChoice -> MaterialTheme.colorScheme.onSecondary
+        StaffQuestionTypeTone.Reorder -> MaterialTheme.colorScheme.onTertiaryContainer
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        color = content,
+        modifier = modifier
+            .clip(CircleShape)
+            .background(background)
+            .border(1.dp, staffDividerColor(), CircleShape)
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+    )
+}
+
+enum class StaffQuestionTypeTone {
+    SingleChoice,
+    MultipleChoice,
+    Reorder,
 }
 
 /** Accent pill marking the folder participants currently see. */
