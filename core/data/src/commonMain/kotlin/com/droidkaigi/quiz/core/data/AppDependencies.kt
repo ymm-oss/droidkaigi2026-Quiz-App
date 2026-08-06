@@ -15,8 +15,8 @@ import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
-import com.droidkaigi.quiz.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
+import com.droidkaigi.quiz.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetSitePublishedUseCase
@@ -27,6 +27,7 @@ import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
 /**
  * Facade over the Metro [QuizAppGraph]. Initialize once via [init] from the app entry point.
  */
+@Suppress("LongParameterList")
 class AppDependencies(
     val instantProvider: InstantProvider,
     private val quizCatalogRepository: QuizCatalogRepository,

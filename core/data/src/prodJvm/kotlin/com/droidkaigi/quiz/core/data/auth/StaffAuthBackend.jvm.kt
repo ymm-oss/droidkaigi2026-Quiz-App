@@ -33,7 +33,8 @@ internal actual suspend fun restoreStaffSessionFromFirebase(): StaffSignInResult
             displayName = user.displayName?.takeIf { it.isNotBlank() } ?: "スタッフ",
             idToken = idToken,
         )
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        println("[StaffAuth] restoreStaffSessionFromFirebase failed: ${e.message}")
         null
     }
 }
