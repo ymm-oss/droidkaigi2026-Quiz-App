@@ -40,7 +40,7 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                         it.copy(
                             entries = emptyList(),
                             isLoading = false,
-                            errorMessage = error.message ?: "Failed to load rankings",
+                            errorMessage = error.message ?: "ランキングの読み込みに失敗しました",
                         )
                     }
                 }
@@ -62,7 +62,7 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                     _uiState.update {
                         it.copy(
                             isMutating = false,
-                            errorMessage = error.message ?: "Failed to delete ranking",
+                            errorMessage = error.message ?: "ランキングの削除に失敗しました",
                         )
                     }
                 }
@@ -83,7 +83,7 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                     _uiState.update {
                         it.copy(
                             isMutating = false,
-                            errorMessage = error.message ?: "Failed to clear rankings",
+                            errorMessage = error.message ?: "ランキングの一括削除に失敗しました",
                         )
                     }
                 }

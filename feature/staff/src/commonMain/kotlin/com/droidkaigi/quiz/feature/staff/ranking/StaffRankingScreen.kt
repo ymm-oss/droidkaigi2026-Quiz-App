@@ -271,7 +271,7 @@ private fun StaffRankingRow(
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "削除",
+                    contentDescription = "${entry.nickname}のランキングを削除",
                     tint = if (deleteEnabled) {
                         MaterialTheme.colorScheme.error
                     } else {
