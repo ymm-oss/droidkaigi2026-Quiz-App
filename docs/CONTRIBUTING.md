@@ -4,16 +4,13 @@ DroidKaigi 2026 Quiz への参加方法です。環境構築・ビルド手順�
 
 ## はじめに
 
-**誰でも PR を歓迎します。** 小さな修正、ドキュメント改善、不具合報告も問題ありません。わからない方・質問は気軽に Issue や Slack で。
+**誰でも PR を歓迎します。** 小さな修正、ドキュメント改善、不具合報告も問題ありません。わからない方・質問は気軽に [GitHub Issue](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues) で。
 
 ## 相談・質問
 
 | 手段 | 向いていること |
 |------|----------------|
-| [Slack `#191_eve_droidkaigi`](https://accenture.enterprise.slack.com/archives/C0AMEMFCL4T) | 手早い質問、実装中の相談、会場運営まわりの確認 |
-| [GitHub Issue](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues) | 設計の議論、バグ・機能のトラッキング、後から参照したい記録 |
-
-Slack は **Accenture Enterprise Slack** のワークスペース参加が必要です（招待はチーム経由）。
+| [GitHub Issue](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues) | 手早い質問、設計の議論、バグ・機能のトラッキング、後から参照したい記録 |
 
 ## 不具合・新機能の提案
 
@@ -27,7 +24,7 @@ Slack は **Accenture Enterprise Slack** のワークスペース参加が必要
 
 ## 作業の流れ
 
-1. Issue または Slack で相談（必要に応じて）
+1. Issue で相談（必要に応じて）
 2. `master` から feature ブランチを切る
 3. 実装（[DEVELOPMENT.md](DEVELOPMENT.md) の fake ランタイムでオフライン検証可能）
 4. テスト・手動確認
