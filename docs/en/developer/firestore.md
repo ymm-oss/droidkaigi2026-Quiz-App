@@ -35,3 +35,7 @@ Folder id and quiz-set id are **1:1**.
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 
 Participant load is two reads: `getActiveFolderId` → `getQuizSet`.
+
+## CD (rules)
+
+Pushes to `master` that change `firestore.rules` deploy via GitHub Actions. Required secret: `FIREBASE_SERVICE_ACCOUNT` (setup: `docs/DEVELOPMENT.md`, section on CD for Firestore rules).

@@ -35,3 +35,7 @@ folders/{folderId}/rankings/{entryId}
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 
 参加者の問題取得は `getActiveFolderId` → `getQuizSet` の **2 読み取り**で足ります。
+
+## CD（ルール）
+
+`master` への `firestore.rules` 変更は GitHub Actions が自動デプロイします。必要な Secret は `FIREBASE_SERVICE_ACCOUNT`（手順: [DEVELOPMENT.md](../DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ)）。
