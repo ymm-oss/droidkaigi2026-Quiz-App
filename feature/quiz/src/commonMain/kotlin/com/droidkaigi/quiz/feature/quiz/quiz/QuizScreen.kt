@@ -23,6 +23,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -212,13 +215,21 @@ fun QuizContent(
                 )
             }
 
+            val answerCorrect = state.lastAnswerCorrect
+            val showFeedbackOverlay = state.showFeedback && answerCorrect != null
+            var feedbackIsCorrect by remember { mutableStateOf(false) }
+            LaunchedEffect(showFeedbackOverlay, answerCorrect) {
+                if (showFeedbackOverlay) {
+                    feedbackIsCorrect = answerCorrect
+                }
+            }
             AnimatedVisibility(
-                visible = state.showFeedback && state.lastAnswerCorrect != null,
+                visible = showFeedbackOverlay,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
                 QuizAnswerFeedbackOverlay(
-                    isCorrect = state.lastAnswerCorrect == true,
+                    isCorrect = feedbackIsCorrect,
                     continueLabel = stringResource(
                         if (state.isFinishing) {
                             Res.string.quiz_feedback_finish

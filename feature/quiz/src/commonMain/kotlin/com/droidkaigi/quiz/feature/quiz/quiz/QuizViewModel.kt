@@ -198,7 +198,6 @@ class QuizViewModel(
         if (session.isComplete) {
             submitScoreAndFinish()
         } else {
-            _uiState.update { it.copy(showFeedback = false) }
             refreshFromSession()
         }
     }
