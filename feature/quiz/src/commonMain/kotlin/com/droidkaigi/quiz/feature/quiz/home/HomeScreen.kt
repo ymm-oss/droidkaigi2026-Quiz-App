@@ -95,7 +95,7 @@ fun HomeContent(
     localePreference: AppLocalePreference = AppLocalePreference.System,
     onLocalePreferenceChange: (AppLocalePreference) -> Unit = {},
 ) {
-    val siteOpen = sitePublished != false
+    val siteOpen = sitePublished == true
     QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
