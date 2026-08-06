@@ -18,7 +18,7 @@ private val staffShapes = Shapes(
 fun QuizStaffTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = QuizColors.staffDark(),
-        typography = QuizTypography.material(),
+        typography = QuizTypography.material(quizFontFamily()),
         shapes = staffShapes,
         content = content,
     )

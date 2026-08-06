@@ -11,7 +11,7 @@ fun QuizTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
     val colors = if (darkTheme) QuizColors.dark() else QuizColors.light()
     MaterialTheme(
         colorScheme = colors,
-        typography = QuizTypography.material(),
+        typography = QuizTypography.material(quizFontFamily()),
         content = content,
     )
 }
