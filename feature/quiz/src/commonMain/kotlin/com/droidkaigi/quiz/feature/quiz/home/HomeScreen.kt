@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -100,6 +101,9 @@ fun HomeContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                // キーボード表示時は表示領域をその上に収め、「クイズを始める」が
+                // IME の裏に隠れない（タップがキーボードに吸われない）ようにする。
+                .imePadding()
                 .quizSafeHorizontalPadding(),
             contentAlignment = Alignment.Center,
         ) {

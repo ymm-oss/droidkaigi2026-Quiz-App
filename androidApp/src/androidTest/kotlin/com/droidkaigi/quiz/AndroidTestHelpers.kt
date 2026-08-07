@@ -48,7 +48,14 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
     waitUntilText("クイズを始める")
     onNode(hasSetTextAction()).performTextInput(nickname)
     waitForIdle()
-    onNodeWithText("クイズを始める").performClick()
+    val startButton = onNodeWithText("クイズを始める")
+    try {
+        // 短い画面ではキーボード表示中にボタンがビューポート外になるためスクロールする
+        startButton.performScrollTo()
+    } catch (_: AssertionError) {
+        // Already on-screen.
+    }
+    startButton.performClick()
     waitForIdle()
     // Markdown プロンプトは分割されることがあるので進捗ラベルで開始を確認する
     waitUntilText("1 / 3")
