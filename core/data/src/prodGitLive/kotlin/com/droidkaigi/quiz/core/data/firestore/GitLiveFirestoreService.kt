@@ -3,9 +3,8 @@ package com.droidkaigi.quiz.core.data.firestore
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.firestore
-import kotlin.coroutines.cancellation.CancellationException
 
-internal class GitLiveFirestoreService : FirestoreService {
+internal class GitLiveFirestoreService : BaseFirestoreService() {
     private val db get() = Firebase.firestore
 
     override suspend fun listFolders(): List<Pair<String, FolderFirestoreDocument>> =
@@ -20,12 +19,11 @@ internal class GitLiveFirestoreService : FirestoreService {
                 }
             }
 
-    override suspend fun getFolder(folderId: String): FolderFirestoreDocument? =
-        db.collection(FirestorePaths.FOLDERS)
-            .document(folderId)
-            .get()
-            .data(FolderFirestoreDocument.serializer())
-            ?.withResolvedLabels()
+    override suspend fun getFolder(folderId: String): FolderFirestoreDocument? = db.collection(FirestorePaths.FOLDERS)
+        .document(folderId)
+        .get()
+        .data(FolderFirestoreDocument.serializer())
+        ?.withResolvedLabels()
 
     override suspend fun setFolder(folderId: String, document: FolderFirestoreDocument) {
         db.collection(FirestorePaths.FOLDERS)
@@ -39,11 +37,10 @@ internal class GitLiveFirestoreService : FirestoreService {
         db.collection(FirestorePaths.FOLDERS).document(folderId).delete()
     }
 
-    override suspend fun getAppConfig(): AppConfigFirestoreDocument? =
-        db.collection(FirestorePaths.APP_CONFIG)
-            .document(FirestorePaths.APP_CONFIG_DEFAULT)
-            .get()
-            .data(AppConfigFirestoreDocument.serializer())
+    override suspend fun getAppConfig(): AppConfigFirestoreDocument? = db.collection(FirestorePaths.APP_CONFIG)
+        .document(FirestorePaths.APP_CONFIG_DEFAULT)
+        .get()
+        .data(AppConfigFirestoreDocument.serializer())
 
     override suspend fun setAppConfig(document: AppConfigFirestoreDocument) {
         db.collection(FirestorePaths.APP_CONFIG)
@@ -53,85 +50,51 @@ internal class GitLiveFirestoreService : FirestoreService {
             }
     }
 
-    override suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) {
-        val ref = db.collection(FirestorePaths.FOLDERS)
-            .document(folderId)
-            .collection(FirestorePaths.RANKINGS)
+    override suspend fun getRanking(folderId: String, entryId: String): RankingFirestoreDocument? =
+        rankingsCollection(folderId)
             .document(entryId)
-        try {
-            ref.set(RankingFirestoreDocument.serializer(), document) {
+            .get()
+            .takeIf { it.exists }
+            ?.data(RankingFirestoreDocument.serializer())
+
+    override suspend fun setRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) {
+        rankingsCollection(folderId)
+            .document(entryId)
+            .set(RankingFirestoreDocument.serializer(), document) {
                 encodeDefaults = true
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            // create-only rules: retry after a successful write looks like a denied update.
-            // Only an identical existing document proves that the previous attempt landed.
-            val existing = runCatching {
-                ref.get()
-                    .takeIf { it.exists }
-                    ?.data(RankingFirestoreDocument.serializer())
-            }.getOrNull()
-            if (existing == document) {
-                return
-            }
-            throw e
-        }
     }
 
-    override suspend fun listRankingsForDate(
+    override suspend fun queryRankings(
         folderId: String,
         dateKey: String,
+        orderByScoreDescending: Boolean,
     ): List<Pair<String, RankingFirestoreDocument>> {
-        val rankings = db.collection(FirestorePaths.FOLDERS)
-            .document(folderId)
-            .collection(FirestorePaths.RANKINGS)
-        val snapshots = try {
-            rankings
-                .where { "dateKey" equalTo dateKey }
-                .orderBy("score", Direction.DESCENDING)
-                .get()
-                .documents
-        } catch (error: Exception) {
-            if (!error.isFirestoreMissingCompositeIndexError()) throw error
-            // 複合インデックス未デプロイ時のみ: 等値クエリ + クライアント側 score 降順
-            rankings
-                .where { "dateKey" equalTo dateKey }
-                .get()
-                .documents
+        val filtered = rankingsCollection(folderId).where { "dateKey" equalTo dateKey }
+        val query = if (orderByScoreDescending) {
+            filtered.orderBy("score", Direction.DESCENDING)
+        } else {
+            filtered
         }
-        return snapshots
+        return query
+            .get()
+            .documents
             .mapNotNull { snapshot ->
-                val document = runCatching { snapshot.data(RankingFirestoreDocument.serializer()) }.getOrNull()
-                    ?: return@mapNotNull null
-                if (!document.isComplete() || document.dateKey != dateKey) return@mapNotNull null
-                snapshot.id to document
+                runCatching { snapshot.data(RankingFirestoreDocument.serializer()) }
+                    .getOrNull()
+                    ?.let { snapshot.id to it }
             }
-            .sortedByDescending { it.second.score }
     }
 
+    override fun isMissingCompositeIndexError(error: Throwable): Boolean = error.isFirestoreMissingCompositeIndexError()
+
     override suspend fun deleteRanking(folderId: String, entryId: String) {
-        db.collection(FirestorePaths.FOLDERS)
-            .document(folderId)
-            .collection(FirestorePaths.RANKINGS)
+        rankingsCollection(folderId)
             .document(entryId)
             .delete()
     }
 
-    override suspend fun deleteRankingsForDate(folderId: String, dateKey: String) {
-        repeat(MAX_CLEAR_PASSES) {
-            val entries = listRankingsForDate(folderId, dateKey)
-            if (entries.isEmpty()) return
-            entries.forEach { (entryId, _) ->
-                deleteRanking(folderId, entryId)
-            }
-        }
-        if (listRankingsForDate(folderId, dateKey).isNotEmpty()) {
-            error("Could not clear all rankings for $dateKey")
-        }
-    }
-
-    private companion object {
-        private const val MAX_CLEAR_PASSES = 5
-    }
+    private fun rankingsCollection(folderId: String) = db.collection(FirestorePaths.FOLDERS)
+        .document(folderId)
+        .collection(FirestorePaths.RANKINGS)
 }

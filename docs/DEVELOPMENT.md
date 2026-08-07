@@ -8,7 +8,7 @@
 - `androidApp` — Android エントリ（参加者向け）
 - `desktopApp` — Desktop エントリ（参加者向け）
 - `staffComposeApp` / `staffDesktopApp` — **スタッフ用** Desktop（クイズ内容・ランキング確認、PC 運営向け）
-- `wasmApp` — Web（Wasm）エントリ（fake で動作。CI でビルド検証。本番配布は未定）
+- `wasmApp` — Web（Wasm）エントリ（fake / prod 両対応。CI でビルド検証。本番配布は未定）
 - `core:domain` / `core:data` / `core:ui`
 - `feature:quiz` / `feature:ranking` / `feature:staff`
 
@@ -82,7 +82,7 @@ flowchart TB
 | **問題データ** | リポジトリ同梱 JSON | **Firestore** `folders/{folderId}` |
 | **問題の編集** | スタッフアプリ → インメモリ（再起動で消える） | **スタッフアプリ** → Firebase Auth 後に Firestore へ保存 |
 | **参加者アプリ** | Android / Desktop（ネット不要） | Android / Desktop（Firestore 必須） |
-| **Wasm** | 動作対象（CI でビルド検証） | prod は未対応（起動時エラー） |
+| **Wasm** | 動作対象（CI でビルド検証） | Firebase JS SDK で Firestore / Auth に接続（ビルド時に google-services.json が必要） |
 
 ### 初期データ（fake）
 
@@ -297,10 +297,11 @@ Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDeskt
 
 ### Web（Wasm）
 
-Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで動作する対象として整備済み（CI で `:wasmApp:compileKotlinWasmJs` を検証）。本番配布は未定。
+Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで動作する対象として整備済み（CI で `:wasmApp:compileKotlinWasmJs` を検証）。prod は Firebase JS SDK（npm `firebase`）で Firestore / Auth に接続する。接続情報は `:core:data:generateFirebaseWebConfig` タスクがビルド時に `google-services.json` から生成する（JVM と同じ設定ソース。パスは `-Pquiz.firebase.config` で上書き可）。本番配布は未定。
 
 ```bash
-./gradlew :wasmApp:wasmJsBrowserDevelopmentRun
+./gradlew :wasmApp:wasmJsBrowserDevelopmentRun                      # fake（既定）
+./gradlew :wasmApp:wasmJsBrowserDevelopmentRun -Pquiz.runtime=prod  # prod（要 androidApp/src/prod/google-services.json）
 ```
 
 ## テスト
