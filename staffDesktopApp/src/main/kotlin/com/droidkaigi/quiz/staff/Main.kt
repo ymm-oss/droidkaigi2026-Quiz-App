@@ -11,7 +11,7 @@ fun main() {
   application {
     Window(
       onCloseRequest = ::exitApplication,
-      title = "DroidKaigi 2026 Quiz — Staff",
+      title = "Droid26クイズ管理アプリ",
       state = rememberWindowState(width = 960.dp, height = 720.dp),
     ) {
       StaffApp()

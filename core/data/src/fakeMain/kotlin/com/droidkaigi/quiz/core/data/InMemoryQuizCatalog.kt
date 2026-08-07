@@ -54,12 +54,9 @@ class InMemoryQuizCatalog {
 
     fun getQuizSet(folderId: String): QuizSet = quizSets[folderId] ?: error("Quiz set not found for folder: $folderId")
 
+    /** Folder metadata (name / description) is owned by [updateFolder]; saving questions must not touch it. */
     fun saveQuizSet(quizSet: QuizSet) {
         quizSets[quizSet.id] = quizSet
-        val folderIndex = folders.indexOfFirst { it.id == quizSet.id }
-        if (folderIndex >= 0) {
-            folders[folderIndex] = folders[folderIndex].copy(name = quizSet.title)
-        }
     }
 
     fun getActiveFolderId(): String = activeFolderId.ifEmpty {
