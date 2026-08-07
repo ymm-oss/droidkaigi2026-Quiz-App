@@ -1,6 +1,5 @@
 package com.droidkaigi.quiz.core.data.firestore
 
-import com.droidkaigi.quiz.core.data.dto.QuizSetDto
 import com.droidkaigi.quiz.core.data.dto.toDomain
 import com.droidkaigi.quiz.core.domain.model.Question
 import com.droidkaigi.quiz.core.domain.model.QuizFolder
@@ -52,6 +51,7 @@ private fun Question.toQuestionDto(): com.droidkaigi.quiz.core.data.dto.Question
         options = options.map { com.droidkaigi.quiz.core.data.dto.ChoiceOptionDto(it.id, it.label) },
         correctId = correctId,
     )
+
     is com.droidkaigi.quiz.core.domain.model.MultipleChoice -> com.droidkaigi.quiz.core.data.dto.QuestionDto(
         type = "multiple_choice",
         id = id,
@@ -60,6 +60,7 @@ private fun Question.toQuestionDto(): com.droidkaigi.quiz.core.data.dto.Question
         options = options.map { com.droidkaigi.quiz.core.data.dto.ChoiceOptionDto(it.id, it.label) },
         correctIds = correctIds.toList(),
     )
+
     is com.droidkaigi.quiz.core.domain.model.Reorder -> com.droidkaigi.quiz.core.data.dto.QuestionDto(
         type = "reorder",
         id = id,

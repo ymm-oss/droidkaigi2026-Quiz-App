@@ -161,6 +161,11 @@ kotlin {
                 "**/InMemoryQuizCatalogSitePublishedTest.kt",
             )
         }
+    } else {
+        // prod ソース（prodMain）に依存するテストは fake ではコンパイル対象外
+        sourceSets.named("jvmTest").configure {
+            kotlin.exclude("**/BaseFirestoreServiceTest.kt")
+        }
     }
 }
 

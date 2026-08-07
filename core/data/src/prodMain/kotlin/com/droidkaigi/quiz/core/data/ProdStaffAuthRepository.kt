@@ -14,24 +14,21 @@ import dev.zacsweers.metro.Inject
 
 @Inject
 @ContributesBinding(AppScope::class)
-class ProdStaffAuthRepository(
-    private val staffAuthHolder: StaffAuthHolder,
-) : StaffAuthRepository {
-    override suspend fun signIn(email: String, password: String): Result<StaffSession> =
-        try {
-            val result = staffSignInWithEmailPassword(email, password)
-            staffAuthHolder.firebaseIdToken = result.idToken
-            Result.success(
-                StaffSession(
-                    email = result.email,
-                    displayName = result.displayName,
-                ),
-            )
-        } catch (e: StaffAuthException) {
-            Result.failure(e)
-        } catch (e: Exception) {
-            Result.failure(StaffAuthErrorMapper.toException(e))
-        }
+class ProdStaffAuthRepository(private val staffAuthHolder: StaffAuthHolder) : StaffAuthRepository {
+    override suspend fun signIn(email: String, password: String): Result<StaffSession> = try {
+        val result = staffSignInWithEmailPassword(email, password)
+        staffAuthHolder.firebaseIdToken = result.idToken
+        Result.success(
+            StaffSession(
+                email = result.email,
+                displayName = result.displayName,
+            ),
+        )
+    } catch (e: StaffAuthException) {
+        Result.failure(e)
+    } catch (e: Exception) {
+        Result.failure(StaffAuthErrorMapper.toException(e))
+    }
 
     override suspend fun restorePersistedSession(): StaffSession? {
         FirestoreBootstrap.ensureInitialized()

@@ -15,10 +15,8 @@ import dev.zacsweers.metro.Inject
 
 @Inject
 @ContributesBinding(AppScope::class)
-class RemoteRankingRepository(
-    private val firestore: FirestoreService,
-    private val instantProvider: InstantProvider,
-) : RankingRepository {
+class RemoteRankingRepository(private val firestore: FirestoreService, private val instantProvider: InstantProvider) :
+    RankingRepository {
     override suspend fun getTodayRankings(folderId: String): List<RankingEntry> {
         val dateKey = instantProvider.todayLocalDate().toString()
         return firestore.listRankingsForDate(folderId, dateKey).map { (entryId, document) ->

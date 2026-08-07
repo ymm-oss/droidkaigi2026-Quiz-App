@@ -4,6 +4,7 @@ package com.droidkaigi.quiz.core.data.auth
 
 import com.droidkaigi.quiz.core.data.firebasejs.UserCredentialJs
 import com.droidkaigi.quiz.core.data.firebasejs.UserJs
+import com.droidkaigi.quiz.core.data.firebasejs.jsErrorCodeOrNull
 import com.droidkaigi.quiz.core.data.firebasejs.signInWithEmailAndPassword
 import com.droidkaigi.quiz.core.data.firebasejs.signOut
 import com.droidkaigi.quiz.core.data.firestore.FirebaseJsApp
@@ -11,6 +12,7 @@ import com.droidkaigi.quiz.core.domain.auth.StaffAuthException
 import com.droidkaigi.quiz.core.domain.auth.StaffAuthFailureReason
 import kotlinx.coroutines.await
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.js.JsException
 
 // JS 例外は Throwable としてしか捕まえられず、throw 構成は JVM / Android 実装と揃える
 @Suppress("TooGenericExceptionCaught", "ThrowsCount")
@@ -24,11 +26,23 @@ internal actual suspend fun staffSignInWithEmailPassword(email: String, password
 } catch (e: StaffAuthException) {
     throw e
 } catch (e: Throwable) {
-    // JS SDK のエラーコードは `auth/invalid-credential` 形式なので `_` 区切りへ正規化して判定する
     throw StaffAuthException(
-        reason = StaffAuthErrorMapper.resolveReason(e.message?.replace('-', '_')),
+        reason = StaffAuthErrorMapper.resolveReason(e.resolveAuthErrorText()),
         cause = e,
     )
+}
+
+/**
+ * `JsException.message` は generic な文言のことがあるため、FirebaseError の
+ * `code`（例: `auth/invalid-credential`）を優先して判定用テキストに含める。
+ * JS SDK のコードはハイフン区切りなので `_` 区切りへ正規化する。
+ */
+private fun Throwable.resolveAuthErrorText(): String? {
+    val code = (this as? JsException)?.thrownValue?.let { jsErrorCodeOrNull(it) }
+    return listOfNotNull(code, message)
+        .joinToString(" ")
+        .takeIf { it.isNotBlank() }
+        ?.replace('-', '_')
 }
 
 @Suppress("TooGenericExceptionCaught")

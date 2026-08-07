@@ -59,6 +59,5 @@ data class RankingFirestoreDocument(
     val dateKey: String = "",
 ) {
     /** ルール必須フィールドが揃っているランキング行だけを UI に出す */
-    fun isComplete(): Boolean =
-        nickname.isNotBlank() && dateKey.isNotBlank() && score >= 0
+    fun isComplete(): Boolean = nickname.isNotBlank() && dateKey.isNotBlank() && score >= 0
 }
