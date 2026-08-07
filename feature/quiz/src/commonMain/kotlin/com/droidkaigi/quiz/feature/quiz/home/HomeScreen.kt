@@ -36,6 +36,8 @@ import com.droidkaigi.quiz.core.ui.generated.resources.home_nickname
 import com.droidkaigi.quiz.core.ui.generated.resources.home_player_info
 import com.droidkaigi.quiz.core.ui.generated.resources.home_site_closed_button
 import com.droidkaigi.quiz.core.ui.generated.resources.home_site_closed_message
+import com.droidkaigi.quiz.core.ui.generated.resources.home_site_status_error_message
+import com.droidkaigi.quiz.core.ui.generated.resources.home_site_status_retry
 import com.droidkaigi.quiz.core.ui.generated.resources.home_start
 import com.droidkaigi.quiz.core.ui.generated.resources.home_subtitle
 import com.droidkaigi.quiz.core.ui.locale.AppLocalePreference
@@ -75,11 +77,13 @@ fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { H
         nickname = state.nickname,
         isLoading = state.isLoading,
         sitePublished = state.sitePublished,
+        siteStatusCheckFailed = state.siteStatusCheckFailed,
         errorMessage = errorMessage,
         localePreference = localeController.preference,
         onLocalePreferenceChange = localeController::select,
         onNicknameChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
         onStartClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
+        onRetrySiteStatusClick = { viewModel.onIntent(HomeIntent.RetrySiteStatus) },
     )
 }
 
@@ -92,8 +96,10 @@ fun HomeContent(
     onStartClick: () -> Unit,
     modifier: Modifier = Modifier,
     sitePublished: Boolean? = true,
+    siteStatusCheckFailed: Boolean = false,
     localePreference: AppLocalePreference = AppLocalePreference.System,
     onLocalePreferenceChange: (AppLocalePreference) -> Unit = {},
+    onRetrySiteStatusClick: () -> Unit = {},
 ) {
     val siteOpen = sitePublished == true
     QuizScreenBackground(modifier = modifier) {
@@ -123,6 +129,21 @@ fun HomeContent(
                     badge = stringResource(Res.string.home_badge),
                 )
                 when {
+                    // 取得失敗は「受付前」と区別してエラー + 再試行導線を出す
+                    siteStatusCheckFailed -> {
+                        QuizSurfaceCard {
+                            Text(
+                                text = stringResource(Res.string.home_site_status_error_message),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                        QuizPrimaryButton(
+                            text = stringResource(Res.string.home_site_status_retry),
+                            onClick = onRetrySiteStatusClick,
+                        )
+                    }
+
                     sitePublished == null -> {
                         QuizPrimaryButton(
                             text = stringResource(Res.string.home_start),

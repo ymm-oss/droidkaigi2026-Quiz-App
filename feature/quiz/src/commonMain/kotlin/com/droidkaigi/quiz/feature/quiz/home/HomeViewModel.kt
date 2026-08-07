@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.droidkaigi.quiz.core.data.AppDependencies
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,6 +13,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+
+/** 受付状況の取得がハングした場合に失敗として扱うまでの時間。 */
+private const val SITE_PUBLISHED_TIMEOUT_MS = 15_000L
 
 class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -23,18 +28,35 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     fun onIntent(intent: HomeIntent) {
         when (intent) {
             is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
+
             HomeIntent.StartQuiz -> startQuiz()
+
             HomeIntent.Shown -> {
                 _uiState.update { it.copy(isLoading = false) }
                 refreshSitePublished()
             }
+
+            HomeIntent.RetrySiteStatus -> refreshSitePublished()
         }
     }
 
     private fun refreshSitePublished() {
         viewModelScope.launch {
-            val published = runCatching { deps.getSitePublishedUseCase() }.getOrDefault(false)
-            _uiState.update { it.copy(sitePublished = published) }
+            _uiState.update { it.copy(sitePublished = null, siteStatusCheckFailed = false) }
+            // 取得失敗を「受付前（false）」に丸めない。ネットワーク障害とスタッフによる
+            // 非公開を区別し、失敗はエラー表示 + 再試行導線にする（SPEC: 失敗時はエラー表示）。
+            val published = try {
+                withTimeout(SITE_PUBLISHED_TIMEOUT_MS) { deps.getSitePublishedUseCase() }
+            } catch (_: TimeoutCancellationException) {
+                null
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+                null
+            }
+            _uiState.update {
+                it.copy(sitePublished = published, siteStatusCheckFailed = published == null)
+            }
         }
     }
 
@@ -50,7 +72,8 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 // Re-check at start so a stale open UI after staff unpublish cannot begin a session.
-                val published = runCatching { deps.getSitePublishedUseCase() }.getOrDefault(false)
+                // 取得失敗はここで丸めず外側の catch で LoadFailed として表示する。
+                val published = deps.getSitePublishedUseCase()
                 if (!published) {
                     _uiState.update { it.copy(isLoading = false, sitePublished = false) }
                     return@launch
