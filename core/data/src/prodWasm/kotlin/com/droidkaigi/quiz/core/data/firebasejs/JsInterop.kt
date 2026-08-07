@@ -17,6 +17,10 @@ internal fun jsonStringify(value: JsAny): String = js("JSON.stringify(value)")
 internal fun jsErrorCodeOrNull(value: JsAny?): String? =
     js("value && typeof value.code === 'string' ? value.code : null")
 
+/** JS Error の `message` を取り出す（`JsException.message` が generic な場合の代替）。 */
+internal fun jsErrorMessageOrNull(value: JsAny?): String? =
+    js("value && typeof value.message === 'string' ? value.message : null")
+
 internal fun <T : JsAny> JsArray<T>.toKotlinList(): List<T> = buildList {
     for (index in 0 until length) {
         add(get(index))

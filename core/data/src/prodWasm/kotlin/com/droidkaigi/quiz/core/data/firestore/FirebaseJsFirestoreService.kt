@@ -10,6 +10,7 @@ import com.droidkaigi.quiz.core.data.firebasejs.doc
 import com.droidkaigi.quiz.core.data.firebasejs.getDoc
 import com.droidkaigi.quiz.core.data.firebasejs.getDocs
 import com.droidkaigi.quiz.core.data.firebasejs.jsErrorCodeOrNull
+import com.droidkaigi.quiz.core.data.firebasejs.jsErrorMessageOrNull
 import com.droidkaigi.quiz.core.data.firebasejs.jsonParse
 import com.droidkaigi.quiz.core.data.firebasejs.jsonStringify
 import com.droidkaigi.quiz.core.data.firebasejs.orderBy
@@ -104,13 +105,25 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
             }
     }
 
-    override fun isMissingCompositeIndexError(error: Throwable): Boolean =
-        FirestoreMissingIndexError.matches(error) { current ->
-            (current as? JsException)?.thrownValue
-                ?.let { jsErrorCodeOrNull(it) }
-                // JS SDK の code は `failed-precondition` 形式なので共通判定に合わせて正規化する
-                ?.replace('-', '_')
+    override fun isMissingCompositeIndexError(error: Throwable): Boolean {
+        // JsException.message は generic な文言のことがあるため、JS Error 側の
+        // code / message を thrownValue から直接取り出して判定する。
+        // code は `failed-precondition` 形式なので共通判定に合わせて `_` 区切りへ正規化する。
+        var current: Throwable? = error
+        while (current != null) {
+            val thrown = (current as? JsException)?.thrownValue
+            if (thrown != null &&
+                FirestoreMissingIndexError.matchesCodeOrMessage(
+                    codeName = jsErrorCodeOrNull(thrown)?.replace('-', '_'),
+                    message = jsErrorMessageOrNull(thrown) ?: current.message,
+                )
+            ) {
+                return true
+            }
+            current = current.cause
         }
+        return FirestoreMissingIndexError.matches(error)
+    }
 
     override suspend fun deleteRanking(folderId: String, entryId: String) {
         deleteDoc(doc(db, rankingPath(folderId, entryId))).await<JsAny?>()
