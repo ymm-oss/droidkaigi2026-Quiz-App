@@ -25,7 +25,7 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
     destinationPath: String,
     onProgress: (bytesRead: Long, totalBytes: Long?) -> Unit,
 ): Result<String> = withContext(Dispatchers.IO) {
-    runCatching {
+    try {
         val bucket = firebaseStorageBucket()
         val encodedPath = URLEncoder.encode(storagePath, StandardCharsets.UTF_8)
             .replace("+", "%20")
@@ -60,12 +60,14 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
                     }
                 }
             }
-            destination.absolutePath
-        } catch (e: CancellationException) {
-            throw e
+            Result.success(destination.absolutePath)
         } finally {
             connection.disconnect()
         }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Result.failure(e)
     }
 }
 

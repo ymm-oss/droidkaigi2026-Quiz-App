@@ -54,11 +54,17 @@ class RemoteStaffAppReleaseRepository(
     }
 
     private suspend fun resolveIdToken(): String? {
-        val refreshed = runCatching { staffCurrentIdToken(forceRefresh = false) }.getOrNull()
-            ?: runCatching { staffCurrentIdToken(forceRefresh = true) }.getOrNull()
-        if (refreshed != null) {
-            staffAuthHolder.firebaseIdToken = refreshed
-            return refreshed
+        try {
+            val refreshed = staffCurrentIdToken(forceRefresh = false)
+                ?: staffCurrentIdToken(forceRefresh = true)
+            if (refreshed != null) {
+                staffAuthHolder.firebaseIdToken = refreshed
+                return refreshed
+            }
+        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // Fall back to the cached token from sign-in when refresh is unavailable.
         }
         return staffAuthHolder.firebaseIdToken
     }
