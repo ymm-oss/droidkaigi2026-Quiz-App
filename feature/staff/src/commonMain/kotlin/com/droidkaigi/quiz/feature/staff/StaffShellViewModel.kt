@@ -21,8 +21,16 @@ data class StaffShellUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val showCreateFolderDialog: Boolean = false,
+    val editingFolderId: String? = null,
+    val deletingFolderId: String? = null,
     val showSitePublishConfirm: Boolean = false,
-)
+) {
+    val editingFolder: QuizFolder?
+        get() = folders.find { it.id == editingFolderId }
+
+    val deletingFolder: QuizFolder?
+        get() = folders.find { it.id == deletingFolderId }
+}
 
 sealed interface StaffShellIntent {
     data object Refresh : StaffShellIntent
@@ -30,6 +38,12 @@ sealed interface StaffShellIntent {
     data object ShowCreateFolderDialog : StaffShellIntent
     data object DismissCreateFolderDialog : StaffShellIntent
     data class CreateFolder(val name: String, val description: String) : StaffShellIntent
+    data class ShowEditFolderDialog(val folderId: String) : StaffShellIntent
+    data object DismissEditFolderDialog : StaffShellIntent
+    data class UpdateFolder(val folderId: String, val name: String, val description: String) : StaffShellIntent
+    data class RequestDeleteFolder(val folderId: String) : StaffShellIntent
+    data object DismissDeleteFolderDialog : StaffShellIntent
+    data object ConfirmDeleteFolder : StaffShellIntent
     data object PublishSelectedFolder : StaffShellIntent
     data object RequestToggleSitePublished : StaffShellIntent
     data object DismissSitePublishConfirm : StaffShellIntent
@@ -48,16 +62,51 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     fun onIntent(intent: StaffShellIntent) {
         when (intent) {
             StaffShellIntent.Refresh -> refresh()
+
             is StaffShellIntent.SelectFolder -> _uiState.update { it.copy(selectedFolderId = intent.folderId) }
-            StaffShellIntent.ShowCreateFolderDialog -> _uiState.update { it.copy(showCreateFolderDialog = true) }
-            StaffShellIntent.DismissCreateFolderDialog -> _uiState.update { it.copy(showCreateFolderDialog = false) }
-            is StaffShellIntent.CreateFolder -> createFolder(intent.name, intent.description)
+
             StaffShellIntent.PublishSelectedFolder -> publishSelected()
+
             StaffShellIntent.RequestToggleSitePublished ->
                 _uiState.update { it.copy(showSitePublishConfirm = true) }
+
             StaffShellIntent.DismissSitePublishConfirm ->
                 _uiState.update { it.copy(showSitePublishConfirm = false) }
+
             StaffShellIntent.ConfirmToggleSitePublished -> toggleSitePublished()
+
+            else -> handleFolderIntent(intent)
+        }
+    }
+
+    private fun handleFolderIntent(intent: StaffShellIntent) {
+        when (intent) {
+            StaffShellIntent.ShowCreateFolderDialog ->
+                _uiState.update { it.copy(showCreateFolderDialog = true) }
+
+            StaffShellIntent.DismissCreateFolderDialog ->
+                _uiState.update { it.copy(showCreateFolderDialog = false) }
+
+            is StaffShellIntent.CreateFolder -> createFolder(intent.name, intent.description)
+
+            is StaffShellIntent.ShowEditFolderDialog ->
+                _uiState.update { it.copy(editingFolderId = intent.folderId) }
+
+            StaffShellIntent.DismissEditFolderDialog ->
+                _uiState.update { it.copy(editingFolderId = null) }
+
+            is StaffShellIntent.UpdateFolder ->
+                updateFolder(intent.folderId, intent.name, intent.description)
+
+            is StaffShellIntent.RequestDeleteFolder ->
+                _uiState.update { it.copy(deletingFolderId = intent.folderId) }
+
+            StaffShellIntent.DismissDeleteFolderDialog ->
+                _uiState.update { it.copy(deletingFolderId = null) }
+
+            StaffShellIntent.ConfirmDeleteFolder -> confirmDeleteFolder()
+
+            else -> error("Unhandled staff shell intent: $intent")
         }
     }
 
@@ -128,6 +177,69 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     it.copy(errorMessage = error.message ?: "フォルダの作成に失敗しました")
                 }
             }
+        }
+    }
+
+    private fun updateFolder(folderId: String, name: String, description: String) {
+        if (name.isBlank()) return
+        val current = _uiState.value.folders.find { it.id == folderId } ?: return
+        val updated = current.copy(name = name.trim(), description = description.trim())
+        if (updated == current) {
+            _uiState.update { it.copy(editingFolderId = null) }
+            return
+        }
+        viewModelScope.launch {
+            staffLog("updateFolder start id=$folderId name=$name")
+            runCatching { deps.updateQuizFolderUseCase(updated) }
+                .onSuccess {
+                    _uiState.update { state -> state.copy(editingFolderId = null, errorMessage = null) }
+                    refresh()
+                }
+                .onFailure { error ->
+                    staffLog("updateFolder failed: ${error.message}")
+                    _uiState.update {
+                        it.copy(errorMessage = error.message ?: "フォルダの更新に失敗しました")
+                    }
+                }
+        }
+    }
+
+    private fun confirmDeleteFolder() {
+        val folderId = _uiState.value.deletingFolderId ?: return
+        if (_uiState.value.folders.none { it.id == folderId }) {
+            _uiState.update { it.copy(deletingFolderId = null) }
+            return
+        }
+        // Keep at least one folder so activeFolderId / participant start stay valid.
+        if (_uiState.value.folders.size <= 1) {
+            _uiState.update {
+                it.copy(
+                    deletingFolderId = null,
+                    errorMessage = "最後のフォルダは削除できません",
+                )
+            }
+            return
+        }
+        viewModelScope.launch {
+            staffLog("deleteFolder start id=$folderId")
+            runCatching { deps.deleteQuizFolderUseCase(folderId) }
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(
+                            deletingFolderId = null,
+                            selectedFolderId = state.selectedFolderId?.takeUnless { it == folderId },
+                            editingFolderId = state.editingFolderId?.takeUnless { it == folderId },
+                            errorMessage = null,
+                        )
+                    }
+                    refresh()
+                }
+                .onFailure { error ->
+                    staffLog("deleteFolder failed: ${error.message}")
+                    _uiState.update {
+                        it.copy(errorMessage = error.message ?: "フォルダの削除に失敗しました")
+                    }
+                }
         }
     }
 
