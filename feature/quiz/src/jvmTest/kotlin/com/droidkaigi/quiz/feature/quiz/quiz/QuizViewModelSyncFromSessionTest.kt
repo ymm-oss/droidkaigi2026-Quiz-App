@@ -25,6 +25,7 @@ import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
+import com.droidkaigi.quiz.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SignInStaffUseCase
@@ -205,8 +206,9 @@ class QuizViewModelSyncFromSessionTest {
             setActiveQuizFolderUseCase = SetActiveQuizFolderUseCase(catalog),
             signInStaffUseCase = signIn,
             quickSignInStaffUseCase = QuickSignInStaffUseCase(staffRepo, signIn),
+            restoreStaffAuthSessionUseCase = RestoreStaffAuthSessionUseCase(staffRepo, staffStore),
             getStaffAuthStateUseCase = GetStaffAuthStateUseCase(staffStore),
-            signOutStaffUseCase = SignOutStaffUseCase(staffStore),
+            signOutStaffUseCase = SignOutStaffUseCase(staffStore, staffRepo),
         )
     }
 }
