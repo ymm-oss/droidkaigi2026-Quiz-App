@@ -2,23 +2,41 @@ package com.droidkaigi.quiz.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
 import com.droidkaigi.quiz.feature.quiz.home.HomeScreen
 import com.droidkaigi.quiz.feature.quiz.quiz.QuizScreen
 import com.droidkaigi.quiz.feature.quiz.result.ResultScreen
 import com.droidkaigi.quiz.feature.ranking.RankingScreen
 import com.droidkaigi.quiz.shell.QuizAdaptiveScaffold
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+
+/** 保存・復元時に NavKey の open polymorphism から Route の各サブタイプを解決する。 */
+private val quizNavStateConfiguration = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(Route.Home::class, Route.Home.serializer())
+            subclass(Route.Quiz::class, Route.Quiz.serializer())
+            subclass(Route.Result::class, Route.Result.serializer())
+            subclass(Route.Ranking::class, Route.Ranking.serializer())
+        }
+    }
+}
 
 @Composable
 fun QuizNavHost() {
-    val backStack = remember { mutableStateListOf<Route>(Route.Home) }
+    // rememberNavBackStack keeps the stack across configuration changes (rotation, resize)
+    // and process death, so an in-progress quiz is not reset to Home.
+    val backStack = rememberNavBackStack(quizNavStateConfiguration, Route.Home)
     val leaveQuizRequest = remember {
         MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     }
@@ -49,7 +67,7 @@ fun QuizNavHost() {
     }
 
     QuizAdaptiveScaffold(
-        currentRoute = backStack.lastOrNull() ?: Route.Home,
+        currentRoute = backStack.lastOrNull() as? Route ?: Route.Home,
         onNavigate = { route ->
             handleScaffoldNavigate(
                 route = route,
@@ -84,7 +102,7 @@ fun QuizNavHost() {
     }
 }
 
-private fun handleBack(backStack: SnapshotStateList<Route>, requestLeaveQuiz: () -> Unit) {
+private fun handleBack(backStack: NavBackStack<NavKey>, requestLeaveQuiz: () -> Unit) {
     if (backStack.size <= 1) return
     if (backStack.lastOrNull() == Route.Quiz) {
         // 完走中は離脱不可。回答中は中断確認のみ（スタックは pop しない）
@@ -96,7 +114,7 @@ private fun handleBack(backStack: SnapshotStateList<Route>, requestLeaveQuiz: ()
 
 private fun handleScaffoldNavigate(
     route: Route,
-    backStack: SnapshotStateList<Route>,
+    backStack: NavBackStack<NavKey>,
     requestLeaveQuiz: () -> Unit,
     popToHome: () -> Unit,
     navigate: (Route) -> Unit,
@@ -128,7 +146,7 @@ private fun handleScaffoldNavigate(
 }
 
 private fun quizNavEntry(
-    key: Route,
+    key: NavKey,
     onStartQuiz: () -> Unit,
     onQuizFinished: () -> Unit,
     onQuizAbandoned: () -> Unit,
@@ -136,7 +154,7 @@ private fun quizNavEntry(
     onExitEnabledChange: (Boolean) -> Unit,
     onGoToRanking: () -> Unit,
     onGoHome: () -> Unit,
-): NavEntry<Route> = when (key) {
+): NavEntry<NavKey> = when (key) {
     Route.Home -> NavEntry(key) {
         HomeScreen(onStartQuiz = onStartQuiz)
     }
@@ -157,4 +175,6 @@ private fun quizNavEntry(
     Route.Ranking -> NavEntry(key) {
         RankingScreen(onGoHome = onGoHome)
     }
+
+    else -> error("Unknown route: $key")
 }
