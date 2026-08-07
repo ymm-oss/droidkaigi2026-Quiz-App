@@ -6,8 +6,10 @@ import com.google.firebase.FirebasePlatform
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
+import kotlinx.coroutines.Dispatchers
 
 internal actual fun initializeFirebasePlatform() {
+    prepareDesktopFirebaseMainDispatcher()
     FirebasePlatform.initializeFirebasePlatform(
         object : FirebasePlatform() {
             private val storage = mutableMapOf<String, String>()
@@ -40,3 +42,12 @@ internal actual fun initializeFirebasePlatform() {
 
 internal actual fun createFirestoreService(staffAuthHolder: StaffAuthHolder): FirestoreService =
     GitLiveFirestoreService()
+
+/**
+ * GitLive Firebase on JVM uses the Android SDK bridge. Auth / Firestore register listeners on
+ * [Dispatchers.Main]. Install Swing Main before [Firebase.initialize].
+ */
+internal fun prepareDesktopFirebaseMainDispatcher() {
+    // Installs Swing Main when kotlinx-coroutines-swing is on the classpath (Desktop apps).
+    Dispatchers.Main
+}

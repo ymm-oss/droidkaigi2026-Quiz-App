@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+
+private const val SITE_PUBLISHED_TIMEOUT_MS = 15_000L
 
 class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -33,7 +36,11 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
 
     private fun refreshSitePublished() {
         viewModelScope.launch {
-            val published = runCatching { deps.getSitePublishedUseCase() }.getOrDefault(false)
+            val published = runCatching {
+                withTimeout(SITE_PUBLISHED_TIMEOUT_MS) {
+                    deps.getSitePublishedUseCase()
+                }
+            }.getOrDefault(false)
             _uiState.update { it.copy(sitePublished = published) }
         }
     }
