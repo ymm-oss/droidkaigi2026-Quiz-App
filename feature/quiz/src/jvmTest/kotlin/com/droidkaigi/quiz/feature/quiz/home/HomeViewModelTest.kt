@@ -38,6 +38,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
@@ -147,11 +148,59 @@ class HomeViewModelTest {
         assertEquals(true, state.sitePublished)
     }
 
+    @Test
+    fun shown_whilePublished_keepsOpenUiDuringRecheck() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.sitePublishedResults += Result.success(true)
+        val viewModel = HomeViewModel(testAppDependencies(catalog))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        advanceUntilIdle()
+        assertEquals(true, viewModel.uiState.value.sitePublished)
+
+        catalog.hangNextCalls = 1
+        viewModel.onIntent(HomeIntent.Shown)
+        runCurrent()
+        // 再チェック中も受付オープン UI を落とさない
+        assertEquals(true, viewModel.uiState.value.sitePublished)
+        assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
+    }
+
+    @Test
+    fun shown_cancelsInFlightRefresh_soStaleTimeoutDoesNotOverwrite() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.hangNextCalls = 1
+        val viewModel = HomeViewModel(testAppDependencies(catalog))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        // Job1 を開始して withTimeout + hang まで進める（仮想時刻は進めない）
+        runCurrent()
+        assertNull(viewModel.uiState.value.sitePublished)
+
+        catalog.sitePublishedResults += Result.success(true)
+        viewModel.onIntent(HomeIntent.Shown)
+        // 遅延タイムアウトを発火させず、今すぐ実行可能な Job2 だけ進める
+        runCurrent()
+        assertEquals(true, viewModel.uiState.value.sitePublished)
+        assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
+
+        // 旧 Job のタイムアウト相当の時間が経っても、世代ガードで成功状態を維持する
+        advanceTimeBy(16_000L)
+        runCurrent()
+        assertEquals(true, viewModel.uiState.value.sitePublished)
+        assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
+    }
+
     private class ControllableCatalog(private val hangSitePublished: Boolean = false) : QuizCatalogRepository {
         val sitePublishedResults = ArrayDeque<Result<Boolean>>()
+        /** 次の N 回の getSitePublished を awaitCancellation する（再入 cancel の検証用）。 */
+        var hangNextCalls: Int = 0
 
         override suspend fun getSitePublished(): Boolean {
-            if (hangSitePublished) awaitCancellation()
+            if (hangSitePublished || hangNextCalls > 0) {
+                if (hangNextCalls > 0) hangNextCalls -= 1
+                awaitCancellation()
+            }
             return sitePublishedResults.removeFirst().getOrThrow()
         }
 

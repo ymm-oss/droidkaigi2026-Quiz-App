@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.droidkaigi.quiz.core.data.AppDependencies
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,9 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     private val _events = MutableSharedFlow<HomeEvent>()
     val events: SharedFlow<HomeEvent> = _events.asSharedFlow()
 
+    private var siteStatusJob: Job? = null
+    private var siteStatusGeneration: Int = 0
+
     fun onIntent(intent: HomeIntent) {
         when (intent) {
             is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
@@ -41,8 +45,18 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
     }
 
     private fun refreshSitePublished() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(sitePublished = null, siteStatusCheckFailed = false) }
+        // 再入時に旧リクエスト（特に 15 秒タイムアウト）が後勝ちで成功状態を上書きしない。
+        siteStatusJob?.cancel()
+        val generation = ++siteStatusGeneration
+        siteStatusJob = viewModelScope.launch {
+            // 既に受付状態が分かっている再チェックでは UI をローディングに戻さない。
+            // 失敗からの再試行（siteStatusCheckFailed）や初回（null）だけ null にしてローディング表示する。
+            _uiState.update {
+                it.copy(
+                    sitePublished = if (it.siteStatusCheckFailed) null else it.sitePublished,
+                    siteStatusCheckFailed = false,
+                )
+            }
             // 取得失敗を「受付前（false）」に丸めない。ネットワーク障害とスタッフによる
             // 非公開を区別し、失敗はエラー表示 + 再試行導線にする（SPEC: 失敗時はエラー表示）。
             val published = try {
@@ -54,6 +68,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
                 null
             }
+            if (generation != siteStatusGeneration) return@launch
             _uiState.update {
                 it.copy(sitePublished = published, siteStatusCheckFailed = published == null)
             }
