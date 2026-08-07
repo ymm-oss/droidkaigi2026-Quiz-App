@@ -82,7 +82,13 @@ fun QuizScreen(
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(sessionKey) {
-        viewModel.syncFromSession()
+        if (sessionKey == null) {
+            // Saved navigation state can restore this screen after process death,
+            // but the in-memory session is gone — return to Home instead of a blank quiz.
+            onAbandoned()
+        } else {
+            viewModel.syncFromSession()
+        }
     }
 
     LaunchedEffect(state.isFinishing) {

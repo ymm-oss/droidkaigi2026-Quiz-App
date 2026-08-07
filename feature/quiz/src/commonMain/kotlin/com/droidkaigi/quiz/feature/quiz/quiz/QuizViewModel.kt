@@ -32,14 +32,24 @@ class QuizViewModel(
     private val _events = MutableSharedFlow<QuizEvent>()
     val events: SharedFlow<QuizEvent> = _events.asSharedFlow()
 
+    /** 最後に同期したセッションの開始時刻。同一プレイ中の再 sync（構成変更後の再 composition）を無視する。 */
+    private var syncedSessionKey: Long? = null
+
     init {
         syncFromSession()
     }
 
     private fun session() = deps.sessionHolder.currentSession
 
-    /** Re-read [QuizSessionHolder.currentSession] (e.g. after a new quiz starts with a reused ViewModel). */
+    /**
+     * Re-read [QuizSessionHolder.currentSession] when it points to a different play-through
+     * (e.g. after a new quiz starts with a reused ViewModel). No-op for the same session so a
+     * configuration change does not wipe unsubmitted selections or the feedback overlay.
+     */
     fun syncFromSession() {
+        val key = session()?.startedAtEpochMillis
+        if (key != null && key == syncedSessionKey) return
+        syncedSessionKey = key
         refreshFromSession()
     }
 

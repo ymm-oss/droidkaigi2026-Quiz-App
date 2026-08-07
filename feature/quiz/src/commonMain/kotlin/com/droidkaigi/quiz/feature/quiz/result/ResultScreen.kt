@@ -39,8 +39,20 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.random.Random
 
 @Composable
-fun ResultScreen(onGoToRanking: () -> Unit, viewModel: ResultViewModel = viewModel { ResultViewModel() }) {
+fun ResultScreen(
+    onGoToRanking: () -> Unit,
+    onMissingResult: () -> Unit = {},
+    viewModel: ResultViewModel = viewModel { ResultViewModel() },
+) {
     val state by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(state.hasResult) {
+        if (!state.hasResult) {
+            // 保存されたナビゲーションはプロセス死後も Result を復元するが、
+            // メモリ上の lastResult は消えているため空の結果を出さず Home へ戻す。
+            onMissingResult()
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
