@@ -7,7 +7,6 @@ interface FirestoreService {
     suspend fun deleteFolder(folderId: String)
     suspend fun getAppConfig(): AppConfigFirestoreDocument?
     suspend fun setAppConfig(document: AppConfigFirestoreDocument)
-
     /**
      * Writes [document] at a fixed [entryId]. If the document already exists (e.g. a prior
      * attempt succeeded but the client timed out), treat as success without updating.

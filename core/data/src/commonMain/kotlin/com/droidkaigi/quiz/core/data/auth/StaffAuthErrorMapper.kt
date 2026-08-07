@@ -60,5 +60,6 @@ internal object StaffAuthErrorMapper {
         }
     }
 
-    private fun containsAny(haystack: String, vararg needles: String): Boolean = needles.any { it in haystack }
+    private fun containsAny(haystack: String, vararg needles: String): Boolean =
+        needles.any { it in haystack }
 }

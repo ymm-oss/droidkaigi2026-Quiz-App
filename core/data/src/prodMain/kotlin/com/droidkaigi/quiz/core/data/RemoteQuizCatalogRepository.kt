@@ -5,9 +5,9 @@ import com.droidkaigi.quiz.core.data.firestore.AppConfigFirestoreDocument
 import com.droidkaigi.quiz.core.data.firestore.FirestoreDiagnostics
 import com.droidkaigi.quiz.core.data.firestore.FirestoreService
 import com.droidkaigi.quiz.core.data.firestore.FolderFirestoreDocument
-import com.droidkaigi.quiz.core.data.firestore.toFirestoreDocument
 import com.droidkaigi.quiz.core.data.firestore.toQuizFolder
 import com.droidkaigi.quiz.core.data.firestore.toQuizSet
+import com.droidkaigi.quiz.core.data.firestore.toFirestoreDocument
 import com.droidkaigi.quiz.core.domain.model.QuizFolder
 import com.droidkaigi.quiz.core.domain.model.QuizSet
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
@@ -122,7 +122,8 @@ class RemoteQuizCatalogRepository(
         }
     }
 
-    override suspend fun getSitePublished(): Boolean = firestore.getAppConfig()?.sitePublished ?: false
+    override suspend fun getSitePublished(): Boolean =
+        firestore.getAppConfig()?.sitePublished ?: false
 
     override suspend fun setSitePublished(published: Boolean) {
         writeAppConfig { current ->

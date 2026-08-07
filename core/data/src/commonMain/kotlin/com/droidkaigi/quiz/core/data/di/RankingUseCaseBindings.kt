@@ -13,8 +13,9 @@ import dev.zacsweers.metro.Provides
 @BindingContainer
 object RankingUseCaseBindings {
     @Provides
-    fun provideSubmitScoreUseCase(rankingRepository: RankingRepository): SubmitScoreUseCase =
-        SubmitScoreUseCase(rankingRepository)
+    fun provideSubmitScoreUseCase(
+        rankingRepository: RankingRepository,
+    ): SubmitScoreUseCase = SubmitScoreUseCase(rankingRepository)
 
     @Provides
     fun provideGetTodayRankingsUseCase(rankingRepository: RankingRepository): GetTodayRankingsUseCase =
