@@ -9,6 +9,8 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
+val appVersion = rootProject.extra["appVersion"] as String
+val appVersionCode = rootProject.extra["appVersionCode"] as Int
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
 }
@@ -31,9 +33,32 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.droidkaigi.quiz.staff"
-            packageVersion = "1.0.0"
+            packageVersion = appVersion
         }
     }
+}
+
+val generateStaffAppVersionProperties = tasks.register("generateStaffAppVersionProperties") {
+    val outputDir = layout.buildDirectory.dir("generated/staffAppVersion")
+    val outputFile = outputDir.map { it.file("staff-app-version.properties") }
+    inputs.property("appVersion", appVersion)
+    inputs.property("appVersionCode", appVersionCode)
+    outputs.file(outputFile)
+    doLast {
+        val file = outputFile.get().asFile
+        file.parentFile.mkdirs()
+        file.writeText(
+            """
+            version=$appVersion
+            versionCode=$appVersionCode
+            """.trimIndent() + "\n",
+        )
+    }
+}
+
+tasks.named<ProcessResources>("processResources") {
+    dependsOn(generateStaffAppVersionProperties)
+    from(layout.buildDirectory.dir("generated/staffAppVersion"))
 }
 
 val rootFirebaseConfig =

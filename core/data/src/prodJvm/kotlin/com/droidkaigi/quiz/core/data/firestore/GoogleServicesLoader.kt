@@ -14,6 +14,7 @@ private data class GoogleServicesRoot(
 @Serializable
 private data class ProjectInfo(
     @SerialName("project_id") val projectId: String,
+    @SerialName("storage_bucket") val storageBucket: String? = null,
 )
 
 @Serializable
@@ -36,6 +37,7 @@ internal data class FirebaseProjectConfig(
     val projectId: String,
     val apiKey: String,
     val applicationId: String,
+    val storageBucket: String? = null,
 )
 
 internal object GoogleServicesLoader {
@@ -52,6 +54,7 @@ internal object GoogleServicesLoader {
             projectId = root.project_info.projectId,
             apiKey = apiKey,
             applicationId = client.client_info.mobileSdkAppId,
+            storageBucket = root.project_info.storageBucket,
         )
     }
 

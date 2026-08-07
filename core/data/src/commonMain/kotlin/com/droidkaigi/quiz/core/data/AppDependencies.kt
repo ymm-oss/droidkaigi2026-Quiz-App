@@ -4,10 +4,12 @@ import com.droidkaigi.quiz.core.data.di.QuizAppGraph
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.CheckForStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DownloadStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetSitePublishedUseCase
@@ -47,6 +49,8 @@ class AppDependencies(
     val quickSignInStaffUseCase: QuickSignInStaffUseCase,
     val getStaffAuthStateUseCase: GetStaffAuthStateUseCase,
     val signOutStaffUseCase: SignOutStaffUseCase,
+    val checkForStaffAppUpdateUseCase: CheckForStaffAppUpdateUseCase,
+    val downloadStaffAppUpdateUseCase: DownloadStaffAppUpdateUseCase,
 ) {
     val getSitePublishedUseCase: GetSitePublishedUseCase
         get() = GetSitePublishedUseCase(quizCatalogRepository)
@@ -80,6 +84,8 @@ class AppDependencies(
                 quickSignInStaffUseCase = graph.quickSignInStaffUseCase,
                 getStaffAuthStateUseCase = graph.getStaffAuthStateUseCase,
                 signOutStaffUseCase = graph.signOutStaffUseCase,
+                checkForStaffAppUpdateUseCase = graph.checkForStaffAppUpdateUseCase,
+                downloadStaffAppUpdateUseCase = graph.downloadStaffAppUpdateUseCase,
             )
         }
 

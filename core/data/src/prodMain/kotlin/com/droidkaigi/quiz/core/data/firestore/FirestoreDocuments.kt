@@ -51,6 +51,20 @@ data class AppConfigFirestoreDocument(
     val updatedAtEpochMillis: Long? = null,
 )
 
+/** Firestore `staffAppRelease/latest` — staff Desktop auto-update metadata. */
+@Serializable
+data class StaffAppReleaseFirestoreDocument(
+    val version: String = "",
+    val versionCode: Int = 0,
+    val storagePath: String = "",
+    val sha256: String = "",
+    val releaseNotes: String = "",
+    val publishedAtEpochMillis: Long? = null,
+) {
+    fun isComplete(): Boolean =
+        version.isNotBlank() && versionCode > 0 && storagePath.isNotBlank() && sha256.isNotBlank()
+}
+
 @Serializable
 data class RankingFirestoreDocument(
     val nickname: String = "",

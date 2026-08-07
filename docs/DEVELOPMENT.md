@@ -207,7 +207,7 @@ firebase deploy --only firestore
 
 ### CD（master マージ時のルール自動デプロイ）
 
-`firestore.rules` が `master` に入ると [.github/workflows/deploy-firestore-rules.yml](../.github/workflows/deploy-firestore-rules.yml) が `firebase deploy --only firestore:rules` を実行する（手動は Actions の **Deploy Firestore rules** → **Run workflow**）。
+`firestore.rules` / `storage.rules` が `master` に入ると [.github/workflows/deploy-firestore-rules.yml](../.github/workflows/deploy-firestore-rules.yml) が `firebase deploy --only firestore:rules,storage` を実行する（手動は Actions の **Deploy Firebase rules** → **Run workflow**）。
 
 | GitHub Secret | 内容 |
 |---------------|------|
@@ -216,7 +216,10 @@ firebase deploy --only firestore
 **サービスアカウントの用意（初回のみ）**
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@droidkaigi26.iam.gserviceaccount.com`）
-2. ロール **Firebase Rules Admin**（`roles/firebaserules.admin`）を付与（最小権限。運用簡略化なら **Firebase Admin** でも可）
+2. ロールを付与:
+   - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
+   - スタッフ DMG 公開 CD も同じ鍵を使う場合: **Cloud Datastore User**（または Firestore 書込）と **Storage Object Admin**
+   - 運用簡略化なら **Firebase Admin** でも可
 3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
 
 `GOOGLE_SERVICES_JSON`（アプリ用クライアント設定）とは別物。インデックスの自動デプロイはこの workflow の対象外（必要なら手動で `firebase deploy --only firestore:indexes`）。
@@ -331,15 +334,34 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 - `droidkaigi-quiz-android-prod-{version}.apk`（`assembleProdDebug`・debug 署名。正式署名は [#31](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues/31) で検討）
 - `droidkaigi-quiz-desktop-mac-{version}.dmg`（`:desktopApp:packageDmg`）
 
-スタッフ Desktop（`staffDesktopApp`）の CD は別ワークフロー想定（未実装）。
-
 バージョンは [`gradle/version.gradle.kts`](../gradle/version.gradle.kts) で解決する（`-Papp.version` / 任意で `-Papp.versionCode`）。
+
+### CD（スタッフ Desktop の Release）
+
+[`.github/workflows/release-staff.yml`](../.github/workflows/release-staff.yml) を **Actions → Release Staff Desktop → Run workflow** で起動する。
+
+| Input | 説明 |
+|-------|------|
+| `version` | SemVer（例 `1.2.0`）。`-Papp.version` / `versionCode` と DMG ファイル名に反映 |
+| `overwrite` | 同一 Storage パスと Firestore メタを上書き |
+| `release_notes` | `staffAppRelease/latest.releaseNotes` に保存 |
+
+成果物（**prod・非公開**）:
+
+1. `:staffDesktopApp:packageDmg` で `droidkaigi-quiz-staff-mac-{version}.dmg` を生成
+2. Firebase Storage `releases/staff-desktop/{version}.dmg` にアップロード
+3. Firestore `staffAppRelease/latest` を更新（`version` / `versionCode` / `storagePath` / `sha256` / `releaseNotes`）
+
+スタッフアプリはログイン後にメタデータを取得し、埋め込み `versionCode` より新しければ DMG ダウンロードを促す（サイレント置換はしない。ユーザーが Applications へ入れ替える）。
+
+必要な Secret: `GOOGLE_SERVICES_JSON`（ビルド）、`FIREBASE_SERVICE_ACCOUNT`（Storage / Firestore 書き込み）。
 
 ### Secrets
 
 | Secret | 用途 |
 |--------|------|
 | `GOOGLE_SERVICES_JSON` | **CD（Release）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/` と Desktop パッケージ用 classpath に書き出す |
+| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD |
 | `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 
 CI（fake）は Secret 不要。将来の署名 APK 用（#31）: `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`

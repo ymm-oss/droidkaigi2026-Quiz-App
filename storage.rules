@@ -1,0 +1,11 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Staff Desktop DMG releases — authenticated staff only.
+    // Writes are via Admin SDK / CI service account (bypasses these rules).
+    match /releases/staff-desktop/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}
