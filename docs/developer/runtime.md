@@ -22,7 +22,7 @@ UI モジュールは共通です。Repository 実装だけが切り替わりま
 
 - fake は本番の代替実装ではない（開発ハーネス）
 - ネット失敗時に fake へサイレントフォールバックしない
-- Wasm の prod は未対応（起動時エラー）
+- Wasm の prod は Firebase JS SDK 実装で対応（ビルド時に `google-services.json` が必要）
 - Android で `assembleFakeDebug` と `assembleProdDebug` を **1 コマンドで並べると** KMP は fake にフォールバックする。片方ずつビルドする
 
 詳細手順はリポジトリの `docs/DEVELOPMENT.md` を参照してください。

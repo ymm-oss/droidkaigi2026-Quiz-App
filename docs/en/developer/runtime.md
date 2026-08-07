@@ -22,7 +22,7 @@ Always **rebuild** after switching.
 
 - fake is a **dev harness**, not a production substitute
 - No silent fallback to fake on network failure
-- Wasm prod is unsupported (startup error)
+- Wasm prod uses the Firebase JS SDK (requires `google-services.json` at build time)
 - Do not assemble both Android flavors in one Gradle invocation (KMP falls back to fake)
 
 See `docs/DEVELOPMENT.md` for full steps.
