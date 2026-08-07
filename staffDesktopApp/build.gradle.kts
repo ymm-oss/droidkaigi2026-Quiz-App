@@ -39,26 +39,21 @@ compose.desktop {
 }
 
 val generateStaffAppVersionProperties = tasks.register("generateStaffAppVersionProperties") {
-    val outputDir = layout.buildDirectory.dir("generated/staffAppVersion")
-    val outputFile = outputDir.map { it.file("staff-app-version.properties") }
-    inputs.property("appVersion", appVersion)
-    inputs.property("appVersionCode", appVersionCode)
+    val version = appVersion
+    val versionCode = appVersionCode
+    val outputFile = layout.buildDirectory.file("generated/staffAppVersion/staff-app-version.properties")
+    inputs.property("appVersion", version)
+    inputs.property("appVersionCode", versionCode)
     outputs.file(outputFile)
     doLast {
         val file = outputFile.get().asFile
         file.parentFile.mkdirs()
-        file.writeText(
-            """
-            version=$appVersion
-            versionCode=$appVersionCode
-            """.trimIndent() + "\n",
-        )
+        file.writeText("version=$version\nversionCode=$versionCode\n")
     }
 }
 
 tasks.named<ProcessResources>("processResources") {
-    dependsOn(generateStaffAppVersionProperties)
-    from(layout.buildDirectory.dir("generated/staffAppVersion"))
+    from(generateStaffAppVersionProperties)
 }
 
 val rootFirebaseConfig =

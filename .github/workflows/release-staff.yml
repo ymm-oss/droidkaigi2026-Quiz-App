@@ -146,6 +146,7 @@ jobs:
           RELEASE_NOTES: ${{ needs.prepare.outputs.notes }}
           OVERWRITE: ${{ inputs.overwrite }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           DMG="$(ls dist/*.dmg | head -n 1)"
           npm install --no-save firebase-admin@13

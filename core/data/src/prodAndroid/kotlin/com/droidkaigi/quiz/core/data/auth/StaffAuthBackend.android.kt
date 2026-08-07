@@ -22,3 +22,6 @@ internal actual suspend fun staffSignInWithEmailPassword(email: String, password
         throw StaffAuthErrorMapper.toException(e)
     }
 }
+
+internal actual suspend fun staffCurrentIdToken(forceRefresh: Boolean): String? =
+    Firebase.auth.currentUser?.getIdToken(forceRefresh)

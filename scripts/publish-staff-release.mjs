@@ -5,6 +5,8 @@
  * Env:
  *   VERSION, VERSION_CODE, STORAGE_PATH, RELEASE_NOTES, OVERWRITE
  *   FIREBASE_SERVICE_ACCOUNT (JSON string) or GOOGLE_APPLICATION_CREDENTIALS
+ *   GOOGLE_SERVICES_JSON (optional; reads project_info.storage_bucket)
+ *   FIREBASE_STORAGE_BUCKET (optional override)
  *
  * Args:
  *   [0] path to local .dmg
@@ -33,10 +35,11 @@ async function main() {
     process.env.GCLOUD_PROJECT ||
     process.env.GOOGLE_CLOUD_PROJECT ||
     "droidkaigi26";
+  const storageBucket = resolveStorageBucket(projectId);
 
   admin.initializeApp({
     credential: admin.credential.cert(credential),
-    storageBucket: `${projectId}.appspot.com`,
+    storageBucket,
   });
 
   const bucket = admin.storage().bucket();
@@ -96,6 +99,24 @@ function resolveCredential() {
   }
   console.error("FIREBASE_SERVICE_ACCOUNT or GOOGLE_APPLICATION_CREDENTIALS is required");
   process.exit(1);
+}
+
+function resolveStorageBucket(projectId) {
+  if (process.env.FIREBASE_STORAGE_BUCKET) {
+    return process.env.FIREBASE_STORAGE_BUCKET;
+  }
+  const gsJson = process.env.GOOGLE_SERVICES_JSON;
+  if (gsJson) {
+    try {
+      const parsed = JSON.parse(gsJson);
+      const bucket = parsed.project_info?.storage_bucket;
+      if (bucket) return bucket;
+    } catch (error) {
+      console.error("Failed to parse GOOGLE_SERVICES_JSON for storage_bucket", error);
+      process.exit(1);
+    }
+  }
+  return `${projectId}.appspot.com`;
 }
 
 function sha256File(filePath) {

@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz.core.data
 
+import com.droidkaigi.quiz.core.data.auth.staffCurrentIdToken
 import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.data.firestore.FirestoreService
 import com.droidkaigi.quiz.core.data.firestore.StaffAppReleaseFirestoreDocument
@@ -25,7 +26,7 @@ class RemoteStaffAppReleaseRepository(
         release: StaffAppRelease,
         onProgress: (bytesRead: Long, totalBytes: Long?) -> Unit,
     ): Result<String> {
-        val idToken = staffAuthHolder.firebaseIdToken
+        val idToken = resolveIdToken()
             ?: return Result.failure(IllegalStateException("スタッフ認証トークンがありません。再ログインしてください。"))
         val destination = defaultStaffDmgDownloadPath(release.version)
         val downloaded = downloadAuthenticatedStorageObject(
@@ -50,6 +51,16 @@ class RemoteStaffAppReleaseRepository(
 
     override fun openDownloadedFile(path: String) {
         openLocalFile(path)
+    }
+
+    private suspend fun resolveIdToken(): String? {
+        val refreshed = runCatching { staffCurrentIdToken(forceRefresh = false) }.getOrNull()
+            ?: runCatching { staffCurrentIdToken(forceRefresh = true) }.getOrNull()
+        if (refreshed != null) {
+            staffAuthHolder.firebaseIdToken = refreshed
+            return refreshed
+        }
+        return staffAuthHolder.firebaseIdToken
     }
 }
 

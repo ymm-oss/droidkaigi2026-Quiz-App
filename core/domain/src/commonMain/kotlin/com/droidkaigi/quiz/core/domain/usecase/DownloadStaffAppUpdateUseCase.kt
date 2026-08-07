@@ -16,6 +16,7 @@ class DownloadStaffAppUpdateUseCase(
         }
         if (openAfterDownload) {
             runCatching { staffAppReleaseRepository.openDownloadedFile(path) }
+                .onFailure { return Result.failure(it) }
         }
         return Result.success(path)
     }
