@@ -28,6 +28,7 @@ import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
 /**
  * Facade over the Metro [QuizAppGraph]. Initialize once via [init] from the app entry point.
  */
+@Suppress("LongParameterList") // Metro graph facade; grows with provided use cases.
 class AppDependencies(
     val instantProvider: InstantProvider,
     private val quizCatalogRepository: QuizCatalogRepository,
