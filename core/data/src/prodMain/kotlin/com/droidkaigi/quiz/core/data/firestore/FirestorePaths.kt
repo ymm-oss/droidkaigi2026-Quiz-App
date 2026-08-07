@@ -5,4 +5,6 @@ internal object FirestorePaths {
     const val APP_CONFIG = "appConfig"
     const val APP_CONFIG_DEFAULT = "default"
     const val RANKINGS = "rankings"
+    const val STAFF_APP_RELEASE = "staffAppRelease"
+    const val STAFF_APP_RELEASE_LATEST = "latest"
 }

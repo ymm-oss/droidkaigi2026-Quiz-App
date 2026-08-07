@@ -32,6 +32,8 @@ Run configs: `staffDesktop[Fake]` / `staffDesktop[Prod]`.
 | fake | Local fixed account (+ demo one-click) |
 | prod | Firebase Auth (organizer credentials) |
 
+In prod, after sign-in the app checks for a newer staff Desktop build and can download a DMG (CD: `Release Staff Desktop`).
+
 ## Web (Wasm)
 
 ```bash

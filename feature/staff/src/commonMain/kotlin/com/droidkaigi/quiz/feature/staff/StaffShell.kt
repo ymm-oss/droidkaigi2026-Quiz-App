@@ -29,14 +29,18 @@ import com.droidkaigi.quiz.core.ui.theme.QuizTokens
 import com.droidkaigi.quiz.feature.staff.folders.StaffFolderSidebar
 import com.droidkaigi.quiz.feature.staff.quiz.StaffQuizScreen
 import com.droidkaigi.quiz.feature.staff.ranking.StaffRankingScreen
+import com.droidkaigi.quiz.feature.staff.update.StaffAppUpdateDialog
+import com.droidkaigi.quiz.feature.staff.update.StaffAppUpdateViewModel
 
 @Composable
 fun StaffShell(
     onSignOut: () -> Unit,
     onPreviewFolder: (folderId: String) -> Unit = {},
     shellViewModel: StaffShellViewModel = viewModel { StaffShellViewModel() },
+    updateViewModel: StaffAppUpdateViewModel = viewModel { StaffAppUpdateViewModel() },
 ) {
     val shellState by shellViewModel.uiState.collectAsState()
+    val updateState by updateViewModel.uiState.collectAsState()
     var selectedTab by rememberSaveable { mutableStateOf(StaffTab.Quiz) }
     var newFolderName by rememberSaveable { mutableStateOf("") }
     var newFolderDescription by rememberSaveable { mutableStateOf("") }
@@ -102,6 +106,11 @@ fun StaffShell(
             onDismiss = { shellViewModel.onIntent(StaffShellIntent.DismissSitePublishConfirm) },
         )
     }
+
+    StaffAppUpdateDialog(
+        state = updateState,
+        onIntent = updateViewModel::onIntent,
+    )
 }
 
 @Composable

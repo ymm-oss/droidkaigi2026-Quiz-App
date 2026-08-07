@@ -4,10 +4,12 @@ import com.droidkaigi.quiz.core.data.di.QuizAppGraph
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.CheckForStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DownloadStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetSitePublishedUseCase
@@ -27,7 +29,7 @@ import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
 /**
  * Facade over the Metro [QuizAppGraph]. Initialize once via [init] from the app entry point.
  */
-@Suppress("LongParameterList")
+@Suppress("LongParameterList") // Metro graph facade; grows with provided use cases.
 class AppDependencies(
     val instantProvider: InstantProvider,
     private val quizCatalogRepository: QuizCatalogRepository,
@@ -50,6 +52,8 @@ class AppDependencies(
     val restoreStaffAuthSessionUseCase: RestoreStaffAuthSessionUseCase,
     val getStaffAuthStateUseCase: GetStaffAuthStateUseCase,
     val signOutStaffUseCase: SignOutStaffUseCase,
+    val checkForStaffAppUpdateUseCase: CheckForStaffAppUpdateUseCase,
+    val downloadStaffAppUpdateUseCase: DownloadStaffAppUpdateUseCase,
 ) {
     val getSitePublishedUseCase: GetSitePublishedUseCase
         get() = GetSitePublishedUseCase(quizCatalogRepository)
@@ -84,6 +88,8 @@ class AppDependencies(
                 restoreStaffAuthSessionUseCase = graph.restoreStaffAuthSessionUseCase,
                 getStaffAuthStateUseCase = graph.getStaffAuthStateUseCase,
                 signOutStaffUseCase = graph.signOutStaffUseCase,
+                checkForStaffAppUpdateUseCase = graph.checkForStaffAppUpdateUseCase,
+                downloadStaffAppUpdateUseCase = graph.downloadStaffAppUpdateUseCase,
             )
         }
 
