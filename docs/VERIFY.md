@@ -42,6 +42,33 @@ Rebuild after changing runtime (inactive `fakeMain` / `prodMain` is not compiled
 
 [Firebase セットアップ](DEVELOPMENT.md#firebase-セットアップ) のスタッフ用ログインで認証する。
 
+**DMG 用 jlink ランタイムの確認（`run` では検出できない不足モジュール向け）**
+
+1. **ヒント（静的解析・不完全）** — `jdeps` ベースの提案を表示:
+
+   ```bash
+   ./gradlew :staffDesktopApp:suggestRuntimeModules -Pquiz.runtime=prod
+   ```
+
+   出力の `modules(...)` と `gradle/desktop-jlink-modules.gradle.kts` を突き合わせる。Firestore 経由の `java.sql` などは拾えないことがある。
+
+2. **確実なスモーク** — パッケージと同じ最小 JRE で起動:
+
+   ```bash
+   ./gradlew :staffDesktopApp:runDistributable -Pquiz.runtime=prod
+   ```
+
+   ログイン → フォルダ一覧まで通れば DMG でも同様に動く想定。
+
+3. **同梱モジュール一覧** — ビルド後:
+
+   ```bash
+   ./gradlew :staffDesktopApp:createRuntimeImage -Pquiz.runtime=prod -q
+   cat staffDesktopApp/build/compose/tmp/main/runtime/release
+   ```
+
+   `MODULES="..."` に `java.sql` / `jdk.unsupported` 等が含まれるか確認。
+
 ## Prerequisites
 
 - Android SDK and emulator or device

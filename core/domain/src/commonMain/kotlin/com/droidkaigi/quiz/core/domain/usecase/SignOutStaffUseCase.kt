@@ -1,7 +1,13 @@
 package com.droidkaigi.quiz.core.domain.usecase
 
-class SignOutStaffUseCase(private val sessionStore: StaffAuthSessionStore) {
-    operator fun invoke() {
+import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
+
+class SignOutStaffUseCase(
+    private val sessionStore: StaffAuthSessionStore,
+    private val staffAuthRepository: StaffAuthRepository,
+) {
+    suspend operator fun invoke() {
+        staffAuthRepository.signOut()
         sessionStore.clearSession()
     }
 }

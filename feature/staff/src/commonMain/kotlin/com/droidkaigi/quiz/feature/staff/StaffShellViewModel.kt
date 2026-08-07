@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+
+private const val STAFF_SHELL_REFRESH_TIMEOUT_MS = 30_000L
 
 data class StaffShellUiState(
     val folders: List<QuizFolder> = emptyList(),
@@ -63,22 +66,24 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             staffLog("refresh start")
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching {
-                val folders = deps.listQuizFoldersUseCase()
-                val activeId = runCatching { deps.getActiveQuizFolderIdUseCase() }
-                    .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
-                    .getOrNull()
-                val sitePublished = runCatching { deps.getSitePublishedUseCase() }
-                    .onFailure { staffLog("getSitePublished failed: ${it.message}") }
-                    .getOrDefault(false)
-                val selected = _uiState.value.selectedFolderId
-                    ?: activeId?.takeIf { id -> folders.any { it.id == id } }
-                    ?: folders.firstOrNull()?.id
-                staffLog(
-                    "refresh ok folders=${folders.size} activeId=$activeId sitePublished=$sitePublished " +
-                        "selected=$selected " +
-                        folders.joinToString { "${it.id}:${it.displayName}" },
-                )
-                RefreshPayload(folders, activeId, selected, sitePublished)
+                withTimeout(STAFF_SHELL_REFRESH_TIMEOUT_MS) {
+                    val folders = deps.listQuizFoldersUseCase()
+                    val activeId = runCatching { deps.getActiveQuizFolderIdUseCase() }
+                        .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
+                        .getOrNull()
+                    val sitePublished = runCatching { deps.getSitePublishedUseCase() }
+                        .onFailure { staffLog("getSitePublished failed: ${it.message}") }
+                        .getOrDefault(false)
+                    val selected = _uiState.value.selectedFolderId
+                        ?: activeId?.takeIf { id -> folders.any { it.id == id } }
+                        ?: folders.firstOrNull()?.id
+                    staffLog(
+                        "refresh ok folders=${folders.size} activeId=$activeId sitePublished=$sitePublished " +
+                            "selected=$selected " +
+                            folders.joinToString { "${it.id}:${it.displayName}" },
+                    )
+                    RefreshPayload(folders, activeId, selected, sitePublished)
+                }
             }.onSuccess { payload ->
                 _uiState.update {
                     it.copy(

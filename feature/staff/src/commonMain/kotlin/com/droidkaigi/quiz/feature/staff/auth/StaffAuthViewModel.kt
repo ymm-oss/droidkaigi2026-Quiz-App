@@ -11,8 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 
 class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
+    private companion object {
+        private const val SIGN_IN_TIMEOUT_MS = 30_000L
+    }
     private val _uiState = MutableStateFlow(
         StaffAuthUiState(showQuickSignIn = deps.quickSignInStaffUseCase.isAvailable),
     )
@@ -25,6 +30,26 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
                     email = session.email,
                     isAuthenticated = true,
                 )
+            }
+        }
+        viewModelScope.launch {
+            if (_uiState.value.isAuthenticated) return@launch
+            _uiState.update { it.copy(isLoading = true) }
+            val session = runCatching {
+                withTimeout(SIGN_IN_TIMEOUT_MS) {
+                    deps.restoreStaffAuthSessionUseCase()
+                }
+            }.getOrNull()
+            _uiState.update {
+                if (session != null) {
+                    it.copy(
+                        isLoading = false,
+                        isAuthenticated = true,
+                        email = session.email,
+                    )
+                } else {
+                    it.copy(isLoading = false)
+                }
             }
         }
     }
@@ -45,12 +70,14 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
     }
 
     fun onSignOut() {
-        deps.signOutStaffUseCase()
-        _uiState.update {
-            StaffAuthUiState(
-                email = it.email,
-                showQuickSignIn = it.showQuickSignIn,
-            )
+        viewModelScope.launch {
+            deps.signOutStaffUseCase()
+            _uiState.update {
+                StaffAuthUiState(
+                    email = it.email,
+                    showQuickSignIn = it.showQuickSignIn,
+                )
+            }
         }
     }
 
@@ -63,7 +90,12 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            applySignInResult(deps.signInStaffUseCase(email, password))
+            val result = runCatching {
+                withTimeout(SIGN_IN_TIMEOUT_MS) {
+                    deps.signInStaffUseCase(email, password)
+                }
+            }.getOrElse { Result.failure(it) }
+            applySignInResult(result)
         }
     }
 
@@ -71,7 +103,12 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
         if (!_uiState.value.showQuickSignIn) return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            applySignInResult(deps.quickSignInStaffUseCase())
+            val result = runCatching {
+                withTimeout(SIGN_IN_TIMEOUT_MS) {
+                    deps.quickSignInStaffUseCase()
+                }
+            }.getOrElse { Result.failure(it) }
+            applySignInResult(result)
         }
     }
 
@@ -90,8 +127,9 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
             }
             .onFailure { error ->
                 val message = when (error) {
-                    is StaffAuthException -> error.message
-                        ?: error.reason.userMessage()
+                    is StaffAuthException -> error.message ?: error.reason.userMessage()
+                    is TimeoutCancellationException ->
+                        "ログインがタイムアウトしました。ネットワーク接続を確認してください。"
                     else -> StaffAuthFailureReason.Unknown.userMessage()
                 }
                 _uiState.update {

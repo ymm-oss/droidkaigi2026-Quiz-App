@@ -23,6 +23,7 @@ import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ListQuizFoldersUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuickSignInStaffUseCase
+import com.droidkaigi.quiz.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import com.droidkaigi.quiz.core.domain.usecase.QuizPlayUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SaveQuizSetUseCase
 import com.droidkaigi.quiz.core.domain.usecase.SetActiveQuizFolderUseCase
@@ -223,7 +224,8 @@ private fun rankingTestDeps(
         setActiveQuizFolderUseCase = SetActiveQuizFolderUseCase(catalogRepository),
         signInStaffUseCase = signInStaffUseCase,
         quickSignInStaffUseCase = QuickSignInStaffUseCase(staffAuthRepository, signInStaffUseCase),
+        restoreStaffAuthSessionUseCase = RestoreStaffAuthSessionUseCase(staffAuthRepository, staffAuthHolder),
         getStaffAuthStateUseCase = GetStaffAuthStateUseCase(staffAuthHolder),
-        signOutStaffUseCase = SignOutStaffUseCase(staffAuthHolder),
+        signOutStaffUseCase = SignOutStaffUseCase(staffAuthHolder, staffAuthRepository),
     )
 }

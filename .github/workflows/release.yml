@@ -152,10 +152,8 @@ jobs:
             echo "Secret GOOGLE_SERVICES_JSON is required for prod Release builds." >&2
             exit 1
           fi
-          mkdir -p androidApp/src/prod desktopApp/src/main/resources
+          mkdir -p androidApp/src/prod
           printf '%s\n' "$GOOGLE_SERVICES_JSON" > androidApp/src/prod/google-services.json
-          # Packaged DMG resolves config from classpath (/google-services.json)
-          cp androidApp/src/prod/google-services.json desktopApp/src/main/resources/google-services.json
       - name: Package Mac DMG
         run: >
           ./gradlew :desktopApp:packageDmg
