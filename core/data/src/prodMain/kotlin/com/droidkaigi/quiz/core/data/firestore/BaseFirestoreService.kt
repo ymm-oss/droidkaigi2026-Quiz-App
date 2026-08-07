@@ -32,12 +32,14 @@ internal abstract class BaseFirestoreService : FirestoreService {
     /** SDK 固有の例外から複合インデックス不足エラーかどうかを判定する。 */
     protected abstract fun isMissingCompositeIndexError(error: Throwable): Boolean
 
+    // wasm の JsException は Exception ではなく Throwable 直下のため Throwable で捕捉する
+    @Suppress("TooGenericExceptionCaught")
     final override suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument) {
         try {
             setRanking(folderId, entryId, document)
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             // create-only rules: retry after a successful write looks like a denied update.
             // Only an identical existing document proves that the previous attempt landed.
             val existing = runCatching { getRanking(folderId, entryId) }.getOrNull()
@@ -48,6 +50,8 @@ internal abstract class BaseFirestoreService : FirestoreService {
         }
     }
 
+    // wasm の JsException は Exception ではなく Throwable 直下のため Throwable で捕捉する
+    @Suppress("TooGenericExceptionCaught")
     final override suspend fun listRankingsForDate(
         folderId: String,
         dateKey: String,
@@ -56,7 +60,7 @@ internal abstract class BaseFirestoreService : FirestoreService {
             queryRankings(folderId, dateKey, orderByScoreDescending = true)
         } catch (e: CancellationException) {
             throw e
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
             if (!isMissingCompositeIndexError(error)) throw error
             // 複合インデックス未デプロイ時のみ: 等値クエリ + クライアント側 score 降順
             queryRankings(folderId, dateKey, orderByScoreDescending = false)
