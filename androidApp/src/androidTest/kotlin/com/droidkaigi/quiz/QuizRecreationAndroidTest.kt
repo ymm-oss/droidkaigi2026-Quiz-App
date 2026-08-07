@@ -1,6 +1,8 @@
 package com.droidkaigi.quiz
 
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -21,7 +23,7 @@ class QuizRecreationAndroidTest {
     val ruleChain: RuleChain = RuleChain.outerRule(ForceJapaneseLocaleRule()).around(composeRule)
 
     @Test
-    fun activityRecreation_duringQuiz_staysOnQuizScreen() {
+    fun activityRecreation_duringQuiz_staysOnQuizScreen_andKeepsSelection() {
         composeRule.startQuizWithNickname("RecreateTester")
         composeRule.clickChoice("Compose Multiplatform")
 
@@ -29,6 +31,10 @@ class QuizRecreationAndroidTest {
 
         composeRule.waitUntilText("1 / 3")
         composeRule.onNodeWithText("クイズを始める").assertDoesNotExist()
+        // 未提出の選択状態も維持される（syncFromSession が同一セッションでは no-op）
+        composeRule.waitUntilTag("choice:Compose Multiplatform")
+        composeRule.onNodeWithTag("choice:Compose Multiplatform", useUnmergedTree = true)
+            .assertIsSelected()
     }
 
     @Test
