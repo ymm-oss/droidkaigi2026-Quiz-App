@@ -169,7 +169,7 @@ private fun quizNavEntry(
     }
 
     Route.Result -> NavEntry(key) {
-        ResultScreen(onGoToRanking = onGoToRanking)
+        ResultScreen(onGoToRanking = onGoToRanking, onMissingResult = onGoHome)
     }
 
     Route.Ranking -> NavEntry(key) {
