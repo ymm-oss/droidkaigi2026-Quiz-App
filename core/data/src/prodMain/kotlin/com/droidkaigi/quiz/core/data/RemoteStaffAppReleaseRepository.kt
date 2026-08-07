@@ -5,6 +5,7 @@ import com.droidkaigi.quiz.core.data.di.AppScope
 import com.droidkaigi.quiz.core.data.firestore.FirestoreService
 import com.droidkaigi.quiz.core.data.firestore.StaffAppReleaseFirestoreDocument
 import com.droidkaigi.quiz.core.data.storage.defaultStaffDmgDownloadPath
+import com.droidkaigi.quiz.core.data.storage.deleteLocalFile
 import com.droidkaigi.quiz.core.data.storage.downloadAuthenticatedStorageObject
 import com.droidkaigi.quiz.core.data.storage.openLocalFile
 import com.droidkaigi.quiz.core.data.storage.sha256HexOfFile
@@ -12,6 +13,7 @@ import com.droidkaigi.quiz.core.domain.model.StaffAppRelease
 import com.droidkaigi.quiz.core.domain.repository.StaffAppReleaseRepository
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 @Inject
 @ContributesBinding(AppScope::class)
@@ -36,10 +38,16 @@ class RemoteStaffAppReleaseRepository(
             onProgress = onProgress,
         ).getOrElse { return Result.failure(it) }
 
-        val actualSha = runCatching { sha256HexOfFile(downloaded) }.getOrElse {
-            return Result.failure(it)
+        val actualSha = try {
+            sha256HexOfFile(downloaded)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            deleteLocalFile(downloaded)
+            return Result.failure(e)
         }
         if (!actualSha.equals(release.sha256, ignoreCase = true)) {
+            deleteLocalFile(downloaded)
             return Result.failure(
                 IllegalStateException(
                     "ダウンロードした DMG のチェックサムが一致しません（expected=${release.sha256}, actual=$actualSha）",
@@ -61,7 +69,7 @@ class RemoteStaffAppReleaseRepository(
                 staffAuthHolder.firebaseIdToken = refreshed
                 return refreshed
             }
-        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+        } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
             // Fall back to the cached token from sign-in when refresh is unavailable.

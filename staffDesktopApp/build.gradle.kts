@@ -1,4 +1,10 @@
-import org.gradle.api.tasks.JavaExec
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -9,11 +15,13 @@ plugins {
 }
 
 val quizRuntime = rootProject.extra["quizRuntime"] as String
-val appVersion = rootProject.extra["appVersion"] as String
-val appVersionCode = rootProject.extra["appVersionCode"] as Int
+val packageAppVersion = rootProject.extra["appVersion"] as String
+val packageAppVersionCode = rootProject.extra["appVersionCode"] as Int
 check(quizRuntime in setOf("fake", "prod")) {
     "quiz.runtime must be 'fake' or 'prod' (was '$quizRuntime')."
 }
+apply(from = "${rootDir}/gradle/desktop-jlink-modules.gradle.kts")
+val desktopJlinkModules = rootProject.extra["desktopJlinkModules"] as List<String>
 kotlin {
     jvmToolchain(17)
     compilerOptions {
@@ -33,36 +41,40 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.droidkaigi.quiz.staff"
-            packageVersion = appVersion
+            packageVersion = packageAppVersion
+            // See gradle/desktop-jlink-modules.gradle.kts
+            modules(*desktopJlinkModules.toTypedArray())
         }
     }
 }
 
-val generateStaffAppVersionProperties = tasks.register("generateStaffAppVersionProperties") {
-    val version = appVersion
-    val versionCode = appVersionCode
-    val outputFile = layout.buildDirectory.file("generated/staffAppVersion/staff-app-version.properties")
-    inputs.property("appVersion", version)
-    inputs.property("appVersionCode", versionCode)
-    outputs.file(outputFile)
-    doLast {
+abstract class GenerateStaffAppVersionPropertiesTask : DefaultTask() {
+    @get:Input
+    abstract val appVersion: Property<String>
+
+    @get:Input
+    abstract val appVersionCode: Property<Int>
+
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
+    @TaskAction
+    fun generate() {
         val file = outputFile.get().asFile
         file.parentFile.mkdirs()
-        file.writeText("version=$version\nversionCode=$versionCode\n")
+        file.writeText("version=${appVersion.get()}\nversionCode=${appVersionCode.get()}\n")
     }
 }
+
+val generateStaffAppVersionProperties =
+    tasks.register<GenerateStaffAppVersionPropertiesTask>("generateStaffAppVersionProperties") {
+        appVersion.set(packageAppVersion)
+        appVersionCode.set(packageAppVersionCode)
+        outputFile.set(layout.buildDirectory.file("generated/staffAppVersion/staff-app-version.properties"))
+    }
 
 tasks.named<ProcessResources>("processResources") {
     from(generateStaffAppVersionProperties)
 }
 
-val rootFirebaseConfig =
-    rootProject.layout.projectDirectory.file("androidApp/src/prod/google-services.json")
-tasks.withType<JavaExec>().configureEach {
-    if (name == "run") {
-        workingDir = rootProject.layout.projectDirectory.asFile
-        if (rootFirebaseConfig.asFile.isFile) {
-            systemProperty("droidkaigi.firebase.config", rootFirebaseConfig.asFile.absolutePath)
-        }
-    }
-}
+apply(from = "${rootDir}/gradle/firebase-google-services.desktop.gradle.kts")

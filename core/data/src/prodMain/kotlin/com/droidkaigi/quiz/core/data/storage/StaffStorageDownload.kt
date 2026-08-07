@@ -14,6 +14,8 @@ internal expect suspend fun downloadAuthenticatedStorageObject(
 
 internal expect fun openLocalFile(path: String)
 
+internal expect fun deleteLocalFile(path: String)
+
 internal expect fun defaultStaffDmgDownloadPath(version: String): String
 
-internal expect fun sha256HexOfFile(path: String): String
+internal expect suspend fun sha256HexOfFile(path: String): String

@@ -83,6 +83,8 @@ kotlin {
                 implementation(libs.firebase.auth)
                 implementation(libs.firebase.firestore)
                 implementation(libs.firebase.java.sdk)
+                // GitLive on JVM bridges to Android Firebase, which posts Auth listeners to Main.
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
         sourceSets.named("wasmJsMain").configure {
@@ -91,7 +93,10 @@ kotlin {
     }
     if (quizRuntime != "fake") {
         sourceSets.named("jvmTest").configure {
-            kotlin.exclude("**/FakeRankingRepositoryTest.kt")
+            kotlin.exclude(
+                "**/FakeRankingRepositoryTest.kt",
+                "**/InMemoryQuizCatalogSitePublishedTest.kt",
+            )
         }
     }
 }
@@ -99,4 +104,8 @@ kotlin {
 compose.resources {
     publicResClass = true
     packageOfResClass = "com.droidkaigi.quiz.core.data.generated.resources"
+}
+
+if (quizRuntime == "prod") {
+    apply(from = "${rootDir}/gradle/firebase-google-services.desktop.gradle.kts")
 }

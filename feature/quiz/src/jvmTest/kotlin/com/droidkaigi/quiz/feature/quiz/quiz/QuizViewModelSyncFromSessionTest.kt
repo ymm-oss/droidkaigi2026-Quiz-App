@@ -39,26 +39,24 @@ import com.droidkaigi.quiz.core.domain.usecase.SubmitScoreUseCase
 import com.droidkaigi.quiz.core.domain.usecase.UpdateQuizFolderUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.coroutines.resume
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertNull
 import kotlin.test.fail
 
+/**
+ * 構成変更後の再 composition による `syncFromSession()` が、同一セッション中の
+ * 未提出の選択・フィードバック状態を初期化しないことを検証する。
+ * https://github.com/ymm-oss/droidkaigi2026-Quiz-App/pull/78 のレビュー指摘。
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
-class QuizViewModelSubmitScoreTest {
+class QuizViewModelSyncFromSessionTest {
     private val dispatcher = StandardTestDispatcher()
 
     @BeforeTest
@@ -72,199 +70,89 @@ class QuizViewModelSubmitScoreTest {
     }
 
     @Test
-    fun submitScore_failure_showsFailedPhase_andRetrySucceedsWithFixedCompletedAt() = runTest(dispatcher) {
-        val ranking = ControllableRankingRepository()
-        ranking.nextFailures = 1
+    fun syncFromSession_sameSession_keepsUnsubmittedSelection() = runTest(dispatcher) {
         val sessionHolder = QuizSessionHolder()
-        val clock = MutableInstantProvider(1_700_000_000_000L)
-        val deps = testAppDependencies(ranking, clock, sessionHolder)
-        val viewModel = createViewModelAtFinalFeedback(deps, sessionHolder, clock)
-        val finishedAt = clock.millis
+        val deps = testAppDependencies(sessionHolder)
+        beginSession(deps, sessionHolder, startedAt = 1_700_000_000_000L)
+        val viewModel = QuizViewModel(deps)
+        viewModel.onIntent(QuizIntent.SelectSingle("a"))
 
-        clock.millis = finishedAt + 60_000L
-        viewModel.onIntent(QuizIntent.ContinueAfterFeedback)
-        advanceUntilIdle()
-        assertEquals(SubmitPhase.Failed, viewModel.uiState.value.submitPhase)
-        assertEquals(1, ranking.submitCount)
-        assertEquals(finishedAt, ranking.completedAts.single())
+        // 構成変更後に LaunchedEffect が再実行されたのと同じ経路
+        viewModel.syncFromSession()
 
-        clock.millis = finishedAt + 120_000L
-        val navigate = async { viewModel.events.first() }
-        viewModel.onIntent(QuizIntent.RetrySubmitScore)
-        advanceUntilIdle()
-
-        assertEquals(QuizEvent.NavigateToResult, navigate.await())
-        assertEquals(SubmitPhase.Idle, viewModel.uiState.value.submitPhase)
-        assertEquals(2, ranking.submitCount)
-        assertEquals(listOf(finishedAt, finishedAt), ranking.completedAts)
-        assertEquals(1, ranking.scores.distinct().size)
-        assertEquals(sessionHolder.lastResult?.score, ranking.scores.first())
+        assertEquals("a", viewModel.uiState.value.selectedSingleId)
+        assertEquals(true, viewModel.uiState.value.canSubmit)
     }
 
     @Test
-    fun submitScore_whileSubmitting_ignoresDuplicateContinueAndRetry() = runTest(dispatcher) {
-        val ranking = ControllableRankingRepository(blockUntilReleased = true)
+    fun syncFromSession_sameSession_keepsFeedbackOverlay() = runTest(dispatcher) {
         val sessionHolder = QuizSessionHolder()
-        val clock = MutableInstantProvider(1_700_000_000_000L)
-        val deps = testAppDependencies(ranking, clock, sessionHolder)
-        val viewModel = createViewModelAtFinalFeedback(deps, sessionHolder, clock)
-
-        viewModel.onIntent(QuizIntent.ContinueAfterFeedback)
-        advanceUntilIdle()
-        assertEquals(SubmitPhase.Submitting, viewModel.uiState.value.submitPhase)
-
-        viewModel.onIntent(QuizIntent.ContinueAfterFeedback)
-        viewModel.onIntent(QuizIntent.RetrySubmitScore)
-        advanceUntilIdle()
-        assertEquals(1, ranking.submitCount)
-
-        val navigate = async { viewModel.events.first() }
-        ranking.release()
-        advanceUntilIdle()
-        assertEquals(QuizEvent.NavigateToResult, navigate.await())
-        assertEquals(1, ranking.submitCount)
-    }
-
-    @Test
-    fun submitScore_cancellation_isNotConvertedToFailed() = runTest(dispatcher) {
-        val ranking = ControllableRankingRepository(throwCancellation = true)
-        val sessionHolder = QuizSessionHolder()
-        val clock = MutableInstantProvider(1_700_000_000_000L)
-        val deps = testAppDependencies(ranking, clock, sessionHolder)
-        val viewModel = createViewModelAtFinalFeedback(deps, sessionHolder, clock)
-
-        viewModel.onIntent(QuizIntent.ContinueAfterFeedback)
-        advanceUntilIdle()
-
-        assertNotEquals(SubmitPhase.Failed, viewModel.uiState.value.submitPhase)
-        assertTrue(
-            viewModel.uiState.value.submitPhase == SubmitPhase.Submitting ||
-                viewModel.uiState.value.submitPhase == SubmitPhase.Idle,
-        )
-    }
-
-    @Test
-    fun viewModelRecreation_keepsFinishedAtForRetry() = runTest(dispatcher) {
-        val ranking = ControllableRankingRepository()
-        ranking.nextFailures = 1
-        val sessionHolder = QuizSessionHolder()
-        val clock = MutableInstantProvider(1_700_000_000_000L)
-        val deps = testAppDependencies(ranking, clock, sessionHolder)
-        val firstVm = createViewModelAtFinalFeedback(deps, sessionHolder, clock)
-        val finishedAt = checkNotNull(sessionHolder.finishedAtEpochMillis)
-
-        firstVm.onIntent(QuizIntent.ContinueAfterFeedback)
-        advanceUntilIdle()
-        assertEquals(SubmitPhase.Failed, firstVm.uiState.value.submitPhase)
-
-        clock.millis = finishedAt + 90_000L
-        val recreated = QuizViewModel(deps)
-        assertEquals(true, recreated.uiState.value.isFinishing)
-        assertEquals(true, recreated.uiState.value.lastAnswerCorrect)
-        assertEquals(SubmitPhase.Failed, recreated.uiState.value.submitPhase)
-        assertEquals(finishedAt, sessionHolder.finishedAtEpochMillis)
-
-        val navigate = async { recreated.events.first() }
-        recreated.onIntent(QuizIntent.RetrySubmitScore)
-        advanceUntilIdle()
-        assertEquals(QuizEvent.NavigateToResult, navigate.await())
-        assertEquals(listOf(finishedAt, finishedAt), ranking.completedAts)
-    }
-
-    @Test
-    fun viewModelRecreation_beforeSubmit_restoresFeedbackContinue() = runTest(dispatcher) {
-        val ranking = ControllableRankingRepository()
-        val sessionHolder = QuizSessionHolder()
-        val clock = MutableInstantProvider(1_700_000_000_000L)
-        val deps = testAppDependencies(ranking, clock, sessionHolder)
-        createViewModelAtFinalFeedback(deps, sessionHolder, clock)
-        val finishedAt = checkNotNull(sessionHolder.finishedAtEpochMillis)
-
-        val recreated = QuizViewModel(deps)
-        assertEquals(true, recreated.uiState.value.showFeedback)
-        assertEquals(true, recreated.uiState.value.lastAnswerCorrect)
-        assertEquals(SubmitPhase.Idle, recreated.uiState.value.submitPhase)
-
-        val navigate = async { recreated.events.first() }
-        recreated.onIntent(QuizIntent.ContinueAfterFeedback)
-        advanceUntilIdle()
-        assertEquals(QuizEvent.NavigateToResult, navigate.await())
-        assertEquals(listOf(finishedAt), ranking.completedAts)
-    }
-
-    private fun createViewModelAtFinalFeedback(
-        deps: AppDependencies,
-        sessionHolder: QuizSessionHolder,
-        clock: MutableInstantProvider,
-    ): QuizViewModel {
-        val question = SingleChoice(
-            id = "q1",
-            prompt = "Q",
-            options = listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B")),
-            correctId = "a",
-        )
-        sessionHolder.beginSession(
-            deps.quizEngine.startSession(
-                folderId = "folder",
-                quizSet = QuizSet("folder", "Demo", listOf(question)),
-                nickname = "Alice",
-                startedAtEpochMillis = clock.millis,
-            ),
-        )
+        val deps = testAppDependencies(sessionHolder)
+        beginSession(deps, sessionHolder, startedAt = 1_700_000_000_000L, questionCount = 2)
         val viewModel = QuizViewModel(deps)
         viewModel.onIntent(QuizIntent.SelectSingle("a"))
         viewModel.onIntent(QuizIntent.SubmitAnswer)
-        assertEquals(true, viewModel.uiState.value.isFinishing)
         assertEquals(true, viewModel.uiState.value.showFeedback)
-        return viewModel
+
+        viewModel.syncFromSession()
+
+        assertEquals(true, viewModel.uiState.value.showFeedback)
+        assertEquals(true, viewModel.uiState.value.lastAnswerCorrect)
     }
 
-    private class MutableInstantProvider(var millis: Long) : InstantProvider {
+    @Test
+    fun syncFromSession_newSession_resyncsToFreshState() = runTest(dispatcher) {
+        val sessionHolder = QuizSessionHolder()
+        val deps = testAppDependencies(sessionHolder)
+        beginSession(deps, sessionHolder, startedAt = 1_700_000_000_000L)
+        val viewModel = QuizViewModel(deps)
+        viewModel.onIntent(QuizIntent.SelectSingle("a"))
+
+        beginSession(deps, sessionHolder, startedAt = 1_700_000_060_000L)
+        viewModel.syncFromSession()
+
+        assertNull(viewModel.uiState.value.selectedSingleId)
+        assertEquals(false, viewModel.uiState.value.canSubmit)
+    }
+
+    private fun beginSession(
+        deps: AppDependencies,
+        sessionHolder: QuizSessionHolder,
+        startedAt: Long,
+        questionCount: Int = 1,
+    ) {
+        val questions = (1..questionCount).map { index ->
+            SingleChoice(
+                id = "q$index",
+                prompt = "Q$index",
+                options = listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B")),
+                correctId = "a",
+            )
+        }
+        sessionHolder.beginSession(
+            deps.quizEngine.startSession(
+                folderId = "folder",
+                quizSet = QuizSet("folder", "Demo", questions),
+                nickname = "Alice",
+                startedAtEpochMillis = startedAt,
+            ),
+        )
+    }
+
+    private class FixedInstantProvider(private val millis: Long) : InstantProvider {
         override fun nowEpochMillis(): Long = millis
     }
 
-    private class ControllableRankingRepository(
-        private val blockUntilReleased: Boolean = false,
-        private val throwCancellation: Boolean = false,
-    ) : RankingRepository {
-        var nextFailures: Int = 0
-        var submitCount: Int = 0
-        val completedAts = mutableListOf<Long>()
-        val scores = mutableListOf<Int>()
-        private var releaseCont: ((Unit) -> Unit)? = null
-
-        fun release() {
-            releaseCont?.invoke(Unit)
-            releaseCont = null
-        }
-
+    private fun noopRanking(): RankingRepository = object : RankingRepository {
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
-
         override suspend fun submitScore(
             result: QuizResult,
             completedAtEpochMillis: Long,
             folderId: String,
             entryId: String,
-        ) {
-            submitCount += 1
-            completedAts += completedAtEpochMillis
-            scores += result.score
-            if (throwCancellation) {
-                throw CancellationException("cancelled submit")
-            }
-            if (nextFailures > 0) {
-                nextFailures -= 1
-                error("network down")
-            }
-            if (blockUntilReleased) {
-                suspendCancellableCoroutine { cont ->
-                    releaseCont = { cont.resume(Unit) }
-                }
-            }
-        }
+        ) = Unit
 
         override suspend fun deleteEntry(folderId: String, entryId: String) = Unit
-
         override suspend fun clearTodayRankings(folderId: String) = Unit
     }
 
@@ -290,17 +178,14 @@ class QuizViewModelSubmitScoreTest {
         override var currentSession: StaffSession? = null
     }
 
-    private fun testAppDependencies(
-        rankingRepository: RankingRepository,
-        instantProvider: InstantProvider,
-        sessionHolder: QuizSessionHolder,
-    ): AppDependencies {
+    private fun testAppDependencies(sessionHolder: QuizSessionHolder): AppDependencies {
         val catalog = unusedCatalog()
+        val ranking = noopRanking()
         val staffRepo = unusedStaffRepo()
         val staffStore = unusedSessionStore()
         val signIn = SignInStaffUseCase(staffRepo, staffStore)
         val quizEngine = QuizEngine()
-        val submitScoreUseCase = SubmitScoreUseCase(rankingRepository)
+        val instantProvider = FixedInstantProvider(1_700_000_000_000L)
         return AppDependencies(
             instantProvider = instantProvider,
             quizCatalogRepository = catalog,
@@ -309,12 +194,12 @@ class QuizViewModelSubmitScoreTest {
             quizPlayUseCase = QuizPlayUseCase(
                 quizEngine = quizEngine,
                 sessionStore = sessionHolder,
-                submitScoreUseCase = submitScoreUseCase,
+                submitScoreUseCase = SubmitScoreUseCase(ranking),
                 instantProvider = instantProvider,
             ),
-            getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
-            deleteRankingEntryUseCase = DeleteRankingEntryUseCase(rankingRepository),
-            clearTodayRankingsUseCase = ClearTodayRankingsUseCase(rankingRepository),
+            getTodayRankingsUseCase = GetTodayRankingsUseCase(ranking),
+            deleteRankingEntryUseCase = DeleteRankingEntryUseCase(ranking),
+            clearTodayRankingsUseCase = ClearTodayRankingsUseCase(ranking),
             listQuizFoldersUseCase = ListQuizFoldersUseCase(catalog),
             createQuizFolderUseCase = CreateQuizFolderUseCase(catalog),
             updateQuizFolderUseCase = UpdateQuizFolderUseCase(catalog),

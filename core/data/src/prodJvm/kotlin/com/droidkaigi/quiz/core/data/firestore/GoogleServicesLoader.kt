@@ -64,6 +64,15 @@ internal object GoogleServicesLoader {
             if (file.isFile) return file
         }
 
+        val classLoader = Thread.currentThread().contextClassLoader
+            ?: GoogleServicesLoader::class.java.classLoader
+        classLoader?.getResourceAsStream("google-services.json")?.use { stream ->
+            val temp = File.createTempFile("google-services", ".json")
+            temp.deleteOnExit()
+            temp.writeBytes(stream.readBytes())
+            return temp
+        }
+
         GoogleServicesLoader::class.java.getResourceAsStream("/google-services.json")?.use { stream ->
             val temp = File.createTempFile("google-services", ".json")
             temp.deleteOnExit()

@@ -181,6 +181,19 @@ androidApp/src/prod/google-services.json
 
 [Firebase Console](https://console.firebase.google.com/) の **プロジェクト設定 → マイアプリ → Android（`com.droidkaigi.quiz`）** から **google-services.json** をダウンロードし、上記パスに置く。リポジトリに同梱されている場合はそのまま使える。フィールド構成の参考: [google-services.json.example](../androidApp/src/prod/google-services.json.example)。
 
+参加者 Desktop / スタッフ Desktop は **同じファイルを Gradle が自動参照**する（`run` はシステムプロパティ、DMG 等パッケージは `processResources` / `jvmProcessResources` で classpath 同梱）。`desktopApp/src/main/resources/` や `staffDesktopApp/src/main/resources/` へ手動コピーする必要はない。
+
+**DMG / MSI パッケージ**では jlink のカスタム JRE に追加モジュールが必要（Firestore の SQLite / protobuf 等）。一覧と確認手順は `gradle/desktop-jlink-modules.gradle.kts` と [VERIFY.md](VERIFY.md)（Staff desktop 節）を参照。`run` は開発用 JDK をそのまま使うため不足は出ない。
+
+### リリースに不要なもの（サービスアカウント）
+
+| ファイル | 用途 | リリース |
+|----------|------|----------|
+| **`google-services.json`** | クライアントアプリ用 Firebase 設定（API キー・プロジェクト ID） | **必要**（上記 1 箇所） |
+| **Firebase Admin SDK JSON**（例 `*-firebase-adminsdk-*.json`） | サーバー側の管理者権限（Firestore 全権操作など） | **不要** |
+
+Admin SDK のサービスアカウント鍵は [.gitignore](../.gitignore) で除外されている。アプリ Release（APK / DMG）や CI の `GOOGLE_SERVICES_JSON` には含めない。誤って配布するとプロジェクト全体の管理者権限が漏れる。
+
 ### リポジトリ内の Firebase ファイル
 
 | パス | 内容 |
@@ -360,7 +373,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 
 | Secret | 用途 |
 |--------|------|
-| `GOOGLE_SERVICES_JSON` | **CD（Release）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/` と Desktop パッケージ用 classpath に書き出す |
+| `GOOGLE_SERVICES_JSON` | **CD（Release）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/google-services.json` に書き出す（Desktop は Gradle が同ファイルから同梱） |
 | `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD |
 | `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 

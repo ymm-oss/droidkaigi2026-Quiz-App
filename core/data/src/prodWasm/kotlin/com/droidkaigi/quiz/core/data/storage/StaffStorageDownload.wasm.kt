@@ -16,8 +16,10 @@ internal actual fun openLocalFile(path: String) {
     error("Opening downloaded staff DMG is not supported on Wasm")
 }
 
+internal actual fun deleteLocalFile(path: String) = Unit
+
 internal actual fun defaultStaffDmgDownloadPath(version: String): String =
     error("Staff DMG download path is not supported on Wasm")
 
-internal actual fun sha256HexOfFile(path: String): String =
+internal actual suspend fun sha256HexOfFile(path: String): String =
     error("Staff DMG checksum is not supported on Wasm")

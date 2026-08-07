@@ -8,3 +8,7 @@ internal actual suspend fun staffSignInWithEmailPassword(email: String, password
 }
 
 internal actual suspend fun staffCurrentIdToken(forceRefresh: Boolean): String? = null
+
+internal actual suspend fun restoreStaffSessionFromFirebase(): StaffSignInResult? = null
+
+internal actual suspend fun staffSignOutFromFirebase() {}

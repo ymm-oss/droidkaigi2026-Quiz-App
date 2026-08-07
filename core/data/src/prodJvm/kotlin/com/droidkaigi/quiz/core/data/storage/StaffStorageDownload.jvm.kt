@@ -80,12 +80,16 @@ internal actual fun openLocalFile(path: String) {
     Desktop.getDesktop().open(file)
 }
 
+internal actual fun deleteLocalFile(path: String) {
+    File(path).delete()
+}
+
 internal actual fun defaultStaffDmgDownloadPath(version: String): String {
     val downloads = File(System.getProperty("user.home"), "Downloads")
     return File(downloads, "droidkaigi-quiz-staff-$version.dmg").absolutePath
 }
 
-internal actual fun sha256HexOfFile(path: String): String {
+internal actual suspend fun sha256HexOfFile(path: String): String = withContext(Dispatchers.IO) {
     val digest = MessageDigest.getInstance("SHA-256")
     FileInputStream(File(path)).use { input ->
         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
@@ -95,5 +99,5 @@ internal actual fun sha256HexOfFile(path: String): String {
             digest.update(buffer, 0, read)
         }
     }
-    return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
+    digest.digest().joinToString("") { byte -> "%02x".format(byte) }
 }
