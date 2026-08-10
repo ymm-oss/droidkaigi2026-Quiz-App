@@ -52,7 +52,7 @@ fun StaffTopBar(
                 )
                 Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
                 Text(
-                    text = "DroidKaigi Quiz — スタッフ",
+                    text = "Droid26クイズ管理アプリ",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,

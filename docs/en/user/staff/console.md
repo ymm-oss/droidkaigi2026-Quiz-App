@@ -18,9 +18,23 @@ Configure single / multi / reorder questions and preview explanations.
 
 <img src="/screenshots/staff/05-create-folder.png" alt="Create folder" width="480" />
 
+### Edit folder name / description
+
+The pencil icon on the selected sidebar row renames a folder and updates its description after creation. Questions are untouched.
+
+<img src="/screenshots/staff/05b-edit-folder.png" alt="Edit folder" width="480" />
+
+### Delete folder
+
+The trash icon on the selected row deletes the folder after confirmation, including its questions and rankings. The last remaining folder cannot be deleted. Deleting the published folder promotes another folder as active.
+
+<img src="/screenshots/staff/05c-delete-folder.png" alt="Delete folder" width="480" />
+
 ### Publish confirmation
 
 <img src="/screenshots/staff/06-publish-confirm.png" alt="Publish confirm" width="480" />
+
+Participants already answering stay on the folder they started, and their score is recorded in that folder's ranking. The switch only applies to participants who start after it.
 
 ### Other states
 

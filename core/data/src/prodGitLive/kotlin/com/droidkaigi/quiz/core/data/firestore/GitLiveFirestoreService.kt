@@ -34,6 +34,8 @@ internal class GitLiveFirestoreService : BaseFirestoreService() {
     }
 
     override suspend fun deleteFolder(folderId: String) {
+        // Firestore does not cascade-delete subcollections; clear rankings first.
+        deleteAllRankingsInFolder(folderId)
         db.collection(FirestorePaths.FOLDERS).document(folderId).delete()
     }
 
@@ -101,7 +103,25 @@ internal class GitLiveFirestoreService : BaseFirestoreService() {
             .delete()
     }
 
+    private suspend fun deleteAllRankingsInFolder(folderId: String) {
+        val rankings = rankingsCollection(folderId)
+        repeat(MAX_CLEAR_PASSES) {
+            val documents = rankings.get().documents
+            if (documents.isEmpty()) return
+            documents.forEach { snapshot ->
+                deleteRanking(folderId, snapshot.id)
+            }
+        }
+        if (rankings.get().documents.isNotEmpty()) {
+            error("Could not clear all rankings for folder $folderId")
+        }
+    }
+
     private fun rankingsCollection(folderId: String) = db.collection(FirestorePaths.FOLDERS)
         .document(folderId)
         .collection(FirestorePaths.RANKINGS)
+
+    private companion object {
+        private const val MAX_CLEAR_PASSES = 5
+    }
 }

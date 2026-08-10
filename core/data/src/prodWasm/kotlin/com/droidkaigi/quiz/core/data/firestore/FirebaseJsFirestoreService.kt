@@ -58,6 +58,8 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
     }
 
     override suspend fun deleteFolder(folderId: String) {
+        // Firestore does not cascade-delete subcollections; clear rankings first.
+        deleteAllRankingsInFolder(folderId)
         deleteDoc(doc(db, folderPath(folderId))).await<JsAny?>()
     }
 
@@ -134,6 +136,20 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
         deleteDoc(doc(db, rankingPath(folderId, entryId))).await<JsAny?>()
     }
 
+    private suspend fun deleteAllRankingsInFolder(folderId: String) {
+        val rankings = collection(db, rankingsPath(folderId))
+        repeat(MAX_CLEAR_PASSES) {
+            val documents = getDocs(rankings).await<QuerySnapshotJs>().docs.toKotlinList()
+            if (documents.isEmpty()) return
+            documents.forEach { snapshot ->
+                deleteRanking(folderId, snapshot.id)
+            }
+        }
+        if (getDocs(rankings).await<QuerySnapshotJs>().docs.toKotlinList().isNotEmpty()) {
+            error("Could not clear all rankings for folder $folderId")
+        }
+    }
+
     private fun <T> encode(serializer: KSerializer<T>, value: T): JsAny =
         checkNotNull(jsonParse(json.encodeToString(serializer, value)))
 
@@ -154,5 +170,6 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
             "${FirestorePaths.APP_CONFIG}/${FirestorePaths.APP_CONFIG_DEFAULT}"
         private const val STAFF_APP_RELEASE_PATH =
             "${FirestorePaths.STAFF_APP_RELEASE}/${FirestorePaths.STAFF_APP_RELEASE_LATEST}"
+        private const val MAX_CLEAR_PASSES = 5
     }
 }
