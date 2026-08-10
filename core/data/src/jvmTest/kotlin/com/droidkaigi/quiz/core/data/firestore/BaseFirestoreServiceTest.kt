@@ -157,6 +157,8 @@ class BaseFirestoreServiceTest {
 
         override suspend fun setAppConfig(document: AppConfigFirestoreDocument) = unused()
 
+        override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? = unused()
+
         private fun unused(): Nothing = error("not used in this test")
     }
 
