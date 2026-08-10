@@ -186,6 +186,62 @@ class StaffScreenshotJvmUiTest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun captureEditFolderDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(
+                    selectedTab = StaffTab.Quiz,
+                    shellState = sampleShellState.copy(editingFolderId = "day1-easy"),
+                ) {
+                    StaffQuizContent(
+                        quizTitle = "Day 1 · Easy",
+                        quizSubtitle = "会場向け初級",
+                        questions = sampleQuestions,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onAddQuestion = {},
+                        onEditQuestion = {},
+                        onRequestDeleteQuestion = {},
+                        onReorderQuestions = { _, _ -> },
+                    )
+                }
+            }
+        }
+        onNodeWithText("フォルダを編集").assertIsDisplayed()
+        captureSurfacePng("05b-edit-folder.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureDeleteFolderDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(
+                    selectedTab = StaffTab.Quiz,
+                    shellState = sampleShellState.copy(deletingFolderId = "day1-easy"),
+                ) {
+                    StaffQuizContent(
+                        quizTitle = "Day 1 · Easy",
+                        quizSubtitle = "会場向け初級",
+                        questions = sampleQuestions,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onAddQuestion = {},
+                        onEditQuestion = {},
+                        onRequestDeleteQuestion = {},
+                        onReorderQuestions = { _, _ -> },
+                    )
+                }
+            }
+        }
+        onNodeWithText("フォルダを削除").assertIsDisplayed()
+        captureSurfacePng("05c-delete-folder.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun capturePublishConfirmDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
         setContent {
             QuizStaffTheme {
@@ -461,7 +517,12 @@ private const val SAMPLE_COMPLETED_AT = 1_783_607_520_000L
 private val sampleRanking = listOf(
     RankingEntry(nickname = "Alice", score = 320, completedAtEpochMillis = SAMPLE_COMPLETED_AT, id = "alice"),
     RankingEntry(nickname = "Bob", score = 280, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 420_000L, id = "bob"),
-    RankingEntry(nickname = "Carol", score = 250, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 1_020_000L, id = "carol"),
+    RankingEntry(
+        nickname = "Carol",
+        score = 250,
+        completedAtEpochMillis = SAMPLE_COMPLETED_AT - 1_020_000L,
+        id = "carol",
+    ),
 )
 
 private val sampleEditorDraft = StaffQuestionDraft(
