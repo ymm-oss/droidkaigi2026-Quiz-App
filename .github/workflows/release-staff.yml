@@ -43,6 +43,10 @@ jobs:
             exit 1
           fi
           IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+          if (( MAJOR > 999 || MINOR > 99 || PATCH > 99 )); then
+            echo "version components must fit MAJOR<=999, MINOR<=99, PATCH<=99 for versionCode encoding (got: $VERSION)" >&2
+            exit 1
+          fi
           VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
           STORAGE_PATH="releases/staff-desktop/${VERSION}.dmg"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"

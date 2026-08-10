@@ -65,8 +65,10 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
             connection.disconnect()
         }
     } catch (e: CancellationException) {
+        File(destinationPath).delete()
         throw e
     } catch (e: Exception) {
+        File(destinationPath).delete()
         Result.failure(e)
     }
 }
