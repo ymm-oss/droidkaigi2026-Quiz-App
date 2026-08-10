@@ -6,6 +6,7 @@ import com.droidkaigi.quiz.core.domain.model.QuizSet
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -82,12 +83,39 @@ class StaffShellViewModelFolderDeleteTest {
         assertEquals("network down", state.errorMessage)
     }
 
+    @Test
+    fun deleteFolder_inFlight_blocksAdditionalDeleteUntilLocalListUpdates() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        val catalog = RecordingCatalogRepository(deleteGate = gate)
+        val viewModel = StaffShellViewModel(staffTestAppDependencies(catalog, NoopRankingRepository))
+
+        viewModel.onIntent(StaffShellIntent.RequestDeleteFolder("day1"))
+        viewModel.onIntent(StaffShellIntent.ConfirmDeleteFolder)
+
+        // While the first delete is still awaiting the backend, reject another delete path.
+        viewModel.onIntent(StaffShellIntent.DismissDeleteFolderDialog)
+        viewModel.onIntent(StaffShellIntent.RequestDeleteFolder("day2"))
+        viewModel.onIntent(StaffShellIntent.ConfirmDeleteFolder)
+        assertTrue(catalog.deletedIds.isEmpty())
+        assertNull(viewModel.uiState.value.deletingFolderId)
+        assertEquals(2, viewModel.uiState.value.folders.size)
+
+        gate.complete(Unit)
+
+        assertEquals(listOf("day1"), catalog.deletedIds)
+        val state = viewModel.uiState.value
+        assertTrue(state.folders.none { it.id == "day1" })
+        assertTrue(state.folders.any { it.id == "day2" })
+        assertEquals(1, state.folders.size)
+    }
+
     private class RecordingCatalogRepository(
         initialFolders: List<QuizFolder> = listOf(
             QuizFolder(id = "day1", name = "Day 1", description = "", sortOrder = 0),
             QuizFolder(id = "day2", name = "Day 2", description = "", sortOrder = 1),
         ),
         private val deleteError: Throwable? = null,
+        private val deleteGate: CompletableDeferred<Unit>? = null,
     ) : QuizCatalogRepository {
         val deletedIds = mutableListOf<String>()
         private val folders = initialFolders.toMutableList()
@@ -100,6 +128,7 @@ class StaffShellViewModelFolderDeleteTest {
         override suspend fun updateFolder(folder: QuizFolder) = error("unused")
 
         override suspend fun deleteFolder(folderId: String) {
+            deleteGate?.await()
             deleteError?.let { throw it }
             deletedIds += folderId
             folders.removeAll { it.id == folderId }
