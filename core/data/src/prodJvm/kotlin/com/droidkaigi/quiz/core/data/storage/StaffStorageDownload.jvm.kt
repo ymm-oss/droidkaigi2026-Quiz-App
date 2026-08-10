@@ -25,6 +25,7 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
     destinationPath: String,
     onProgress: (bytesRead: Long, totalBytes: Long?) -> Unit,
 ): Result<String> = withContext(Dispatchers.IO) {
+    val partial = File("$destinationPath.partial")
     try {
         val bucket = firebaseStorageBucket()
         val encodedPath = URLEncoder.encode(storagePath, StandardCharsets.UTF_8)
@@ -48,7 +49,7 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
             val destination = File(destinationPath)
             destination.parentFile?.mkdirs()
             connection.inputStream.use { input ->
-                destination.outputStream().use { output ->
+                partial.outputStream().use { output ->
                     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                     var readTotal = 0L
                     while (true) {
@@ -60,15 +61,17 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
                     }
                 }
             }
+            partial.copyTo(destination, overwrite = true)
+            partial.delete()
             Result.success(destination.absolutePath)
         } finally {
             connection.disconnect()
         }
     } catch (e: CancellationException) {
-        File(destinationPath).delete()
+        partial.delete()
         throw e
     } catch (e: Exception) {
-        File(destinationPath).delete()
+        partial.delete()
         Result.failure(e)
     }
 }

@@ -52,6 +52,18 @@ async function main() {
     process.exit(1);
   }
 
+  const latestRef = admin.firestore().doc("staffAppRelease/latest");
+  const existing = await latestRef.get();
+  if (existing.exists) {
+    const existingCode = existing.get("versionCode");
+    if (typeof existingCode === "number" && existingCode > versionCode && !overwrite) {
+      console.error(
+        `Refusing to publish older versionCode ${versionCode} over existing ${existingCode}. Pass overwrite=true to force.`,
+      );
+      process.exit(1);
+    }
+  }
+
   const sha256 = sha256File(dmgPath);
   console.log(`Uploading ${dmgPath} -> gs://${bucket.name}/${storagePath}`);
   await bucket.upload(dmgPath, {
@@ -75,17 +87,6 @@ async function main() {
     releaseNotes,
     publishedAtEpochMillis,
   };
-  const latestRef = admin.firestore().doc("staffAppRelease/latest");
-  const existing = await latestRef.get();
-  if (existing.exists) {
-    const existingCode = existing.get("versionCode");
-    if (typeof existingCode === "number" && existingCode > versionCode && !overwrite) {
-      console.error(
-        `Refusing to publish older versionCode ${versionCode} over existing ${existingCode}. Pass overwrite=true to force.`,
-      );
-      process.exit(1);
-    }
-  }
   console.log("Writing Firestore staffAppRelease/latest", doc);
   await latestRef.set(doc, { merge: false });
   console.log("Published staff Desktop release", version);
