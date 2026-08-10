@@ -209,52 +209,55 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
     private fun confirmDeleteFolder() {
         if (folderDeleteInFlight) return
-        val folderId = _uiState.value.deletingFolderId ?: return
-        if (_uiState.value.folders.none { it.id == folderId }) {
-            _uiState.update { it.copy(deletingFolderId = null) }
-            return
-        }
-        // Keep at least one folder so activeFolderId / participant start stay valid.
-        if (_uiState.value.folders.size <= 1) {
-            _uiState.update {
-                it.copy(
-                    deletingFolderId = null,
-                    errorMessage = "最後のフォルダは削除できません",
-                )
-            }
-            return
-        }
-        viewModelScope.launch {
-            folderDeleteInFlight = true
-            staffLog("deleteFolder start id=$folderId")
-            try {
-                runCatching { deps.deleteQuizFolderUseCase(folderId) }
-                    .onSuccess {
-                        _uiState.update { state ->
-                            val remaining = state.folders.filterNot { it.id == folderId }
-                            state.copy(
-                                folders = remaining,
-                                deletingFolderId = null,
-                                selectedFolderId = state.selectedFolderId
-                                    ?.takeUnless { it == folderId }
-                                    ?: remaining.firstOrNull()?.id,
-                                editingFolderId = state.editingFolderId?.takeUnless { it == folderId },
-                                activeFolderId = state.activeFolderId
-                                    ?.takeUnless { it == folderId }
-                                    ?: remaining.firstOrNull()?.id,
-                                errorMessage = null,
-                            )
+        val current = _uiState.value
+        val folderId = current.deletingFolderId
+        when {
+            folderId == null -> Unit
+
+            current.folders.none { it.id == folderId } ->
+                _uiState.update { it.copy(deletingFolderId = null) }
+
+            // Keep at least one folder so activeFolderId / participant start stay valid.
+            current.folders.size <= 1 ->
+                _uiState.update {
+                    it.copy(
+                        deletingFolderId = null,
+                        errorMessage = "最後のフォルダは削除できません",
+                    )
+                }
+
+            else -> viewModelScope.launch {
+                folderDeleteInFlight = true
+                staffLog("deleteFolder start id=$folderId")
+                try {
+                    runCatching { deps.deleteQuizFolderUseCase(folderId) }
+                        .onSuccess {
+                            _uiState.update { state ->
+                                val remaining = state.folders.filterNot { it.id == folderId }
+                                state.copy(
+                                    folders = remaining,
+                                    deletingFolderId = null,
+                                    selectedFolderId = state.selectedFolderId
+                                        ?.takeUnless { it == folderId }
+                                        ?: remaining.firstOrNull()?.id,
+                                    editingFolderId = state.editingFolderId?.takeUnless { it == folderId },
+                                    activeFolderId = state.activeFolderId
+                                        ?.takeUnless { it == folderId }
+                                        ?: remaining.firstOrNull()?.id,
+                                    errorMessage = null,
+                                )
+                            }
+                            refresh()
                         }
-                        refresh()
-                    }
-                    .onFailure { error ->
-                        staffLog("deleteFolder failed: ${error.message}")
-                        _uiState.update {
-                            it.copy(errorMessage = error.message ?: "フォルダの削除に失敗しました")
+                        .onFailure { error ->
+                            staffLog("deleteFolder failed: ${error.message}")
+                            _uiState.update {
+                                it.copy(errorMessage = error.message ?: "フォルダの削除に失敗しました")
+                            }
                         }
-                    }
-            } finally {
-                folderDeleteInFlight = false
+                } finally {
+                    folderDeleteInFlight = false
+                }
             }
         }
     }
