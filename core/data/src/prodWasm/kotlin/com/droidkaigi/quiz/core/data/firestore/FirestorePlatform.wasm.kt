@@ -36,4 +36,6 @@ private class UnsupportedFirestoreService : FirestoreService {
     override suspend fun deleteRanking(folderId: String, entryId: String) = unsupported()
 
     override suspend fun deleteRankingsForDate(folderId: String, dateKey: String) = unsupported()
+
+    override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? = unsupported()
 }

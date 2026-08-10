@@ -1,0 +1,157 @@
+name: Release Staff Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer (e.g. 1.2.0)
+        required: true
+        type: string
+      overwrite:
+        description: Overwrite existing Storage object and Firestore metadata for this version
+        required: false
+        type: boolean
+        default: false
+      release_notes:
+        description: Release notes written to Firestore staffAppRelease/latest
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      version_code: ${{ steps.meta.outputs.version_code }}
+      storage_path: ${{ steps.meta.outputs.storage_path }}
+      notes: ${{ steps.notes.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version and compute versionCode
+        id: meta
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "version must be SemVer MAJOR.MINOR.PATCH (got: $VERSION)" >&2
+            exit 1
+          fi
+          IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+          if (( MAJOR > 999 || MINOR > 99 || PATCH > 99 )); then
+            echo "version components must fit MAJOR<=999, MINOR<=99, PATCH<=99 for versionCode encoding (got: $VERSION)" >&2
+            exit 1
+          fi
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          STORAGE_PATH="releases/staff-desktop/${VERSION}.dmg"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "storage_path=$STORAGE_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          MANUAL="${{ inputs.release_notes }}"
+          if [ -n "$MANUAL" ]; then
+            {
+              echo "notes<<EOF"
+              echo "$MANUAL"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          {
+            echo "notes<<EOF"
+            echo "Staff Desktop ${{ steps.meta.outputs.version }}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  build-staff-desktop:
+    needs: prepare
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Write google-services.json from Secret
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Secret GOOGLE_SERVICES_JSON is required for prod staff Release builds." >&2
+            exit 1
+          fi
+          mkdir -p androidApp/src/prod staffDesktopApp/src/main/resources
+          printf '%s\n' "$GOOGLE_SERVICES_JSON" > androidApp/src/prod/google-services.json
+          # Packaged DMG resolves config from classpath (/google-services.json)
+          cp androidApp/src/prod/google-services.json staffDesktopApp/src/main/resources/google-services.json
+      - name: Package Staff Mac DMG
+        run: >
+          ./gradlew :staffDesktopApp:packageDmg
+          -Pquiz.runtime=prod
+          -Papp.version=${{ needs.prepare.outputs.version }}
+          -Papp.versionCode=${{ needs.prepare.outputs.version_code }}
+          --no-daemon
+      - name: Rename DMG
+        run: |
+          mkdir -p dist
+          cp staffDesktopApp/build/compose/binaries/main/dmg/*.dmg \
+            "dist/droidkaigi-quiz-staff-mac-${{ needs.prepare.outputs.version }}.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: staff-desktop-dmg
+          path: dist/*.dmg
+
+  publish:
+    needs: [prepare, build-staff-desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: staff-desktop-dmg
+          path: dist
+
+      - name: Require FIREBASE_SERVICE_ACCOUNT secret
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "Secret FIREBASE_SERVICE_ACCOUNT is required." >&2
+            exit 1
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Publish DMG to Storage and update Firestore metadata
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          VERSION_CODE: ${{ needs.prepare.outputs.version_code }}
+          STORAGE_PATH: ${{ needs.prepare.outputs.storage_path }}
+          RELEASE_NOTES: ${{ needs.prepare.outputs.notes }}
+          OVERWRITE: ${{ inputs.overwrite }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          DMG="$(ls dist/*.dmg | head -n 1)"
+          npm install --no-save firebase-admin@13
+          node scripts/publish-staff-release.mjs "$DMG"

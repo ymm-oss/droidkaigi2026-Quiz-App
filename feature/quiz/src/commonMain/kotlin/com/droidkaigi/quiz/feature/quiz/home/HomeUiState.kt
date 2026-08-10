@@ -3,8 +3,13 @@ package com.droidkaigi.quiz.feature.quiz.home
 data class HomeUiState(
     val nickname: String = "",
     val isLoading: Boolean = false,
-    /** null while checking; false = closed (safe default while loading). */
+    /**
+     * null = 未取得（初回ローディング）または取得失敗表示中。
+     * false = スタッフにより非公開。再チェック中は直前の true/false を保持する。
+     */
     val sitePublished: Boolean? = null,
+    /** 受付状況の取得に失敗した（ネットワーク障害など）。受付前（false）とは区別する。 */
+    val siteStatusCheckFailed: Boolean = false,
     val error: HomeError? = null,
 ) {
     val isSiteOpen: Boolean get() = sitePublished == true
@@ -21,6 +26,9 @@ sealed interface HomeIntent {
 
     /** Home が再表示されたときに loading を解除（中断復帰後の二重開始防止フラグ残り対策）。 */
     data object Shown : HomeIntent
+
+    /** 受付状況の取得失敗後の再試行。 */
+    data object RetrySiteStatus : HomeIntent
 }
 
 sealed interface HomeEvent {
