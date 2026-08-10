@@ -36,6 +36,9 @@ internal actual suspend fun restoreStaffSessionFromFirebase(): StaffSignInResult
     }
 }
 
+internal actual suspend fun staffCurrentIdToken(forceRefresh: Boolean): String? =
+    Firebase.auth.currentUser?.getIdToken(forceRefresh)
+
 internal actual suspend fun staffSignOutFromFirebase() {
     Firebase.auth.signOut()
 }

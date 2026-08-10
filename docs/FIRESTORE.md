@@ -23,12 +23,28 @@ appConfig/default              # ドキュメント ID 固定
   sitePublished: boolean        # サイト／受付の公開可否（既定 false）
   updatedAtEpochMillis: number?
 
+staffAppRelease/latest         # ドキュメント ID 固定。スタッフ Desktop 最新版メタ（認証必須）
+  version: string               # SemVer 例 "1.2.0"
+  versionCode: number           # 比較用（major*10000+minor*100+patch）
+  storagePath: string           # Storage オブジェクトパス（公開 URL ではない）
+  sha256: string                # DMG の SHA-256（hex）
+  releaseNotes: string
+  publishedAtEpochMillis: number?
+
 folders/{folderId}/rankings/{entryId}
   nickname: string
   score: number
   completedAtEpochMillis: number
   dateKey: string               # 例 "2026-06-04"（InstantProvider の当日）
 ```
+
+### Firebase Storage（スタッフ DMG）
+
+```
+releases/staff-desktop/{version}.dmg
+```
+
+読み取りは認証済みスタッフのみ（[`storage.rules`](../storage.rules)）。書き込みは Admin SDK / Release CD のサービスアカウント。
 
 ### 設計の意図
 
@@ -75,22 +91,26 @@ firebase deploy --only firestore:indexes
 
 - `folders` / `appConfig`: 読み取り全員、書き込み `request.auth != null`（スタッフ）
 - `rankings`: 読み取り全員、`create`（参加者のスコア送信）、`delete` はログイン済みスタッフのみ、`update` 不可
+- `staffAppRelease`: 読み取り `request.auth != null`、クライアント書き込み不可（CD / Admin SDK）
+- Storage `releases/staff-desktop/**`: 読み取り `request.auth != null`、クライアント書き込み不可
 
 ## アプリからのマッピング
 
-| Repository | Firestore |
-|------------|-----------|
+| Repository | Firestore / Storage |
+|------------|---------------------|
 | `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`activeFolderId` / `sitePublished`） |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
+| `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage `releases/staff-desktop/{version}.dmg` |
 | 参加者クイズ取得 | `getActiveQuizFolderIdUseCase` → `getQuizSetForFolderUseCase`（`folders/{activeFolderId}`） |
 | サイト公開 | `getSitePublishedUseCase` / `setSitePublishedUseCase`（`appConfig/default.sitePublished`） |
+| スタッフ Desktop 更新 | `checkForStaffAppUpdateUseCase` / `downloadStaffAppUpdateUseCase` |
 
 **prod のデータ取得**
 
 - `QuizRepository` / `getDefaultQuizSet` は使わない。参加者・スタッフとも `QuizCatalogRepository` 経由。
 - `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える（インデックス不足時の挙動は [クエリとフォールバック](#クエリとフォールバックgitlivefirestoreservicelistrankingsfordate)）。
 
-`firestore.rules` の本番反映は `master` マージ時の CD（[DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ](DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ)）を使う。
+`firestore.rules` / `storage.rules` の本番反映は `master` マージ時の CD（[DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ](DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ)）を使う。
 
 ### prod 実装クラス（`core:data`）
 
