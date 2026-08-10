@@ -8,6 +8,9 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -61,8 +64,7 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
                     }
                 }
             }
-            partial.copyTo(destination, overwrite = true)
-            partial.delete()
+            replaceFileAtomically(partial, destination)
             Result.success(destination.absolutePath)
         } finally {
             connection.disconnect()
@@ -73,6 +75,24 @@ internal actual suspend fun downloadAuthenticatedStorageObject(
     } catch (e: Exception) {
         partial.delete()
         Result.failure(e)
+    }
+}
+
+private fun replaceFileAtomically(source: File, destination: File) {
+    try {
+        Files.move(
+            source.toPath(),
+            destination.toPath(),
+            StandardCopyOption.REPLACE_EXISTING,
+            StandardCopyOption.ATOMIC_MOVE,
+        )
+    } catch (_: AtomicMoveNotSupportedException) {
+        // Same-directory rename is still atomic on POSIX even without ATOMIC_MOVE.
+        Files.move(
+            source.toPath(),
+            destination.toPath(),
+            StandardCopyOption.REPLACE_EXISTING,
+        )
     }
 }
 
