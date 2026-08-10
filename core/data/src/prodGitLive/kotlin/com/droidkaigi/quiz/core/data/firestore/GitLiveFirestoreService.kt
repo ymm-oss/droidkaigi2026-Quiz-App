@@ -50,6 +50,13 @@ internal class GitLiveFirestoreService : BaseFirestoreService() {
             }
     }
 
+    override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? =
+        db.collection(FirestorePaths.STAFF_APP_RELEASE)
+            .document(FirestorePaths.STAFF_APP_RELEASE_LATEST)
+            .get()
+            .data(StaffAppReleaseFirestoreDocument.serializer())
+            .takeIf { it.isComplete() }
+
     override suspend fun getRanking(folderId: String, entryId: String): RankingFirestoreDocument? =
         rankingsCollection(folderId)
             .document(entryId)

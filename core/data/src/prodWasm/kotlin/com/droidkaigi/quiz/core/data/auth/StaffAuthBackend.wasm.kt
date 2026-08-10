@@ -45,6 +45,11 @@ private fun Throwable.resolveAuthErrorText(): String? {
         ?.replace('-', '_')
 }
 
+internal actual suspend fun staffCurrentIdToken(forceRefresh: Boolean): String? {
+    val user = FirebaseJsApp.auth.currentUser ?: return null
+    return user.getIdToken(forceRefresh).await<JsString>().toString()
+}
+
 @Suppress("TooGenericExceptionCaught")
 internal actual suspend fun restoreStaffSessionFromFirebase(): StaffSignInResult? {
     val auth = FirebaseJsApp.auth

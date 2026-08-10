@@ -73,6 +73,11 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
         ).await<JsAny?>()
     }
 
+    override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? = decode(
+        StaffAppReleaseFirestoreDocument.serializer(),
+        getDoc(doc(db, STAFF_APP_RELEASE_PATH)).await<DocumentSnapshotJs>(),
+    )?.takeIf { it.isComplete() }
+
     override suspend fun getRanking(folderId: String, entryId: String): RankingFirestoreDocument? = decode(
         RankingFirestoreDocument.serializer(),
         getDoc(doc(db, rankingPath(folderId, entryId))).await<DocumentSnapshotJs>(),
@@ -147,5 +152,7 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
     private companion object {
         private const val APP_CONFIG_PATH =
             "${FirestorePaths.APP_CONFIG}/${FirestorePaths.APP_CONFIG_DEFAULT}"
+        private const val STAFF_APP_RELEASE_PATH =
+            "${FirestorePaths.STAFF_APP_RELEASE}/${FirestorePaths.STAFF_APP_RELEASE_LATEST}"
     }
 }

@@ -6,9 +6,11 @@ import com.droidkaigi.quiz.core.domain.repository.RankingRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
+import com.droidkaigi.quiz.core.domain.usecase.CheckForStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DownloadStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
@@ -49,4 +51,6 @@ interface QuizAppGraph {
     val restoreStaffAuthSessionUseCase: RestoreStaffAuthSessionUseCase
     val getStaffAuthStateUseCase: GetStaffAuthStateUseCase
     val signOutStaffUseCase: SignOutStaffUseCase
+    val checkForStaffAppUpdateUseCase: CheckForStaffAppUpdateUseCase
+    val downloadStaffAppUpdateUseCase: DownloadStaffAppUpdateUseCase
 }

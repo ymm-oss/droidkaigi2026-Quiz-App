@@ -8,15 +8,19 @@ import com.droidkaigi.quiz.core.domain.model.QuizResult
 import com.droidkaigi.quiz.core.domain.model.QuizSet
 import com.droidkaigi.quiz.core.domain.model.RankingEntry
 import com.droidkaigi.quiz.core.domain.model.StaffSession
+import com.droidkaigi.quiz.core.domain.repository.LocalStaffAppVersionProvider
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
 import com.droidkaigi.quiz.core.domain.repository.RankingRepository
+import com.droidkaigi.quiz.core.domain.repository.StaffAppReleaseRepository
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.CheckForStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.ClearTodayRankingsUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteRankingEntryUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DownloadStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
@@ -227,5 +231,29 @@ private fun rankingTestDeps(
         restoreStaffAuthSessionUseCase = RestoreStaffAuthSessionUseCase(staffAuthRepository, staffAuthHolder),
         getStaffAuthStateUseCase = GetStaffAuthStateUseCase(staffAuthHolder),
         signOutStaffUseCase = SignOutStaffUseCase(staffAuthHolder, staffAuthRepository),
+        checkForStaffAppUpdateUseCase = CheckForStaffAppUpdateUseCase(
+            staffAppReleaseRepository = object : StaffAppReleaseRepository {
+                override suspend fun fetchLatestRelease() = null
+                override suspend fun downloadDmg(
+                    release: com.droidkaigi.quiz.core.domain.model.StaffAppRelease,
+                    onProgress: (Long, Long?) -> Unit,
+                ) = Result.failure<String>(UnsupportedOperationException())
+                override fun openDownloadedFile(path: String) = Unit
+            },
+            localStaffAppVersionProvider = object : LocalStaffAppVersionProvider {
+                override fun current() =
+                    com.droidkaigi.quiz.core.domain.model.LocalStaffAppVersion("1.0.0", 10_000)
+            },
+        ),
+        downloadStaffAppUpdateUseCase = DownloadStaffAppUpdateUseCase(
+            staffAppReleaseRepository = object : StaffAppReleaseRepository {
+                override suspend fun fetchLatestRelease() = null
+                override suspend fun downloadDmg(
+                    release: com.droidkaigi.quiz.core.domain.model.StaffAppRelease,
+                    onProgress: (Long, Long?) -> Unit,
+                ) = Result.failure<String>(UnsupportedOperationException())
+                override fun openDownloadedFile(path: String) = Unit
+            },
+        ),
     )
 }

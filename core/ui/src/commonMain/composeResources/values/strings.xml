@@ -15,6 +15,8 @@
     <string name="home_error_load_failed">読み込みに失敗しました</string>
     <string name="home_site_closed_message">現在は公開されていません。公開までお待ちください。</string>
     <string name="home_site_closed_button">受付開始前</string>
+    <string name="home_site_status_error_message">受付状況を取得できませんでした。通信環境を確認して再試行してください。</string>
+    <string name="home_site_status_retry">再試行</string>
 
     <string name="nav_home">ホーム</string>
     <string name="nav_ranking">ランキング</string>

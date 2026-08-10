@@ -3,12 +3,16 @@ package com.droidkaigi.quiz.core.data.di
 import com.droidkaigi.quiz.core.data.QuizSessionHolder
 import com.droidkaigi.quiz.core.data.StaffAuthHolder
 import com.droidkaigi.quiz.core.domain.repository.QuizCatalogRepository
+import com.droidkaigi.quiz.core.domain.repository.LocalStaffAppVersionProvider
 import com.droidkaigi.quiz.core.domain.repository.StaffAuthRepository
+import com.droidkaigi.quiz.core.domain.repository.StaffAppReleaseRepository
 import com.droidkaigi.quiz.core.domain.session.QuizEngine
 import com.droidkaigi.quiz.core.domain.time.InstantProvider
 import com.droidkaigi.quiz.core.domain.time.SystemInstantProvider
+import com.droidkaigi.quiz.core.domain.usecase.CheckForStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.CreateQuizFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.DeleteQuizFolderUseCase
+import com.droidkaigi.quiz.core.domain.usecase.DownloadStaffAppUpdateUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetQuizSetForFolderUseCase
 import com.droidkaigi.quiz.core.domain.usecase.GetStaffAuthStateUseCase
@@ -117,4 +121,18 @@ object DataCommonBindings {
         staffAuthHolder: StaffAuthHolder,
         staffAuthRepository: StaffAuthRepository,
     ): SignOutStaffUseCase = SignOutStaffUseCase(staffAuthHolder, staffAuthRepository)
+
+    @Provides
+    fun provideCheckForStaffAppUpdateUseCase(
+        staffAppReleaseRepository: StaffAppReleaseRepository,
+        localStaffAppVersionProvider: LocalStaffAppVersionProvider,
+    ): CheckForStaffAppUpdateUseCase = CheckForStaffAppUpdateUseCase(
+        staffAppReleaseRepository = staffAppReleaseRepository,
+        localStaffAppVersionProvider = localStaffAppVersionProvider,
+    )
+
+    @Provides
+    fun provideDownloadStaffAppUpdateUseCase(
+        staffAppReleaseRepository: StaffAppReleaseRepository,
+    ): DownloadStaffAppUpdateUseCase = DownloadStaffAppUpdateUseCase(staffAppReleaseRepository)
 }

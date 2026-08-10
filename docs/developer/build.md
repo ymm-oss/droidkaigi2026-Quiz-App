@@ -32,6 +32,8 @@ Run Configuration: `staffDesktop[Fake]` / `staffDesktop[Prod]`。
 | fake | ローカル固定アカウント（デモワンクリック可） |
 | prod | Firebase Auth（運営共有のメール / パスワード） |
 
+prod ではログイン後に最新版チェックがあり、古い場合は DMG をダウンロードできます（CD: `Release Staff Desktop`）。
+
 ## Web（Wasm）
 
 ```bash
