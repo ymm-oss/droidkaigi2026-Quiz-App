@@ -29,4 +29,4 @@
 ## クイックリンク
 
 - GitHub: [ymm-oss/droidkaigi2026-Quiz-App](https://github.com/ymm-oss/droidkaigi2026-Quiz-App)
-- パッケージ: `com.droidkaigi.quiz`
+- パッケージ: `jp.co.yumemi.quiz.droidkaigi`

@@ -10,7 +10,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.droidkaigi.quiz.core.ui"
+        namespace = "jp.co.yumemi.quiz.droidkaigi.core.ui"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
@@ -46,5 +46,5 @@ kotlin {
 
 compose.resources {
     publicResClass = true
-    packageOfResClass = "com.droidkaigi.quiz.core.ui.generated.resources"
+    packageOfResClass = "jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources"
 }

@@ -37,7 +37,7 @@ export PATH="$ANDROID_HOME/platform-tools:$PATH"
 export ANDROID_SERIAL=emulator-5554
 
 ./gradlew :androidApp:connectedFakeDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=com.droidkaigi.quiz.QuizFeedbackScreenshotAndroidTest
+  -Pandroid.testInstrumentationRunnerArguments.class=jp.co.yumemi.quiz.droidkaigi.QuizFeedbackScreenshotAndroidTest
 
 cp "androidApp/build/outputs/connected_android_test_additional_output/fakeDebugAndroidTest/connected/"*/*.png \
   docs/screenshots/android/

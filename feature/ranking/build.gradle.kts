@@ -10,7 +10,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.droidkaigi.quiz.feature.ranking"
+        namespace = "jp.co.yumemi.quiz.droidkaigi.feature.ranking"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {

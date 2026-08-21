@@ -10,7 +10,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.droidkaigi.quiz.feature.quiz"
+        namespace = "jp.co.yumemi.quiz.droidkaigi.feature.quiz"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {

@@ -1,6 +1,6 @@
 # AGENTS — DroidKaigi Quiz
 
-Package: `com.droidkaigi.quiz`
+Package: `jp.co.yumemi.quiz.droidkaigi`
 
 ## Modules
 
