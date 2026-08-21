@@ -8,12 +8,16 @@ internal object FirestoreBootstrap {
 
     fun ensureInitialized() {
         if (initialized) return
-        synchronized(this) {
-            if (initialized) return
-            initializeFirebasePlatform()
-            initialized = true
+        withFirestoreInitLock {
+            if (!initialized) {
+                initializeFirebasePlatform()
+                initialized = true
+            }
         }
     }
 }
 
 internal expect fun initializeFirebasePlatform()
+
+/** JVM/Android では synchronized、wasm（シングルスレッド）ではそのまま実行する。 */
+internal expect fun withFirestoreInitLock(block: () -> Unit)
