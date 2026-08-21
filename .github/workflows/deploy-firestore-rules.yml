@@ -51,4 +51,4 @@ jobs:
       - name: Deploy Firestore and Storage rules
         run: >
           firebase deploy --only firestore:rules,storage
-          --non-interactive --project droidkaigi26
+          --non-interactive --project ymm-droidkaigi26

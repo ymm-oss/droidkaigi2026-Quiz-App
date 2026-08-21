@@ -34,7 +34,7 @@ async function main() {
     credential.project_id ||
     process.env.GCLOUD_PROJECT ||
     process.env.GOOGLE_CLOUD_PROJECT ||
-    "droidkaigi26";
+    "ymm-droidkaigi26";
   const storageBucket = resolveStorageBucket(projectId);
 
   admin.initializeApp({
