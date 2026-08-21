@@ -70,35 +70,29 @@ jobs:
       - name: Verify hosting artifact
         run: test -f wasmApp/build/dist/wasmJs/productionExecutable/index.html
 
-      - name: Require Firebase service account secret
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Deploy to live channel
         env:
           SA_YMM: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26 }}
           SA_INIT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26 }}
           SA_SHARED: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -z "$SA_YMM" ] && [ -z "$SA_INIT" ] && [ -z "$SA_SHARED" ]; then
+          set -euo pipefail
+          CREDS=""
+          if [ -n "$SA_YMM" ]; then
+            CREDS="$SA_YMM"
+          elif [ -n "$SA_INIT" ]; then
+            CREDS="$SA_INIT"
+          elif [ -n "$SA_SHARED" ]; then
+            CREDS="$SA_SHARED"
+          else
             echo "Missing Firebase service account secret for Hosting deploy." >&2
             echo "Set one of: FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26, FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26, FIREBASE_SERVICE_ACCOUNT" >&2
             exit 1
           fi
-
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26 != '' }}
-        with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26 }}
-          channelId: live
-          projectId: ymm-droidkaigi26
-
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26 == '' && secrets.FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26 != '' }}
-        with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26 }}
-          channelId: live
-          projectId: ymm-droidkaigi26
-
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26 == '' && secrets.FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26 == '' }}
-        with:
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: ymm-droidkaigi26
+          printf '%s\n' "$CREDS" > "$RUNNER_TEMP/firebase-sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-sa.json"
+          npx firebase-tools@latest deploy --only hosting --project ymm-droidkaigi26
