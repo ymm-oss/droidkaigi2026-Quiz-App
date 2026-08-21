@@ -354,7 +354,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 
 ### CD（Wasm Firebase Hosting）
 
-`firebase init hosting:github` で生成した workflow を Wasm 向けに調整している（npm ビルドではなく Gradle prod ビルド）。
+`firebase init hosting:github` で生成した workflow を Wasm 向けに調整している（`npm ci && npm run build` ではなく Gradle prod ビルド）。**init を再実行すると workflow が npm 版に戻る**ため、Secret だけ更新し workflow は手動で Wasm 向けを維持する。
 
 | workflow | トリガー | 動作 |
 |----------|----------|------|
