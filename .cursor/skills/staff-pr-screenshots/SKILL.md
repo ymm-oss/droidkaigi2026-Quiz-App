@@ -27,8 +27,8 @@ description: >-
 
 ```bash
 xvfb-run --auto-servernum ./gradlew :feature:staff:jvmTest \
-  --tests 'com.droidkaigi.quiz.feature.staff.auth.StaffAuthContentJvmUiTest' \
-  --tests 'com.droidkaigi.quiz.feature.staff.StaffScreenshotJvmUiTest'
+  --tests 'jp.co.yumemi.quiz.droidkaigi.feature.staff.auth.StaffAuthContentJvmUiTest' \
+  --tests 'jp.co.yumemi.quiz.droidkaigi.feature.staff.StaffScreenshotJvmUiTest'
 ```
 
 4. 生成 PNG を読み、欠け・空画面・意図しない状態がないか確認する

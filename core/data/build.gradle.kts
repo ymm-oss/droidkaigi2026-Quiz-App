@@ -55,12 +55,12 @@ val generateFirebaseWebConfig = tasks.register("generateFirebaseWebConfig") {
 
         fun escape(value: String) = value.replace("\\", "\\\\").replace("\"", "\\\"")
         val outputFile = outputDir.get()
-            .file("com/droidkaigi/quiz/core/data/firestore/FirebaseWebConfig.kt").asFile
+            .file("jp/co/yumemi/quiz/droidkaigi/core/data/firestore/FirebaseWebConfig.kt").asFile
         outputFile.parentFile.mkdirs()
         outputFile.writeText(
             """
             |// generateFirebaseWebConfig タスクが google-services.json から生成する。手動編集しない。
-            |package com.droidkaigi.quiz.core.data.firestore
+            |package jp.co.yumemi.quiz.droidkaigi.core.data.firestore
             |
             |internal object FirebaseWebConfig {
             |    const val PROJECT_ID = "${escape(projectId)}"
@@ -75,7 +75,7 @@ val generateFirebaseWebConfig = tasks.register("generateFirebaseWebConfig") {
 
 kotlin {
     android {
-        namespace = "com.droidkaigi.quiz.core.data"
+        namespace = "jp.co.yumemi.quiz.droidkaigi.core.data"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
@@ -171,7 +171,7 @@ kotlin {
 
 compose.resources {
     publicResClass = true
-    packageOfResClass = "com.droidkaigi.quiz.core.data.generated.resources"
+    packageOfResClass = "jp.co.yumemi.quiz.droidkaigi.core.data.generated.resources"
 }
 
 if (quizRuntime == "prod") {

@@ -117,8 +117,8 @@ Run Configuration で切り替えて実行できる（`.run/staffDesktop[Fake].r
 
 | Build Variant | productFlavor | `quiz.runtime`（KMP） | データ源 | パッケージ名（例） |
 |---------------|---------------|----------------------|----------|-------------------|
-| **fakeDebug**（既定） | `fake` | `fake` | 同梱 JSON + インメモリ | `com.droidkaigi.quiz.fake` |
-| **prodDebug** | `prod` | `prod` | Firestore | `com.droidkaigi.quiz` |
+| **fakeDebug**（既定） | `fake` | `fake` | 同梱 JSON + インメモリ | `jp.co.yumemi.quiz.droidkaigi.fake` |
+| **prodDebug** | `prod` | `prod` | Firestore | `jp.co.yumemi.quiz.droidkaigi` |
 | fakeRelease / prodRelease | 同上 | 同上 | 同上 | 同上 |
 
 `quiz.runtime` の決まり方（優先順）:
@@ -179,7 +179,7 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 androidApp/src/prod/google-services.json
 ```
 
-[Firebase Console](https://console.firebase.google.com/) の **プロジェクト設定 → マイアプリ → Android（`com.droidkaigi.quiz`）** から **google-services.json** をダウンロードし、上記パスに置く。リポジトリに同梱されている場合はそのまま使える。フィールド構成の参考: [google-services.json.example](../androidApp/src/prod/google-services.json.example)。
+[Firebase Console](https://console.firebase.google.com/) の **プロジェクト設定 → マイアプリ → Android（`jp.co.yumemi.quiz.droidkaigi`）** から **google-services.json** をダウンロードし、上記パスに置く。リポジトリに同梱されている場合はそのまま使える。フィールド構成の参考: [google-services.json.example](../androidApp/src/prod/google-services.json.example)。
 
 参加者 Desktop / スタッフ Desktop は **同じファイルを Gradle が自動参照**する（`run` はシステムプロパティ、DMG 等パッケージは `processResources` / `jvmProcessResources` で classpath 同梱）。`desktopApp/src/main/resources/` や `staffDesktopApp/src/main/resources/` へ手動コピーする必要はない。
 
@@ -312,7 +312,7 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 ```bash
 ./gradlew :core:domain:jvmTest :core:data:jvmTest
 ./gradlew :core:data:jvmTest -Pquiz.runtime=prod   # prod では Fake 専用テストは除外
-./gradlew :feature:quiz:jvmTest --tests 'com.droidkaigi.quiz.feature.quiz.home.HomeContentJvmUiTest'  # JVM Compose UI スモーク
+./gradlew :feature:quiz:jvmTest --tests 'jp.co.yumemi.quiz.droidkaigi.feature.quiz.home.HomeContentJvmUiTest'  # JVM Compose UI スモーク
 ./gradlew :androidApp:connectedFakeDebugAndroidTest    # 要エミュレータ（Android UI）
 ```
 

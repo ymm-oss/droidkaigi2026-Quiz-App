@@ -18,7 +18,7 @@ val quizRuntimeSourceSetDir = if (quizRuntime == "prod") "prodMain" else "fakeMa
 
 kotlin {
     android {
-        namespace = "com.droidkaigi.quiz.library"
+        namespace = "jp.co.yumemi.quiz.droidkaigi.library"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {

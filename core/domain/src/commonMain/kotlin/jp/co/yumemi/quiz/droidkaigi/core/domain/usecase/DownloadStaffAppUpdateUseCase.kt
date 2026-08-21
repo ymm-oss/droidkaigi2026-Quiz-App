@@ -1,0 +1,23 @@
+package jp.co.yumemi.quiz.droidkaigi.core.domain.usecase
+
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.StaffAppRelease
+import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.StaffAppReleaseRepository
+
+class DownloadStaffAppUpdateUseCase(
+    private val staffAppReleaseRepository: StaffAppReleaseRepository,
+) {
+    suspend operator fun invoke(
+        release: StaffAppRelease,
+        onProgress: (bytesRead: Long, totalBytes: Long?) -> Unit = { _, _ -> },
+        openAfterDownload: Boolean = true,
+    ): Result<String> {
+        val path = staffAppReleaseRepository.downloadDmg(release, onProgress).getOrElse {
+            return Result.failure(it)
+        }
+        if (openAfterDownload) {
+            runCatching { staffAppReleaseRepository.openDownloadedFile(path) }
+                .onFailure { return Result.failure(it) }
+        }
+        return Result.success(path)
+    }
+}

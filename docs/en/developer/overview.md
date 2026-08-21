@@ -29,4 +29,4 @@ Kept in-repo (excluded from this site as pages):
 ## Links
 
 - GitHub: [ymm-oss/droidkaigi2026-Quiz-App](https://github.com/ymm-oss/droidkaigi2026-Quiz-App)
-- Package: `com.droidkaigi.quiz`
+- Package: `jp.co.yumemi.quiz.droidkaigi`

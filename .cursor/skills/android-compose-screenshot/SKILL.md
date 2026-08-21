@@ -11,7 +11,7 @@ Capture Android screenshots with an **instrumented Compose UI test that renders 
 Live-driving (`android` CLI / `adb shell input tap`) is unreliable and has repeatedly failed here:
 Play Protect and Google sign-in dialogs steal focus, taps near the bottom hit the gesture-nav area
 and background the app, `keyevent 111` behaves as BACK, coordinates drift between densities, and
-`monkey -p com.droidkaigi.quiz` launches nothing because the flavor adds `.fake` to the
+`monkey -p jp.co.yumemi.quiz.droidkaigi` launches nothing because the flavor adds `.fake` to the
 applicationId. The test below avoids all of that.
 
 ## 1. Wire up dependencies
@@ -45,8 +45,8 @@ manifest**, not in `src/androidTest/AndroidManifest.xml`:
 ```
 
 - Missing entirely → `RuntimeException: Unable to resolve activity for: ... ComponentActivity`
-- Declared in `src/androidTest/` → `Intent in process com.droidkaigi.quiz.fake resolved to
-  different process com.droidkaigi.quiz.fake.test`
+- Declared in `src/androidTest/` → `Intent in process jp.co.yumemi.quiz.droidkaigi.fake resolved to
+  different process jp.co.yumemi.quiz.droidkaigi.fake.test`
 - Do **not** use `createAndroidComposeRule<MainActivity>()` + `setContent`; `MainActivity` already
   calls `setContent` and the rule throws.
 
@@ -101,7 +101,7 @@ class QuizFeedbackScreenshotAndroidTest {
 ```
 
 Reference implementation:
-`androidApp/src/androidTest/kotlin/com/droidkaigi/quiz/QuizFeedbackScreenshotAndroidTest.kt`.
+`androidApp/src/androidTest/kotlin/jp/co/yumemi/quiz/droidkaigi/QuizFeedbackScreenshotAndroidTest.kt`.
 
 ## 5. Run and collect
 
@@ -115,7 +115,7 @@ adb -s "$ANDROID_SERIAL" shell settings put global transition_animation_scale 0
 adb -s "$ANDROID_SERIAL" shell settings put global animator_duration_scale 0
 
 ./gradlew :androidApp:connectedFakeDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=com.droidkaigi.quiz.QuizFeedbackScreenshotAndroidTest
+  -Pandroid.testInstrumentationRunnerArguments.class=jp.co.yumemi.quiz.droidkaigi.QuizFeedbackScreenshotAndroidTest
 
 cp "androidApp/build/outputs/connected_android_test_additional_output/fakeDebugAndroidTest/connected/"*/*.png \
   docs/screenshots/android/

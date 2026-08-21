@@ -22,12 +22,12 @@ kotlin {
 }
 
 android {
-    namespace = "com.droidkaigi.quiz"
+    namespace = "jp.co.yumemi.quiz.droidkaigi"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     ndkVersion = libs.versions.android.ndk.get()
 
     defaultConfig {
-        applicationId = "com.droidkaigi.quiz"
+        applicationId = "jp.co.yumemi.quiz.droidkaigi"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = appVersionCode
@@ -45,7 +45,7 @@ android {
         }
         create("prod") {
             dimension = "runtime"
-            // applicationId は google-services.json の package_name（com.droidkaigi.quiz）と一致させる
+            // applicationId は google-services.json の package_name（jp.co.yumemi.quiz.droidkaigi）と一致させる
             versionNameSuffix = "-prod"
         }
     }

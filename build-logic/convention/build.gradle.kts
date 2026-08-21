@@ -2,7 +2,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.droidkaigi.quiz.buildlogic"
+group = "jp.co.yumemi.quiz.droidkaigi.buildlogic"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

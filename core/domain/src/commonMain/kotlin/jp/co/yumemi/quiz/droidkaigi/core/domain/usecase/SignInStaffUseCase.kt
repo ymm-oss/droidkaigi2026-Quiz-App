@@ -1,0 +1,22 @@
+package jp.co.yumemi.quiz.droidkaigi.core.domain.usecase
+
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.StaffSession
+import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.StaffAuthRepository
+
+interface StaffAuthSessionStore {
+    var currentSession: StaffSession?
+
+    fun clearSession() {
+        currentSession = null
+    }
+}
+
+class SignInStaffUseCase(
+    private val staffAuthRepository: StaffAuthRepository,
+    private val sessionStore: StaffAuthSessionStore,
+) {
+    suspend operator fun invoke(email: String, password: String): Result<StaffSession> =
+        staffAuthRepository.signIn(email.trim(), password).onSuccess { session ->
+            sessionStore.currentSession = session
+        }
+}

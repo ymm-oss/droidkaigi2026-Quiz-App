@@ -37,10 +37,10 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.droidkaigi.quiz.staff.MainKt"
+        mainClass = "jp.co.yumemi.quiz.droidkaigi.staff.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.droidkaigi.quiz.staff"
+            packageName = "jp.co.yumemi.quiz.droidkaigi.staff"
             packageVersion = packageAppVersion
             // See gradle/desktop-jlink-modules.gradle.kts
             modules(*desktopJlinkModules.toTypedArray())
