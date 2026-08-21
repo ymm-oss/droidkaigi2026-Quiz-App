@@ -366,7 +366,13 @@ PR 中は本番（live）へデプロイしない。
 
 成果物ディレクトリは [firebase.json](../firebase.json) の `hosting.public`（`wasmApp/build/dist/wasmJs/productionExecutable`）。
 
-必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、`FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26`（Hosting デプロイ。`firebase init hosting:github` が自動登録）。
+必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、Hosting デプロイ用 SA JSON（いずれか1つ）:
+
+| Secret | 優先 | 備考 |
+|--------|------|------|
+| `FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26` | 1 | `firebase init hosting:github` が `ymm-droidkaigi26` 向けに自動登録 |
+| `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | 2 | 旧プロジェクト ID で init した場合 |
+| `FIREBASE_SERVICE_ACCOUNT` | 3 | Firestore ルール CD 等と共用（Hosting Admin ロール必須） |
 
 ### CD（スタッフ Desktop の Release）
 
@@ -393,8 +399,9 @@ PR 中は本番（live）へデプロイしない。
 | Secret | 用途 |
 |--------|------|
 | `GOOGLE_SERVICES_JSON` | **CD（Release / Wasm Hosting）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/google-services.json` に書き出す（Desktop / Wasm は Gradle が同ファイルから同梱・生成） |
-| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD |
-| `FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26` | Wasm Hosting CD（`firebase init hosting:github` が自動登録） |
+| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD（Hosting CD でも未設定時のフォールバック） |
+| `FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26` | Wasm Hosting CD（`firebase init hosting:github` / `ymm-droidkaigi26`） |
+| `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | 旧 init 名（Hosting CD フォールバック） |
 | `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 
 CI（fake）は Secret 不要。将来の署名 APK 用（#31）: `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`
