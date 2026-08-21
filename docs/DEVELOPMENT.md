@@ -231,7 +231,7 @@ firebase deploy --only firestore
 1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@droidkaigi26.iam.gserviceaccount.com`）
 2. ロールを付与:
    - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
-   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— Wasm Hosting CD（[deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml)）
+   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— Wasm Hosting CD（[preview-wasm-hosting.yml](../.github/workflows/preview-wasm-hosting.yml) / [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml)）
    - スタッフ DMG 公開 CD も同じ鍵を使う場合: **Cloud Datastore User**（または Firestore 書込）と **Storage Object Admin**
    - 運用簡略化なら **Firebase Admin** でも可
 3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
@@ -354,13 +354,15 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 
 ### CD（Wasm Firebase Hosting）
 
-[`.github/workflows/deploy-wasm-hosting.yml`](../.github/workflows/deploy-wasm-hosting.yml) が Wasm 参加者アプリを Firebase Hosting へデプロイする。
+Wasm 参加者アプリの Hosting CD は **プレビュー用** と **本番用** で workflow を分けている。
 
-| トリガー | 動作 |
-|----------|------|
-| **PR → `master`**（Wasm 関連パス変更） | `:wasmApp:wasmJsBrowserDistribution`（`quiz.runtime=prod`）をビルドし、**プレビューチャネル**へデプロイ。PR にプレビュー URL コメント（有効期限 30 日、コミットごとに更新） |
-| **`master` へ push**（同上パス） | 同ビルドを **live チャネル**（本番 URL）へデプロイ |
-| **Actions → Deploy Wasm (Firebase Hosting) → Run workflow** | 手動で live デプロイ |
+| workflow | トリガー | 動作 |
+|----------|----------|------|
+| [preview-wasm-hosting.yml](../.github/workflows/preview-wasm-hosting.yml) | **PR → `master`**（Wasm 関連パス変更） | `:wasmApp:wasmJsBrowserDistribution`（`quiz.runtime=prod`）をビルドし、**プレビューチャネルのみ**へデプロイ。PR にプレビュー URL コメント（有効期限 30 日） |
+| [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml) | **`master` へ push**（同上パス） | 同ビルドを **live チャネル**（本番 URL）へデプロイ |
+| [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml) | **Actions → Deploy Wasm (Firebase Hosting) → Run workflow** | 手動で live デプロイ |
+
+PR 中は本番（live）へデプロイしない。
 
 成果物ディレクトリは [firebase.json](../firebase.json) の `hosting.public`（`wasmApp/build/dist/wasmJs/productionExecutable`）。
 

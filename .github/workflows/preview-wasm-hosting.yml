@@ -1,8 +1,9 @@
-name: Deploy Wasm (Firebase Hosting)
+name: Preview Wasm (Firebase Hosting)
 
 on:
-  push:
+  pull_request:
     branches: [master]
+    types: [opened, synchronize, reopened]
     paths:
       - "wasmApp/**"
       - "composeApp/**"
@@ -19,18 +20,18 @@ on:
       - ".firebaserc"
       - ".github/workflows/preview-wasm-hosting.yml"
       - ".github/workflows/deploy-wasm-hosting.yml"
-  workflow_dispatch:
 
 concurrency:
-  group: deploy-wasm-hosting-live
-  cancel-in-progress: false
+  group: preview-wasm-hosting-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
-  deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+  preview:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -57,7 +58,7 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
           if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "Secret FIREBASE_SERVICE_ACCOUNT is required for Firebase Hosting deploy." >&2
+            echo "Secret FIREBASE_SERVICE_ACCOUNT is required for Firebase Hosting preview deploy." >&2
             exit 1
           fi
 
@@ -77,9 +78,10 @@ jobs:
       - name: Verify hosting artifact
         run: test -f wasmApp/build/dist/wasmJs/productionExecutable/index.html
 
-      - name: Deploy to live channel
+      - name: Deploy to preview channel
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: droidkaigi26
-          channelId: live
+          expires: 30d
