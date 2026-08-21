@@ -110,8 +110,13 @@ jobs:
           fi
           URL="$(
             node -e "
-              const result = require(process.argv[1]);
-              const entry = Array.isArray(result.result) ? result.result[0] : result.result;
+              const payload = require(process.argv[1]);
+              const result = payload.result;
+              const entry = Array.isArray(result)
+                ? result[0]
+                : result && typeof result === 'object'
+                  ? Object.values(result)[0]
+                  : undefined;
               process.stdout.write(entry?.url ?? '');
             " "$RUNNER_TEMP/deploy.json"
           )"
