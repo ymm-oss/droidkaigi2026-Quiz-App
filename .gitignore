@@ -21,4 +21,4 @@ firebase-debug.log
 docs/node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
-/droidkaigi26-firebase-adminsdk-fbsvc-d64e69a5c2.json
+/ymm-droidkaigi26-firebase-adminsdk-*.json

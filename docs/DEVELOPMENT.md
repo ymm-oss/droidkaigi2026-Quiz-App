@@ -167,7 +167,7 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 
 | 項目 | 内容 |
 |------|------|
-| **Firebase プロジェクトへのアクセス** | [.firebaserc](../.firebaserc) のプロジェクト（本番: `droidkaigi26`）への権限 |
+| **Firebase プロジェクトへのアクセス** | [.firebaserc](../.firebaserc) のプロジェクト（本番: `ymm-droidkaigi26`）への権限 |
 | **`google-services.json`** | 下記パスに配置（Android `prod`・Desktop / スタッフ Desktop 共通） |
 | **スタッフ用ログイン** | prod 用メール / パスワード（運営から共有。fake の `staff@droidkaigi.local` は使えない） |
 
@@ -224,11 +224,11 @@ firebase deploy --only firestore
 
 | GitHub Secret | 内容 |
 |---------------|------|
-| `FIREBASE_SERVICE_ACCOUNT` | GCP サービスアカウントの **JSON 鍵全文**（`.firebaserc` のプロジェクト `droidkaigi26`） |
+| `FIREBASE_SERVICE_ACCOUNT` | GCP サービスアカウントの **JSON 鍵全文**（`.firebaserc` のプロジェクト `ymm-droidkaigi26`） |
 
 **サービスアカウントの用意（初回のみ）**
 
-1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@droidkaigi26.iam.gserviceaccount.com`）
+1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `ymm-droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@ymm-droidkaigi26.iam.gserviceaccount.com`）
 2. ロールを付与:
    - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
    - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— `firebase init hosting:github` が Hosting 用 SA と Secret（`FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26`）を自動作成する
@@ -255,7 +255,7 @@ firebase deploy --only firestore
 - `release` の難読化は現在無効。難読化を有効にした場合は Crashlytics Gradle プラグインが mapping file をアップロードする
 - NDK Crashlytics は未導入。Kotlin / Java の未捕捉例外を収集対象とする
 
-導入確認では、一時的な `RuntimeException` を `prod` アプリで発生させ、アプリを再起動してレポートを送信します。[Firebase Console の Crashlytics](https://console.firebase.google.com/project/droidkaigi26/crashlytics) で受信を確認したら、強制クラッシュのコードは必ず削除してください。
+導入確認では、一時的な `RuntimeException` を `prod` アプリで発生させ、アプリを再起動してレポートを送信します。[Firebase Console の Crashlytics](https://console.firebase.google.com/project/ymm-droidkaigi26/crashlytics) で受信を確認したら、強制クラッシュのコードは必ず削除してください。
 
 結合確認: [VERIFY.md](VERIFY.md)
 
