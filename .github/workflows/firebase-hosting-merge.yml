@@ -84,10 +84,10 @@ jobs:
           CREDS=""
           if [ -n "$SA_YMM" ]; then
             CREDS="$SA_YMM"
-          elif [ -n "$SA_INIT" ]; then
-            CREDS="$SA_INIT"
           elif [ -n "$SA_SHARED" ]; then
             CREDS="$SA_SHARED"
+          elif [ -n "$SA_INIT" ]; then
+            CREDS="$SA_INIT"
           else
             echo "Missing Firebase service account secret for Hosting deploy." >&2
             echo "Set one of: FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26, FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26, FIREBASE_SERVICE_ACCOUNT" >&2

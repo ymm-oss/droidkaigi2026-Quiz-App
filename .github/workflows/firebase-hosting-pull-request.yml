@@ -88,10 +88,10 @@ jobs:
           CREDS=""
           if [ -n "$SA_YMM" ]; then
             CREDS="$SA_YMM"
-          elif [ -n "$SA_INIT" ]; then
-            CREDS="$SA_INIT"
           elif [ -n "$SA_SHARED" ]; then
             CREDS="$SA_SHARED"
+          elif [ -n "$SA_INIT" ]; then
+            CREDS="$SA_INIT"
           else
             echo "Missing Firebase service account secret for Hosting deploy." >&2
             echo "Set one of: FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26, FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26, FIREBASE_SERVICE_ACCOUNT" >&2
@@ -100,10 +100,14 @@ jobs:
           printf '%s\n' "$CREDS" > "$RUNNER_TEMP/firebase-sa.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-sa.json"
           CHANNEL="pr${{ github.event.pull_request.number }}"
-          npx firebase-tools@latest hosting:channel:deploy "$CHANNEL" \
+          if ! npx firebase-tools@latest hosting:channel:deploy "$CHANNEL" \
             --expires 30d \
             --project ymm-droidkaigi26 \
-            --json > "$RUNNER_TEMP/deploy.json"
+            --json > "$RUNNER_TEMP/deploy.json" 2> "$RUNNER_TEMP/deploy.err"; then
+            cat "$RUNNER_TEMP/deploy.err" >&2
+            cat "$RUNNER_TEMP/deploy.json" >&2 || true
+            exit 1
+          fi
           URL="$(
             node -e "
               const result = require(process.argv[1]);

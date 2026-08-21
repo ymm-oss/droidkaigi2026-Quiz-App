@@ -371,8 +371,8 @@ PR 中は本番（live）へデプロイしない。
 | Secret | 優先 | 備考 |
 |--------|------|------|
 | `FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26` | 1 | `firebase init hosting:github` が `ymm-droidkaigi26` 向けに自動登録 |
-| `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | 2 | 旧プロジェクト ID で init した場合 |
-| `FIREBASE_SERVICE_ACCOUNT` | 3 | Firestore ルール CD 等と共用（Hosting Admin ロール必須） |
+| `FIREBASE_SERVICE_ACCOUNT` | 2 | Firestore ルール CD 等と共用（Hosting Admin ロール必須） |
+| `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | 3 | 旧プロジェクト ID で init した場合（非推奨） |
 
 ### CD（スタッフ Desktop の Release）
 
