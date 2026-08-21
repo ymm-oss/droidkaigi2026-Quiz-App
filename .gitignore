@@ -14,6 +14,7 @@ captures/
 
 # Firebase
 androidApp/src/prod/google-services.json
+.firebase/
 firebase-debug.log
 
 # VitePress (docs site)

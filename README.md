@@ -29,7 +29,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 
 ### Web（Wasm）について
 
-`:wasmApp` は **参加者アプリが Web（Wasm）でも動作する対象**として整備済みで、CI で `:wasmApp:compileKotlinWasmJs`（fake）を継続検証している。ローカル実行は `./gradlew :wasmApp:wasmJsBrowserDevelopmentRun`（fake ランタイム）。prod（Firestore）は wasm では未対応で、本番配布の可否（QR コード経由のブラウザ参加など）は未定。Firebase Hosting 設定は [docs/DEVELOPMENT.md#firebase-セットアップ](docs/DEVELOPMENT.md#firebase-セットアップ) を参照。
+`:wasmApp` は **参加者アプリが Web（Wasm）でも動作する対象**として整備済みで、CI で `:wasmApp:compileKotlinWasmJs`（fake）を継続検証している。ローカル実行は `./gradlew :wasmApp:wasmJsBrowserDevelopmentRun`（fake ランタイム）。prod（Firestore）は Firebase JS SDK で接続し、`master` マージ時に Firebase Hosting へ自動デプロイ、PR ではプレビューチャネルへデプロイする（[docs/DEVELOPMENT.md#cdwasm-firebase-hosting](docs/DEVELOPMENT.md#cdwasm-firebase-hosting)）。
 
 ### データ（本番と開発）
 
