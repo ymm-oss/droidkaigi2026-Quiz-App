@@ -232,6 +232,7 @@ firebase deploy --only firestore
 2. ロールを付与:
    - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
    - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— Wasm Hosting CD（[preview-wasm-hosting.yml](../.github/workflows/preview-wasm-hosting.yml) / [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml)）
+   - **Service Usage Consumer**（`roles/serviceusage.serviceUsageConsumer`）— Hosting CD で Firebase API を呼ぶために必要（未付与だと CI が 403 で失敗）
    - スタッフ DMG 公開 CD も同じ鍵を使う場合: **Cloud Datastore User**（または Firestore 書込）と **Storage Object Admin**
    - 運用簡略化なら **Firebase Admin** でも可
 3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
