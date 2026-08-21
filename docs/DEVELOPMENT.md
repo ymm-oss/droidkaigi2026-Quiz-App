@@ -231,7 +231,7 @@ firebase deploy --only firestore
 1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `ymm-droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@ymm-droidkaigi26.iam.gserviceaccount.com`）
 2. ロールを付与:
    - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
-   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— `firebase init hosting:github` が Hosting 用 SA と Secret（`FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26`）を自動作成する
+   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— `firebase init hosting:github` が Hosting 用 SA と Secret（`FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26`）を自動作成する
    - スタッフ DMG 公開 CD も同じ鍵を使う場合: **Cloud Datastore User**（または Firestore 書込）と **Storage Object Admin**
    - 運用簡略化なら **Firebase Admin** でも可
 3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
@@ -366,7 +366,7 @@ PR 中は本番（live）へデプロイしない。
 
 成果物ディレクトリは [firebase.json](../firebase.json) の `hosting.public`（`wasmApp/build/dist/wasmJs/productionExecutable`）。
 
-必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、`FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26`（Hosting デプロイ。`firebase init hosting:github` が自動登録）。
+必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、`FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26`（Hosting デプロイ。`firebase init hosting:github` が自動登録）。
 
 ### CD（スタッフ Desktop の Release）
 
@@ -394,7 +394,7 @@ PR 中は本番（live）へデプロイしない。
 |--------|------|
 | `GOOGLE_SERVICES_JSON` | **CD（Release / Wasm Hosting）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/google-services.json` に書き出す（Desktop / Wasm は Gradle が同ファイルから同梱・生成） |
 | `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD |
-| `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | Wasm Hosting CD（`firebase init hosting:github` が自動登録） |
+| `FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26` | Wasm Hosting CD（`firebase init hosting:github` が自動登録） |
 | `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 
 CI（fake）は Secret 不要。将来の署名 APK 用（#31）: `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`

@@ -76,6 +76,6 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26 }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26 }}
           expires: 30d
-          projectId: droidkaigi26
+          projectId: ymm-droidkaigi26
