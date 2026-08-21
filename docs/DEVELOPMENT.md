@@ -231,8 +231,7 @@ firebase deploy --only firestore
 1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@droidkaigi26.iam.gserviceaccount.com`）
 2. ロールを付与:
    - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
-   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— Wasm Hosting CD（[preview-wasm-hosting.yml](../.github/workflows/preview-wasm-hosting.yml) / [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml)）
-   - **Service Usage Consumer**（`roles/serviceusage.serviceUsageConsumer`）— Hosting CD で Firebase API を呼ぶために必要（未付与だと CI が 403 で失敗）
+   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— `firebase init hosting:github` が Hosting 用 SA と Secret（`FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26`）を自動作成する
    - スタッフ DMG 公開 CD も同じ鍵を使う場合: **Cloud Datastore User**（または Firestore 書込）と **Storage Object Admin**
    - 運用簡略化なら **Firebase Admin** でも可
 3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
@@ -355,19 +354,19 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 
 ### CD（Wasm Firebase Hosting）
 
-Wasm 参加者アプリの Hosting CD は **プレビュー用** と **本番用** で workflow を分けている。
+`firebase init hosting:github` で生成した workflow を Wasm 向けに調整している（npm ビルドではなく Gradle prod ビルド）。
 
 | workflow | トリガー | 動作 |
 |----------|----------|------|
-| [preview-wasm-hosting.yml](../.github/workflows/preview-wasm-hosting.yml) | **PR → `master`**（Wasm 関連パス変更） | `:wasmApp:wasmJsBrowserDistribution`（`quiz.runtime=prod`）をビルドし、**プレビューチャネルのみ**へデプロイ。PR にプレビュー URL コメント（有効期限 30 日） |
-| [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml) | **`master` へ push**（同上パス） | 同ビルドを **live チャネル**（本番 URL）へデプロイ |
-| [deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml) | **Actions → Deploy Wasm (Firebase Hosting) → Run workflow** | 手動で live デプロイ |
+| [firebase-hosting-pull-request.yml](../.github/workflows/firebase-hosting-pull-request.yml) | **PR → `master`**（Wasm 関連パス変更） | `:wasmApp:wasmJsBrowserDistribution`（`quiz.runtime=prod`）をビルドし、**プレビューチャネルのみ**へデプロイ。PR にプレビュー URL コメント（有効期限 30 日） |
+| [firebase-hosting-merge.yml](../.github/workflows/firebase-hosting-merge.yml) | **`master` へ push**（同上パス） | 同ビルドを **live チャネル**（本番 URL）へデプロイ |
+| [firebase-hosting-merge.yml](../.github/workflows/firebase-hosting-merge.yml) | **Actions → Deploy to Firebase Hosting on merge → Run workflow** | 手動で live デプロイ |
 
 PR 中は本番（live）へデプロイしない。
 
 成果物ディレクトリは [firebase.json](../firebase.json) の `hosting.public`（`wasmApp/build/dist/wasmJs/productionExecutable`）。
 
-必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、`FIREBASE_SERVICE_ACCOUNT`（Hosting デプロイ。`roles/firebasehosting.admin` が必要）。
+必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、`FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26`（Hosting デプロイ。`firebase init hosting:github` が自動登録）。
 
 ### CD（スタッフ Desktop の Release）
 
@@ -394,7 +393,8 @@ PR 中は本番（live）へデプロイしない。
 | Secret | 用途 |
 |--------|------|
 | `GOOGLE_SERVICES_JSON` | **CD（Release / Wasm Hosting）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/google-services.json` に書き出す（Desktop / Wasm は Gradle が同ファイルから同梱・生成） |
-| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、Wasm Hosting CD、スタッフ DMG 公開 CD |
+| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD |
+| `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | Wasm Hosting CD（`firebase init hosting:github` が自動登録） |
 | `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 
 CI（fake）は Secret 不要。将来の署名 APK 用（#31）: `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`
