@@ -1,5 +1,6 @@
 package com.droidkaigi.quiz.core.data.firestore
 
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,6 +23,19 @@ class BaseFirestoreServiceTest {
 
         // 前回の書き込みが成功していた場合（同一ドキュメントが存在）は成功扱い
         service.putRanking("folder", "entry", document)
+    }
+
+    @Test
+    fun putRanking_propagatesCancellationFromRecoveryRead() = runTest {
+        val document = rankingDocument(nickname = "alice", score = 10)
+        val service = TestFirestoreService(
+            onSetRanking = { error("create-only rules deny update") },
+            onGetRanking = { throw CancellationException() },
+        )
+
+        assertFailsWith<CancellationException> {
+            service.putRanking("folder", "entry", document)
+        }
     }
 
     @Test

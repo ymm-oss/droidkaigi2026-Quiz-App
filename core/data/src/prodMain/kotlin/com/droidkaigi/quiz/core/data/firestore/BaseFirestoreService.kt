@@ -42,7 +42,13 @@ internal abstract class BaseFirestoreService : FirestoreService {
         } catch (e: Throwable) {
             // create-only rules: retry after a successful write looks like a denied update.
             // Only an identical existing document proves that the previous attempt landed.
-            val existing = runCatching { getRanking(folderId, entryId) }.getOrNull()
+            val existing = try {
+                getRanking(folderId, entryId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Throwable) {
+                null
+            }
             if (existing == document) {
                 return
             }
