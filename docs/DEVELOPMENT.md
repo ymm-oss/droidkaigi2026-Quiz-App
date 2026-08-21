@@ -8,7 +8,7 @@
 - `androidApp` — Android エントリ（参加者向け）
 - `desktopApp` — Desktop エントリ（参加者向け）
 - `staffComposeApp` / `staffDesktopApp` — **スタッフ用** Desktop（クイズ内容・ランキング確認、PC 運営向け）
-- `wasmApp` — Web（Wasm）エントリ（fake / prod 両対応。CI でビルド検証。本番配布は未定）
+- `wasmApp` — Web（Wasm）エントリ（fake / prod 両対応。CI でビルド検証。`master` マージで Firebase Hosting 本番デプロイ、PR でプレビューチャネル）
 - `core:domain` / `core:data` / `core:ui`
 - `feature:quiz` / `feature:ranking` / `feature:staff`
 
@@ -199,7 +199,7 @@ Admin SDK のサービスアカウント鍵は [.gitignore](../.gitignore) で�
 | パス | 内容 |
 |------|------|
 | [.firebaserc](../.firebaserc) | CLI のデフォルトプロジェクト ID |
-| [firebase.json](../firebase.json) | Firestore ルール・インデックス、Wasm 向け Hosting（Hosting は未デプロイ） |
+| [firebase.json](../firebase.json) | Firestore ルール・インデックス、Wasm 向け Hosting（[CD](#cdwasm-firebase-hosting) でデプロイ） |
 | [firestore.rules](../firestore.rules) / [firestore.indexes.json](../firestore.indexes.json) | ルール・インデックス定義 |
 | [functions/](../functions/) | Cloud Functions 雛形（**未使用**・`firebase.json` 登録済み） |
 | [docs/firestore-seed.json](firestore-seed.json) | fake 問題データの Firestore 形式参考（実行時は未使用） |
@@ -231,6 +231,7 @@ firebase deploy --only firestore
 1. [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト `droidkaigi26` → IAM と管理 → サービスアカウントを作成（例: `github-firestore-rules@droidkaigi26.iam.gserviceaccount.com`）
 2. ロールを付与:
    - **Firebase Rules Admin**（`roles/firebaserules.admin`）— ルール CD
+   - **Firebase Hosting Admin**（`roles/firebasehosting.admin`）— Wasm Hosting CD（[deploy-wasm-hosting.yml](../.github/workflows/deploy-wasm-hosting.yml)）
    - スタッフ DMG 公開 CD も同じ鍵を使う場合: **Cloud Datastore User**（または Firestore 書込）と **Storage Object Admin**
    - 運用簡略化なら **Firebase Admin** でも可
 3. 鍵を作成（JSON）し、GitHub リポジトリ **Settings → Secrets and variables → Actions** に `FIREBASE_SERVICE_ACCOUNT` として登録
@@ -300,11 +301,12 @@ Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDeskt
 
 ### Web（Wasm）
 
-Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで動作する対象として整備済み（CI で `:wasmApp:compileKotlinWasmJs` を検証）。prod は Firebase JS SDK（npm `firebase`）で Firestore / Auth に接続する。接続情報は `:core:data:generateFirebaseWebConfig` タスクがビルド時に `google-services.json` から生成する（JVM と同じ設定ソース。パスは `-Pquiz.firebase.config` で上書き可）。本番配布は未定。
+Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで動作する対象として整備済み（CI で `:wasmApp:compileKotlinWasmJs` を検証）。prod は Firebase JS SDK（npm `firebase`）で Firestore / Auth に接続する。接続情報は `:core:data:generateFirebaseWebConfig` タスクがビルド時に `google-services.json` から生成する（JVM と同じ設定ソース。パスは `-Pquiz.firebase.config` で上書き可）。本番配布は Firebase Hosting（[CD](#cdwasm-firebase-hosting)）。
 
 ```bash
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun                      # fake（既定）
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun -Pquiz.runtime=prod  # prod（要 androidApp/src/prod/google-services.json）
+./gradlew :wasmApp:wasmJsBrowserDistribution -Pquiz.runtime=prod     # Hosting 用 production バンドル
 ```
 
 ## テスト
@@ -350,6 +352,20 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 
 バージョンは [`gradle/version.gradle.kts`](../gradle/version.gradle.kts) で解決する（`-Papp.version` / 任意で `-Papp.versionCode`）。
 
+### CD（Wasm Firebase Hosting）
+
+[`.github/workflows/deploy-wasm-hosting.yml`](../.github/workflows/deploy-wasm-hosting.yml) が Wasm 参加者アプリを Firebase Hosting へデプロイする。
+
+| トリガー | 動作 |
+|----------|------|
+| **PR → `master`**（Wasm 関連パス変更） | `:wasmApp:wasmJsBrowserDistribution`（`quiz.runtime=prod`）をビルドし、**プレビューチャネル**へデプロイ。PR にプレビュー URL コメント（有効期限 30 日、コミットごとに更新） |
+| **`master` へ push**（同上パス） | 同ビルドを **live チャネル**（本番 URL）へデプロイ |
+| **Actions → Deploy Wasm (Firebase Hosting) → Run workflow** | 手動で live デプロイ |
+
+成果物ディレクトリは [firebase.json](../firebase.json) の `hosting.public`（`wasmApp/build/dist/wasmJs/productionExecutable`）。
+
+必要な Secret: `GOOGLE_SERVICES_JSON`（prod ビルド）、`FIREBASE_SERVICE_ACCOUNT`（Hosting デプロイ。`roles/firebasehosting.admin` が必要）。
+
 ### CD（スタッフ Desktop の Release）
 
 [`.github/workflows/release-staff.yml`](../.github/workflows/release-staff.yml) を **Actions → Release Staff Desktop → Run workflow** で起動する。
@@ -374,8 +390,8 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 
 | Secret | 用途 |
 |--------|------|
-| `GOOGLE_SERVICES_JSON` | **CD（Release）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/google-services.json` に書き出す（Desktop は Gradle が同ファイルから同梱） |
-| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD |
+| `GOOGLE_SERVICES_JSON` | **CD（Release / Wasm Hosting）必須。** Firebase Console の `google-services.json` 全文。`androidApp/src/prod/google-services.json` に書き出す（Desktop / Wasm は Gradle が同ファイルから同梱・生成） |
+| `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、Wasm Hosting CD、スタッフ DMG 公開 CD |
 | `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 
 CI（fake）は Secret 不要。将来の署名 APK 用（#31）: `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`
