@@ -103,7 +103,6 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: droidkaigi26
           expires: 30d
-          force: true
 
       - name: Deploy live channel
         if: github.event_name != 'pull_request'
@@ -112,4 +111,3 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: droidkaigi26
           channelId: live
-          force: true
