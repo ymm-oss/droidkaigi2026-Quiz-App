@@ -3,9 +3,12 @@ package jp.co.yumemi.quiz.droidkaigi.core.data.firestore
 import android.app.Application
 import jp.co.yumemi.quiz.droidkaigi.core.data.StaffAuthHolder
 import com.google.firebase.FirebasePlatform
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
+import dev.gitlive.firebase.firestore.android
+import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.Dispatchers
 
 internal actual fun initializeFirebasePlatform() {
@@ -38,6 +41,11 @@ internal actual fun initializeFirebasePlatform() {
             projectId = config.projectId,
         ),
     )
+    // ローカル永続化を無効化し、失敗した書き込みをキャッシュ成功扱いにしない。
+    Firebase.firestore.android.firestoreSettings =
+        FirebaseFirestoreSettings.Builder(Firebase.firestore.android.firestoreSettings)
+            .setPersistenceEnabled(false)
+            .build()
 }
 
 internal actual fun createFirestoreService(staffAuthHolder: StaffAuthHolder): FirestoreService =

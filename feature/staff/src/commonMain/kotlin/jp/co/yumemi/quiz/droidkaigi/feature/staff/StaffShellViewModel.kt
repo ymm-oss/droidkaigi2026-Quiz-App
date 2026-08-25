@@ -3,6 +3,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.staff
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
+import jp.co.yumemi.quiz.droidkaigi.core.data.firestore.FirestoreErrorMessages
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -172,7 +173,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                 staffLog("refresh failed: ${error.message}")
                 error.printStackTrace()
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = error.message ?: "読み込みに失敗しました")
+                    it.copy(isLoading = false, errorMessage = firestoreErrorMessage(error, "読み込みに失敗しました"))
                 }
             }
         }
@@ -200,7 +201,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     staffLog("createFolder failed: ${error.message}")
                     error.printStackTrace()
                     _uiState.update {
-                        it.copy(errorMessage = error.message ?: "フォルダの作成に失敗しました")
+                        it.copy(errorMessage = firestoreErrorMessage(error, "フォルダの作成に失敗しました"))
                     }
                 }
             } finally {
@@ -229,7 +230,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     .onFailure { error ->
                         staffLog("updateFolder failed: ${error.message}")
                         _uiState.update {
-                            it.copy(errorMessage = error.message ?: "フォルダの更新に失敗しました")
+                            it.copy(errorMessage = firestoreErrorMessage(error, "フォルダの更新に失敗しました"))
                         }
                     }
             } finally {
@@ -283,7 +284,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                         .onFailure { error ->
                             staffLog("deleteFolder failed: ${error.message}")
                             _uiState.update {
-                                it.copy(errorMessage = error.message ?: "フォルダの削除に失敗しました")
+                                it.copy(errorMessage = firestoreErrorMessage(error, "フォルダの削除に失敗しました"))
                             }
                         }
                 } finally {
@@ -310,7 +311,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     .onFailure { error ->
                         staffLog("setSitePublished failed: ${error.message}")
                         _uiState.update {
-                            it.copy(errorMessage = error.message ?: "サイト公開状態の更新に失敗しました")
+                            it.copy(errorMessage = firestoreErrorMessage(error, "サイト公開状態の更新に失敗しました"))
                         }
                     }
             } finally {
@@ -323,6 +324,9 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
         fun staffLog(message: String) {
             println("[StaffShell] $message")
         }
+
+        fun firestoreErrorMessage(error: Throwable, fallback: String): String =
+            FirestoreErrorMessages.from(error, fallback)
     }
 
     private fun publishSelected() {
@@ -340,7 +344,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     .onFailure { error ->
                         staffLog("publishFolder failed: ${error.message}")
                         _uiState.update {
-                            it.copy(errorMessage = error.message ?: "フォルダの公開に失敗しました")
+                            it.copy(errorMessage = firestoreErrorMessage(error, "フォルダの公開に失敗しました"))
                         }
                     }
             } finally {
