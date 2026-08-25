@@ -195,6 +195,7 @@ private fun quizNavEntry(
         ResultScreen(
             rankingVisible = rankingNavVisible,
             onGoToRanking = onGoToRanking,
+            onGoHome = onGoHome,
             onMissingResult = onGoHome,
         )
     }
