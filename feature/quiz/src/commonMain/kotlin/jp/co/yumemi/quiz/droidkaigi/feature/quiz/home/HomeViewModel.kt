@@ -72,6 +72,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             _uiState.update {
                 it.copy(sitePublished = published, siteStatusCheckFailed = published == null)
             }
+            deps.siteStatusHolder.updateSitePublished(published)
         }
     }
 
@@ -91,6 +92,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 val published = deps.getSitePublishedUseCase()
                 if (!published) {
                     _uiState.update { it.copy(isLoading = false, sitePublished = false) }
+                    deps.siteStatusHolder.updateSitePublished(false)
                     return@launch
                 }
                 val folderId = deps.getActiveQuizFolderIdUseCase()

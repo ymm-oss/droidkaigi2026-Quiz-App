@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.ranking
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.data.StaffAuthHolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
@@ -209,6 +210,7 @@ private fun rankingTestDeps(
         quizCatalogRepository = catalogRepository,
         quizEngine = quizEngine,
         sessionHolder = sessionHolder,
+        siteStatusHolder = SiteStatusHolder(),
         quizPlayUseCase = QuizPlayUseCase(
             quizEngine = quizEngine,
             sessionStore = sessionHolder,

@@ -42,23 +42,34 @@ import jp.co.yumemi.quiz.droidkaigi.navigation.Route
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun QuizAdaptiveScaffold(currentRoute: Route, onNavigate: (Route) -> Unit, content: @Composable () -> Unit) {
+fun QuizAdaptiveScaffold(
+    currentRoute: Route,
+    onNavigate: (Route) -> Unit,
+    rankingNavVisible: Boolean,
+    content: @Composable () -> Unit,
+) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val useRail = maxWidth >= 600.dp
-        val navItems = listOf(
-            NavItem(
-                route = Route.Home,
-                label = stringResource(Res.string.nav_home),
-                selectedIcon = Icons.Filled.Home,
-                unselectedIcon = Icons.Outlined.Home,
-            ),
-            NavItem(
-                route = Route.Ranking,
-                label = stringResource(Res.string.nav_ranking),
-                selectedIcon = Icons.Filled.Leaderboard,
-                unselectedIcon = Icons.Outlined.Leaderboard,
-            ),
-        )
+        val navItems = buildList {
+            add(
+                NavItem(
+                    route = Route.Home,
+                    label = stringResource(Res.string.nav_home),
+                    selectedIcon = Icons.Filled.Home,
+                    unselectedIcon = Icons.Outlined.Home,
+                ),
+            )
+            if (rankingNavVisible) {
+                add(
+                    NavItem(
+                        route = Route.Ranking,
+                        label = stringResource(Res.string.nav_ranking),
+                        selectedIcon = Icons.Filled.Leaderboard,
+                        unselectedIcon = Icons.Outlined.Leaderboard,
+                    ),
+                )
+            }
+        }
 
         if (useRail) {
             Row(modifier = Modifier.fillMaxSize()) {
@@ -89,7 +100,8 @@ fun QuizAdaptiveScaffold(currentRoute: Route, onNavigate: (Route) -> Unit, conte
         } else {
             // Custom shell (no Scaffold): content draws edge-to-edge; bottom bar overlays.
             // Screens apply safeDrawing insets to interactive content themselves.
-            val showBottomBar = currentRoute == Route.Home || currentRoute == Route.Ranking
+            val showBottomBar = currentRoute == Route.Home ||
+                (rankingNavVisible && currentRoute == Route.Ranking)
             val density = LocalDensity.current
             var bottomBarHeightPx by remember { mutableIntStateOf(0) }
 

@@ -1,6 +1,8 @@
 package jp.co.yumemi.quiz.droidkaigi.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,6 +13,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.home.HomeScreen
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.quiz.QuizScreen
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.result.ResultScreen
@@ -33,7 +37,7 @@ private val quizNavStateConfiguration = SavedStateConfiguration {
 }
 
 @Composable
-fun QuizNavHost() {
+fun QuizNavHost(siteStatusHolder: SiteStatusHolder = AppDependencies.shared.siteStatusHolder) {
     // rememberNavBackStack keeps the stack across configuration changes (rotation, resize)
     // and process death, so an in-progress quiz is not reset to Home.
     val backStack = rememberNavBackStack(quizNavStateConfiguration, Route.Home)
@@ -41,6 +45,15 @@ fun QuizNavHost() {
         MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     }
     var quizExitEnabled by remember { mutableStateOf(true) }
+    val sitePublished by siteStatusHolder.sitePublished.collectAsState()
+    val rankingNavVisible = sitePublished == true
+
+    LaunchedEffect(rankingNavVisible, backStack.lastOrNull()) {
+        if (!rankingNavVisible && backStack.lastOrNull() == Route.Ranking) {
+            backStack.clear()
+            backStack.add(Route.Home)
+        }
+    }
 
     fun navigate(route: Route) {
         backStack.add(route)
@@ -68,9 +81,11 @@ fun QuizNavHost() {
 
     QuizAdaptiveScaffold(
         currentRoute = backStack.lastOrNull() as? Route ?: Route.Home,
+        rankingNavVisible = rankingNavVisible,
         onNavigate = { route ->
             handleScaffoldNavigate(
                 route = route,
+                rankingNavVisible = rankingNavVisible,
                 backStack = backStack,
                 requestLeaveQuiz = ::requestLeaveQuiz,
                 popToHome = ::popToHome,
@@ -89,12 +104,17 @@ fun QuizNavHost() {
             entryProvider = { key ->
                 quizNavEntry(
                     key = key,
+                    rankingNavVisible = rankingNavVisible,
                     onStartQuiz = { navigate(Route.Quiz) },
                     onQuizFinished = ::navigateToResult,
                     onQuizAbandoned = ::popToHome,
                     leaveRequest = leaveQuizRequest,
                     onExitEnabledChange = { quizExitEnabled = it },
-                    onGoToRanking = { navigate(Route.Ranking) },
+                    onGoToRanking = {
+                        if (rankingNavVisible) {
+                            navigate(Route.Ranking)
+                        }
+                    },
                     onGoHome = ::popToHome,
                 )
             },
@@ -114,6 +134,7 @@ private fun handleBack(backStack: NavBackStack<NavKey>, requestLeaveQuiz: () -> 
 
 private fun handleScaffoldNavigate(
     route: Route,
+    rankingNavVisible: Boolean,
     backStack: NavBackStack<NavKey>,
     requestLeaveQuiz: () -> Unit,
     popToHome: () -> Unit,
@@ -129,6 +150,7 @@ private fun handleScaffoldNavigate(
         }
 
         Route.Ranking -> {
+            if (!rankingNavVisible) return
             if (backStack.lastOrNull() == Route.Quiz) {
                 // Quiz 中の Ranking は中断確認なしで積めると進捗破棄をバイパスするため、Home と同様に確認する
                 requestLeaveQuiz()
@@ -147,6 +169,7 @@ private fun handleScaffoldNavigate(
 
 private fun quizNavEntry(
     key: NavKey,
+    rankingNavVisible: Boolean,
     onStartQuiz: () -> Unit,
     onQuizFinished: () -> Unit,
     onQuizAbandoned: () -> Unit,
@@ -169,7 +192,11 @@ private fun quizNavEntry(
     }
 
     Route.Result -> NavEntry(key) {
-        ResultScreen(onGoToRanking = onGoToRanking, onMissingResult = onGoHome)
+        ResultScreen(
+            rankingVisible = rankingNavVisible,
+            onGoToRanking = onGoToRanking,
+            onMissingResult = onGoHome,
+        )
     }
 
     Route.Ranking -> NavEntry(key) {

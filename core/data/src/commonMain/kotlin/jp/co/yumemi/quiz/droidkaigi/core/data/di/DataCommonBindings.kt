@@ -1,6 +1,7 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data.di
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.data.StaffAuthHolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.LocalStaffAppVersionProvider
@@ -37,6 +38,10 @@ object DataCommonBindings {
     @Provides
     @SingleIn(AppScope::class)
     fun provideSessionHolder(): QuizSessionHolder = QuizSessionHolder()
+
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideSiteStatusHolder(): SiteStatusHolder = SiteStatusHolder()
 
     @Provides
     @SingleIn(AppScope::class)

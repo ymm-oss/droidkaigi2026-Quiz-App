@@ -42,6 +42,7 @@ import kotlin.random.Random
 fun ResultScreen(
     onGoToRanking: () -> Unit,
     onMissingResult: () -> Unit = {},
+    rankingVisible: Boolean = true,
     viewModel: ResultViewModel = viewModel { ResultViewModel() },
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -67,6 +68,7 @@ fun ResultScreen(
         correctCount = state.correctCount,
         totalCount = state.totalCount,
         targetScore = state.targetScore,
+        rankingVisible = rankingVisible,
         onGoToRankingClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
     )
 }
@@ -81,6 +83,7 @@ fun ResultContent(
     modifier: Modifier = Modifier,
     animateScore: Boolean = true,
     primaryActionLabel: String? = null,
+    rankingVisible: Boolean = true,
 ) {
     val displayedScore = if (animateScore) {
         QuizMotion.animateScore(targetScore)
@@ -137,10 +140,12 @@ fun ResultContent(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                QuizPrimaryButton(
-                    text = actionLabel,
-                    onClick = onGoToRankingClick,
-                )
+                if (rankingVisible) {
+                    QuizPrimaryButton(
+                        text = actionLabel,
+                        onClick = onGoToRankingClick,
+                    )
+                }
             }
         }
     }

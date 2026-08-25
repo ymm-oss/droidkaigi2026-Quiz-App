@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.home
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
@@ -105,10 +106,11 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun shown_fetchReturnsFalse_showsClosedWithoutError() = runTest(dispatcher) {
+    fun shown_fetchReturnsFalse_showsClosedAndUpdatesSiteStatusHolder() = runTest(dispatcher) {
         val catalog = ControllableCatalog()
         catalog.sitePublishedResults += Result.success(false)
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
+        val deps = testAppDependencies(catalog)
+        val viewModel = HomeViewModel(deps)
 
         viewModel.onIntent(HomeIntent.Shown)
         advanceUntilIdle()
@@ -116,6 +118,8 @@ class HomeViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(false, state.sitePublished)
         assertEquals(false, state.siteStatusCheckFailed)
+        assertEquals(false, deps.siteStatusHolder.sitePublished.value)
+        assertEquals(false, deps.siteStatusHolder.isRankingNavVisible)
     }
 
     @Test
@@ -244,7 +248,38 @@ class HomeViewModelTest {
         override var currentSession: StaffSession? = null
     }
 
-    private fun testAppDependencies(catalog: QuizCatalogRepository): AppDependencies {
+    @Test
+    fun shown_updatesSiteStatusHolder_whenUnpublished() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.sitePublishedResults += Result.success(false)
+        val siteStatusHolder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, siteStatusHolder))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        advanceUntilIdle()
+
+        assertEquals(false, siteStatusHolder.sitePublished.value)
+        assertEquals(false, siteStatusHolder.isRankingNavVisible)
+    }
+
+    @Test
+    fun shown_updatesSiteStatusHolder_whenPublished() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.sitePublishedResults += Result.success(true)
+        val siteStatusHolder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, siteStatusHolder))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        advanceUntilIdle()
+
+        assertEquals(true, siteStatusHolder.sitePublished.value)
+        assertEquals(true, siteStatusHolder.isRankingNavVisible)
+    }
+
+    private fun testAppDependencies(
+        catalog: QuizCatalogRepository,
+        siteStatusHolder: SiteStatusHolder = SiteStatusHolder(),
+    ): AppDependencies {
         val ranking = unusedRanking()
         val staffRepo = unusedStaffRepo()
         val staffStore = unusedSessionStore()
@@ -257,6 +292,7 @@ class HomeViewModelTest {
             quizCatalogRepository = catalog,
             quizEngine = quizEngine,
             sessionHolder = sessionHolder,
+            siteStatusHolder = siteStatusHolder,
             quizPlayUseCase = QuizPlayUseCase(
                 quizEngine = quizEngine,
                 sessionStore = sessionHolder,
