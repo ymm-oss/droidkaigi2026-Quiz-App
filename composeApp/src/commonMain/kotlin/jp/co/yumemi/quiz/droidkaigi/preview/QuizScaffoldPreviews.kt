@@ -18,6 +18,7 @@ private fun ScaffoldPhoneHomePreview() {
     QuizPreview {
         QuizAdaptiveScaffold(
             currentRoute = Route.Home,
+            rankingNavVisible = true,
             onNavigate = {},
         ) {
             HomeContent(
@@ -37,6 +38,7 @@ private fun ScaffoldTabletRankingPreview() {
     QuizPreview {
         QuizAdaptiveScaffold(
             currentRoute = Route.Ranking,
+            rankingNavVisible = true,
             onNavigate = {},
         ) {
             Box(
@@ -55,6 +57,7 @@ private fun ScaffoldQuizFlowPreview() {
     QuizPreview {
         QuizAdaptiveScaffold(
             currentRoute = Route.Quiz,
+            rankingNavVisible = true,
             onNavigate = {},
         ) {
             Box(

@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.staff
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.data.StaffAuthHolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.StaffSession
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.LocalStaffAppVersionProvider
@@ -61,6 +62,7 @@ internal fun staffTestAppDependencies(
         quizCatalogRepository = catalogRepository,
         quizEngine = quizEngine,
         sessionHolder = sessionHolder,
+        siteStatusHolder = SiteStatusHolder(),
         quizPlayUseCase = QuizPlayUseCase(
             quizEngine = quizEngine,
             sessionStore = sessionHolder,

@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.quiz
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.ChoiceOption
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
@@ -191,6 +192,7 @@ class QuizViewModelSyncFromSessionTest {
             quizCatalogRepository = catalog,
             quizEngine = quizEngine,
             sessionHolder = sessionHolder,
+            siteStatusHolder = SiteStatusHolder(),
             quizPlayUseCase = QuizPlayUseCase(
                 quizEngine = quizEngine,
                 sessionStore = sessionHolder,

@@ -29,6 +29,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSurfaceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_correct_count
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_go_ranking
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_score_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_section
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_subtitle
@@ -42,6 +43,8 @@ import kotlin.random.Random
 fun ResultScreen(
     onGoToRanking: () -> Unit,
     onMissingResult: () -> Unit = {},
+    onGoHome: () -> Unit = onMissingResult,
+    rankingVisible: Boolean = true,
     viewModel: ResultViewModel = viewModel { ResultViewModel() },
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -67,7 +70,9 @@ fun ResultScreen(
         correctCount = state.correctCount,
         totalCount = state.totalCount,
         targetScore = state.targetScore,
+        rankingVisible = rankingVisible,
         onGoToRankingClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
+        onGoHomeClick = onGoHome,
     )
 }
 
@@ -78,9 +83,11 @@ fun ResultContent(
     totalCount: Int,
     targetScore: Int,
     onGoToRankingClick: () -> Unit,
+    onGoHomeClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     animateScore: Boolean = true,
     primaryActionLabel: String? = null,
+    rankingVisible: Boolean = true,
 ) {
     val displayedScore = if (animateScore) {
         QuizMotion.animateScore(targetScore)
@@ -137,10 +144,17 @@ fun ResultContent(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
-                QuizPrimaryButton(
-                    text = actionLabel,
-                    onClick = onGoToRankingClick,
-                )
+                if (rankingVisible) {
+                    QuizPrimaryButton(
+                        text = actionLabel,
+                        onClick = onGoToRankingClick,
+                    )
+                } else {
+                    QuizPrimaryButton(
+                        text = stringResource(Res.string.ranking_go_home),
+                        onClick = onGoHomeClick,
+                    )
+                }
             }
         }
     }

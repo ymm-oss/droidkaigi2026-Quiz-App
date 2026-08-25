@@ -1,6 +1,7 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data.di
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
+import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.RankingRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.session.QuizEngine
@@ -33,6 +34,7 @@ interface QuizAppGraph {
     val rankingRepository: RankingRepository
     val quizEngine: QuizEngine
     val sessionHolder: QuizSessionHolder
+    val siteStatusHolder: SiteStatusHolder
     val submitScoreUseCase: SubmitScoreUseCase
     val quizPlayUseCase: QuizPlayUseCase
     val getTodayRankingsUseCase: GetTodayRankingsUseCase
