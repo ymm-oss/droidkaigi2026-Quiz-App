@@ -334,13 +334,15 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             _uiState.update {
                 it.copy(
                     isTogglingSitePublished = true,
-                    showSitePublishConfirm = false,
                     errorMessage = null,
                 )
             }
             try {
                 runCatching { deps.setSitePublishedUseCase(next) }
-                    .onSuccess { refresh() }
+                    .onSuccess {
+                        _uiState.update { state -> state.copy(showSitePublishConfirm = false) }
+                        refresh()
+                    }
                     .onFailure { error ->
                         staffLog("setSitePublished failed: ${error.message}")
                         _uiState.update {

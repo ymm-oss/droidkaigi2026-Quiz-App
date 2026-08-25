@@ -103,6 +103,7 @@ fun StaffShell(
             },
             confirmLabel = if (publishing) "公開する" else "非公開にする",
             confirmLoading = shellState.isTogglingSitePublished,
+            errorMessage = if (shellState.isTogglingSitePublished) null else shellState.errorMessage,
             onConfirm = { shellViewModel.onIntent(StaffShellIntent.ConfirmToggleSitePublished) },
             onDismiss = { shellViewModel.onIntent(StaffShellIntent.DismissSitePublishConfirm) },
         )
