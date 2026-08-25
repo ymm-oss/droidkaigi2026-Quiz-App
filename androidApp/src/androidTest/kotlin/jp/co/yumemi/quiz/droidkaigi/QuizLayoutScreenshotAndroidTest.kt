@@ -4,7 +4,12 @@ import android.graphics.Bitmap
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -81,6 +86,10 @@ class QuizLayoutScreenshotAndroidTest {
     @Test
     fun captureMultipleChoiceWithCodeBlock() {
         render(QuizPreviewFixtures.multipleChoiceState())
+        composeRule.onNode(
+            hasTestTag("choice:count の変更で UI が再 Composition される")
+                .and(hasRole(Role.Checkbox)),
+        ).assertIsDisplayed()
         capture("android-quiz-multiple-choice-code.png")
     }
 

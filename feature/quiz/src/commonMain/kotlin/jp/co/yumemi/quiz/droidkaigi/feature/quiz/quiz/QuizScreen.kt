@@ -37,6 +37,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.Question
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.Reorder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoice
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.ChoiceCard
+import jp.co.yumemi.quiz.droidkaigi.core.ui.components.MultipleChoiceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizAnswerFeedbackOverlay
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizMarkdownText
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizPrimaryButton
@@ -293,7 +294,7 @@ private fun QuestionAnswerArea(
         }
 
         is MultipleChoice -> q.options.forEach { option ->
-            ChoiceCard(
+            MultipleChoiceCard(
                 label = option.label,
                 selected = option.id in selectedMultipleIds,
                 onClick = { onToggleMultiple(option.id) },
