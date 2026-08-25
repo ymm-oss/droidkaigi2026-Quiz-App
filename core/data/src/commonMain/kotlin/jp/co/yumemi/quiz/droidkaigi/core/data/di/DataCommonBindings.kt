@@ -1,12 +1,15 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data.di
 
+import dev.zacsweers.metro.BindingContainer
+import dev.zacsweers.metro.ContributesTo
+import dev.zacsweers.metro.Provides
+import dev.zacsweers.metro.SingleIn
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
-import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
 import jp.co.yumemi.quiz.droidkaigi.core.data.StaffAuthHolder
-import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.LocalStaffAppVersionProvider
-import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.StaffAuthRepository
+import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.StaffAppReleaseRepository
+import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.StaffAuthRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.session.QuizEngine
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.InstantProvider
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.SystemInstantProvider
@@ -19,18 +22,14 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCa
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SaveQuizSetUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetActiveQuizFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignOutStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SubmitScoreUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.UpdateQuizFolderUseCase
-import dev.zacsweers.metro.BindingContainer
-import dev.zacsweers.metro.ContributesTo
-import dev.zacsweers.metro.Provides
-import dev.zacsweers.metro.SingleIn
 
 @ContributesTo(AppScope::class)
 @BindingContainer
@@ -38,10 +37,6 @@ object DataCommonBindings {
     @Provides
     @SingleIn(AppScope::class)
     fun provideSessionHolder(): QuizSessionHolder = QuizSessionHolder()
-
-    @Provides
-    @SingleIn(AppScope::class)
-    fun provideSiteStatusHolder(): SiteStatusHolder = SiteStatusHolder()
 
     @Provides
     @SingleIn(AppScope::class)
