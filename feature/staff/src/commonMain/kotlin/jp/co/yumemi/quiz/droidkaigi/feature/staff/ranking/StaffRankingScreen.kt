@@ -21,10 +21,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -77,22 +77,70 @@ fun StaffRankingScreen(
         onRequestClearToday = { showClearTodayConfirm = true },
     )
 
-    val deleteTarget = entryToDelete
+    StaffRankingConfirmDialogs(
+        deleteTarget = entryToDelete,
+        showClearTodayConfirm = showClearTodayConfirm,
+        isMutating = state.isMutating,
+        mutationError = state.mutationError,
+        onDeleteConfirm = { entryId ->
+            deleteConfirmed = true
+            viewModel.onIntent(StaffRankingIntent.DeleteEntry(entryId))
+        },
+        onDeleteDismiss = {
+            entryToDelete = null
+            deleteConfirmed = false
+        },
+        onClearTodayConfirm = {
+            clearTodayConfirmed = true
+            viewModel.onIntent(StaffRankingIntent.ClearToday)
+        },
+        onClearTodayDismiss = {
+            showClearTodayConfirm = false
+            clearTodayConfirmed = false
+        },
+        deleteConfirmed = deleteConfirmed,
+        clearTodayConfirmed = clearTodayConfirmed,
+        onDeleteMutationFinished = {
+            if (state.mutationError == null) {
+                entryToDelete = null
+            }
+            deleteConfirmed = false
+        },
+        onClearTodayMutationFinished = {
+            if (state.mutationError == null) {
+                showClearTodayConfirm = false
+            }
+            clearTodayConfirmed = false
+        },
+    )
+}
+
+@Composable
+private fun StaffRankingConfirmDialogs(
+    deleteTarget: RankingEntry?,
+    showClearTodayConfirm: Boolean,
+    isMutating: Boolean,
+    mutationError: String?,
+    onDeleteConfirm: (String) -> Unit,
+    onDeleteDismiss: () -> Unit,
+    onClearTodayConfirm: () -> Unit,
+    onClearTodayDismiss: () -> Unit,
+    deleteConfirmed: Boolean,
+    clearTodayConfirmed: Boolean,
+    onDeleteMutationFinished: () -> Unit,
+    onClearTodayMutationFinished: () -> Unit,
+) {
     if (deleteTarget != null) {
         StaffConfirmDialog(
             title = "ランキングを削除",
             message = "「${truncateForDialog(deleteTarget.nickname)}」のスコアを削除しますか？\nこの操作は取り消せません。",
             confirmLabel = "削除",
-            confirmLoading = state.isMutating && deleteConfirmed,
-            errorMessage = if (state.isMutating) null else state.mutationError,
-            onConfirm = {
-                deleteConfirmed = true
-                viewModel.onIntent(StaffRankingIntent.DeleteEntry(deleteTarget.id))
-            },
+            confirmLoading = isMutating && deleteConfirmed,
+            errorMessage = if (isMutating) null else mutationError,
+            onConfirm = { onDeleteConfirm(deleteTarget.id) },
             onDismiss = {
-                if (!state.isMutating) {
-                    entryToDelete = null
-                    deleteConfirmed = false
+                if (!isMutating) {
+                    onDeleteDismiss()
                 }
             },
             destructive = true,
@@ -104,37 +152,27 @@ fun StaffRankingScreen(
             title = "本日のランキングをすべて削除",
             message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
             confirmLabel = "すべて削除",
-            confirmLoading = state.isMutating && clearTodayConfirmed,
-            errorMessage = if (state.isMutating) null else state.mutationError,
-            onConfirm = {
-                clearTodayConfirmed = true
-                viewModel.onIntent(StaffRankingIntent.ClearToday)
-            },
+            confirmLoading = isMutating && clearTodayConfirmed,
+            errorMessage = if (isMutating) null else mutationError,
+            onConfirm = onClearTodayConfirm,
             onDismiss = {
-                if (!state.isMutating) {
-                    showClearTodayConfirm = false
-                    clearTodayConfirmed = false
+                if (!isMutating) {
+                    onClearTodayDismiss()
                 }
             },
             destructive = true,
         )
     }
 
-    LaunchedEffect(state.isMutating, state.mutationError, deleteConfirmed) {
-        if (deleteConfirmed && !state.isMutating) {
-            if (state.mutationError == null) {
-                entryToDelete = null
-            }
-            deleteConfirmed = false
+    LaunchedEffect(isMutating, mutationError, deleteConfirmed) {
+        if (deleteConfirmed && !isMutating) {
+            onDeleteMutationFinished()
         }
     }
 
-    LaunchedEffect(state.isMutating, state.mutationError, clearTodayConfirmed) {
-        if (clearTodayConfirmed && !state.isMutating) {
-            if (state.mutationError == null) {
-                showClearTodayConfirm = false
-            }
-            clearTodayConfirmed = false
+    LaunchedEffect(isMutating, mutationError, clearTodayConfirmed) {
+        if (clearTodayConfirmed && !isMutating) {
+            onClearTodayMutationFinished()
         }
     }
 }
@@ -263,12 +301,7 @@ private fun RowScope.StaffRankingCell(text: String, weight: Float, align: TextAl
 }
 
 @Composable
-private fun StaffRankingRow(
-    rank: Int,
-    entry: RankingEntry,
-    deleteEnabled: Boolean,
-    onDelete: () -> Unit,
-) {
+private fun StaffRankingRow(rank: Int, entry: RankingEntry, deleteEnabled: Boolean, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

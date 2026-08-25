@@ -99,6 +99,27 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
     private fun handleFolderIntent(intent: StaffShellIntent) {
         when (intent) {
+            StaffShellIntent.ShowCreateFolderDialog,
+            StaffShellIntent.DismissCreateFolderDialog,
+            is StaffShellIntent.CreateFolder,
+            -> handleCreateFolderIntent(intent)
+
+            is StaffShellIntent.ShowEditFolderDialog,
+            StaffShellIntent.DismissEditFolderDialog,
+            is StaffShellIntent.UpdateFolder,
+            -> handleEditFolderIntent(intent)
+
+            is StaffShellIntent.RequestDeleteFolder,
+            StaffShellIntent.DismissDeleteFolderDialog,
+            StaffShellIntent.ConfirmDeleteFolder,
+            -> handleDeleteFolderIntent(intent)
+
+            else -> error("Unhandled staff shell intent: $intent")
+        }
+    }
+
+    private fun handleCreateFolderIntent(intent: StaffShellIntent) {
+        when (intent) {
             StaffShellIntent.ShowCreateFolderDialog ->
                 _uiState.update { it.copy(showCreateFolderDialog = true, errorMessage = null) }
 
@@ -109,6 +130,12 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
             is StaffShellIntent.CreateFolder -> createFolder(intent.name, intent.description)
 
+            else -> error("Unhandled create-folder intent: $intent")
+        }
+    }
+
+    private fun handleEditFolderIntent(intent: StaffShellIntent) {
+        when (intent) {
             is StaffShellIntent.ShowEditFolderDialog ->
                 _uiState.update { it.copy(editingFolderId = intent.folderId, errorMessage = null) }
 
@@ -120,6 +147,12 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             is StaffShellIntent.UpdateFolder ->
                 updateFolder(intent.folderId, intent.name, intent.description)
 
+            else -> error("Unhandled edit-folder intent: $intent")
+        }
+    }
+
+    private fun handleDeleteFolderIntent(intent: StaffShellIntent) {
+        when (intent) {
             is StaffShellIntent.RequestDeleteFolder -> {
                 if (_uiState.value.isDeletingFolder) return
                 _uiState.update { it.copy(deletingFolderId = intent.folderId, errorMessage = null) }
@@ -132,7 +165,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
             StaffShellIntent.ConfirmDeleteFolder -> confirmDeleteFolder()
 
-            else -> error("Unhandled staff shell intent: $intent")
+            else -> error("Unhandled delete-folder intent: $intent")
         }
     }
 

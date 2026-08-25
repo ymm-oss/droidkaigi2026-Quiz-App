@@ -102,26 +102,30 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
     }
 
     private fun saveEditor() {
-        if (_uiState.value.isSaving) return
-        val draft = _uiState.value.editorDraft ?: return
-        val quizSet = _uiState.value.quizSet ?: return
-        val resolvedDraft = if (_uiState.value.isNewQuestion && quizSet.questions.any { it.id == draft.id }) {
+        val state = _uiState.value
+        if (state.isSaving || state.editorDraft == null || state.quizSet == null) return
+
+        val draft = state.editorDraft
+        val quizSet = state.quizSet
+        val resolvedDraft = if (state.isNewQuestion && quizSet.questions.any { it.id == draft.id }) {
             draft.copy(id = nextAutoQuestionId(quizSet.questions))
         } else {
             draft
         }
-        val question = runCatching { resolvedDraft.toQuestion() }.getOrElse { error ->
-            _uiState.update { state -> state.copy(saveError = error.message) }
-            return
-        }
-        val questions = if (_uiState.value.isNewQuestion) {
-            quizSet.questions + question
-        } else {
-            quizSet.questions.map { if (it.id == question.id) question else it }
-        }
-        persist(quizSet.copy(questions = questions)) {
-            _uiState.update { state -> state.copy(editorDraft = null, saveError = null) }
-        }
+        runCatching { resolvedDraft.toQuestion() }
+            .onSuccess { question ->
+                val questions = if (state.isNewQuestion) {
+                    quizSet.questions + question
+                } else {
+                    quizSet.questions.map { if (it.id == question.id) question else it }
+                }
+                persist(quizSet.copy(questions = questions)) {
+                    _uiState.update { current -> current.copy(editorDraft = null, saveError = null) }
+                }
+            }
+            .onFailure { error ->
+                _uiState.update { current -> current.copy(saveError = error.message) }
+            }
     }
 
     private fun deleteQuestion(questionId: String) {
