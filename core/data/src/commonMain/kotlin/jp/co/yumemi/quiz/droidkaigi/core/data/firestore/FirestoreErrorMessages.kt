@@ -9,7 +9,7 @@ object FirestoreErrorMessages {
         val combined = messageChain(error)
         return when {
             combined.contains("Cloud Firestore API has not been used", ignoreCase = true) ||
-                combined.contains("firestore.googleapis.com", ignoreCase = true) ->
+                combined.contains("Cloud Firestore API is disabled", ignoreCase = true) ->
                 "Firestore API が GCP プロジェクトで有効になっていません。Google Cloud Console で Cloud Firestore API を有効にしてください。"
             combined.contains("Missing or insufficient permissions", ignoreCase = true) ->
                 "Firestore の権限がありません。ログイン状態とセキュリティルールを確認してください。"

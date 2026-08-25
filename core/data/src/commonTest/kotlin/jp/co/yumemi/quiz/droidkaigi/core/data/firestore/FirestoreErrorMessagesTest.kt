@@ -25,6 +25,12 @@ class FirestoreErrorMessagesTest {
     }
 
     @Test
+    fun from_doesNotMapGenericFirestoreHostErrors() {
+        val error = RuntimeException("Unable to resolve host firestore.googleapis.com")
+        assertEquals("Unable to resolve host firestore.googleapis.com", FirestoreErrorMessages.from(error, "fallback"))
+    }
+
+    @Test
     fun from_usesFallbackWhenUnknown() {
         assertEquals("fallback", FirestoreErrorMessages.from(RuntimeException(), "fallback"))
     }
