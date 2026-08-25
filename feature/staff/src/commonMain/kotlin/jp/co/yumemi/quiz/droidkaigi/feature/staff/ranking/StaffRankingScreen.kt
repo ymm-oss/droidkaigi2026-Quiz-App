@@ -21,12 +21,14 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +62,9 @@ fun StaffRankingScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var entryToDelete by remember(folderId) { mutableStateOf<RankingEntry?>(null) }
+    var deleteConfirmed by remember(folderId) { mutableStateOf(false) }
     var showClearTodayConfirm by remember(folderId) { mutableStateOf(false) }
+    var clearTodayConfirmed by remember(folderId) { mutableStateOf(false) }
 
     StaffRankingContent(
         entries = state.entries,
@@ -79,11 +83,18 @@ fun StaffRankingScreen(
             title = "ランキングを削除",
             message = "「${truncateForDialog(deleteTarget.nickname)}」のスコアを削除しますか？\nこの操作は取り消せません。",
             confirmLabel = "削除",
+            confirmLoading = state.isMutating && deleteConfirmed,
+            errorMessage = if (state.isMutating) null else state.mutationError,
             onConfirm = {
+                deleteConfirmed = true
                 viewModel.onIntent(StaffRankingIntent.DeleteEntry(deleteTarget.id))
-                entryToDelete = null
             },
-            onDismiss = { entryToDelete = null },
+            onDismiss = {
+                if (!state.isMutating) {
+                    entryToDelete = null
+                    deleteConfirmed = false
+                }
+            },
             destructive = true,
         )
     }
@@ -93,13 +104,38 @@ fun StaffRankingScreen(
             title = "本日のランキングをすべて削除",
             message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
             confirmLabel = "すべて削除",
+            confirmLoading = state.isMutating && clearTodayConfirmed,
+            errorMessage = if (state.isMutating) null else state.mutationError,
             onConfirm = {
+                clearTodayConfirmed = true
                 viewModel.onIntent(StaffRankingIntent.ClearToday)
-                showClearTodayConfirm = false
             },
-            onDismiss = { showClearTodayConfirm = false },
+            onDismiss = {
+                if (!state.isMutating) {
+                    showClearTodayConfirm = false
+                    clearTodayConfirmed = false
+                }
+            },
             destructive = true,
         )
+    }
+
+    LaunchedEffect(state.isMutating, state.mutationError, deleteConfirmed) {
+        if (deleteConfirmed && !state.isMutating) {
+            if (state.mutationError == null) {
+                entryToDelete = null
+            }
+            deleteConfirmed = false
+        }
+    }
+
+    LaunchedEffect(state.isMutating, state.mutationError, clearTodayConfirmed) {
+        if (clearTodayConfirmed && !state.isMutating) {
+            if (state.mutationError == null) {
+                showClearTodayConfirm = false
+            }
+            clearTodayConfirmed = false
+        }
     }
 }
 
@@ -133,6 +169,16 @@ fun StaffRankingContent(
             )
         }
         Spacer(modifier = Modifier.height(QuizTokens.spacingExtraLarge))
+        if (isMutating) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+            Text(
+                text = "処理中…",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = QuizTokens.spacingMedium),
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()

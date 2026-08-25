@@ -102,6 +102,7 @@ fun StaffShell(
                 "参加者アプリでのクイズ受付を停止します。よろしいですか？"
             },
             confirmLabel = if (publishing) "公開する" else "非公開にする",
+            confirmLoading = shellState.isTogglingSitePublished,
             onConfirm = { shellViewModel.onIntent(StaffShellIntent.ConfirmToggleSitePublished) },
             onDismiss = { shellViewModel.onIntent(StaffShellIntent.DismissSitePublishConfirm) },
         )

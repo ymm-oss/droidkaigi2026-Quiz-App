@@ -84,7 +84,7 @@ class StaffShellViewModelFolderDeleteTest {
     }
 
     @Test
-    fun deleteFolder_inFlight_blocksAdditionalDeleteUntilLocalListUpdates() = runTest {
+    fun deleteFolder_inFlight_blocksDismissAndAdditionalDeleteUntilComplete() = runTest {
         val gate = CompletableDeferred<Unit>()
         val catalog = RecordingCatalogRepository(deleteGate = gate)
         val viewModel = StaffShellViewModel(staffTestAppDependencies(catalog, NoopRankingRepository))
@@ -92,12 +92,15 @@ class StaffShellViewModelFolderDeleteTest {
         viewModel.onIntent(StaffShellIntent.RequestDeleteFolder("day1"))
         viewModel.onIntent(StaffShellIntent.ConfirmDeleteFolder)
 
-        // While the first delete is still awaiting the backend, reject another delete path.
+        // While the first delete is still awaiting the backend, block dismiss and another delete path.
         viewModel.onIntent(StaffShellIntent.DismissDeleteFolderDialog)
+        assertEquals("day1", viewModel.uiState.value.deletingFolderId)
+        assertTrue(viewModel.uiState.value.isDeletingFolder)
+
         viewModel.onIntent(StaffShellIntent.RequestDeleteFolder("day2"))
         viewModel.onIntent(StaffShellIntent.ConfirmDeleteFolder)
         assertTrue(catalog.deletedIds.isEmpty())
-        assertNull(viewModel.uiState.value.deletingFolderId)
+        assertEquals("day1", viewModel.uiState.value.deletingFolderId)
         assertEquals(2, viewModel.uiState.value.folders.size)
 
         gate.complete(Unit)

@@ -21,9 +21,15 @@ data class StaffShellUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val showCreateFolderDialog: Boolean = false,
+    val isCreatingFolder: Boolean = false,
     val editingFolderId: String? = null,
+    val isUpdatingFolder: Boolean = false,
     val deletingFolderId: String? = null,
+    val isDeletingFolder: Boolean = false,
+    val showPublishFolderConfirm: Boolean = false,
+    val isPublishingFolder: Boolean = false,
     val showSitePublishConfirm: Boolean = false,
+    val isTogglingSitePublished: Boolean = false,
 ) {
     val editingFolder: QuizFolder?
         get() = folders.find { it.id == editingFolderId }
@@ -44,7 +50,9 @@ sealed interface StaffShellIntent {
     data class RequestDeleteFolder(val folderId: String) : StaffShellIntent
     data object DismissDeleteFolderDialog : StaffShellIntent
     data object ConfirmDeleteFolder : StaffShellIntent
-    data object PublishSelectedFolder : StaffShellIntent
+    data object RequestPublishFolder : StaffShellIntent
+    data object DismissPublishFolderConfirm : StaffShellIntent
+    data object ConfirmPublishFolder : StaffShellIntent
     data object RequestToggleSitePublished : StaffShellIntent
     data object DismissSitePublishConfirm : StaffShellIntent
     data object ConfirmToggleSitePublished : StaffShellIntent
@@ -53,8 +61,6 @@ sealed interface StaffShellIntent {
 class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(StaffShellUiState())
     val uiState: StateFlow<StaffShellUiState> = _uiState.asStateFlow()
-    private var sitePublishInFlight: Boolean = false
-    private var folderDeleteInFlight: Boolean = false
 
     init {
         refresh()
@@ -66,13 +72,23 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
             is StaffShellIntent.SelectFolder -> _uiState.update { it.copy(selectedFolderId = intent.folderId) }
 
-            StaffShellIntent.PublishSelectedFolder -> publishSelected()
+            StaffShellIntent.RequestPublishFolder ->
+                _uiState.update { it.copy(showPublishFolderConfirm = true, errorMessage = null) }
+
+            StaffShellIntent.DismissPublishFolderConfirm ->
+                if (!_uiState.value.isPublishingFolder) {
+                    _uiState.update { it.copy(showPublishFolderConfirm = false) }
+                }
+
+            StaffShellIntent.ConfirmPublishFolder -> publishSelected()
 
             StaffShellIntent.RequestToggleSitePublished ->
                 _uiState.update { it.copy(showSitePublishConfirm = true) }
 
             StaffShellIntent.DismissSitePublishConfirm ->
-                _uiState.update { it.copy(showSitePublishConfirm = false) }
+                if (!_uiState.value.isTogglingSitePublished) {
+                    _uiState.update { it.copy(showSitePublishConfirm = false) }
+                }
 
             StaffShellIntent.ConfirmToggleSitePublished -> toggleSitePublished()
 
@@ -83,29 +99,35 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     private fun handleFolderIntent(intent: StaffShellIntent) {
         when (intent) {
             StaffShellIntent.ShowCreateFolderDialog ->
-                _uiState.update { it.copy(showCreateFolderDialog = true) }
+                _uiState.update { it.copy(showCreateFolderDialog = true, errorMessage = null) }
 
             StaffShellIntent.DismissCreateFolderDialog ->
-                _uiState.update { it.copy(showCreateFolderDialog = false) }
+                if (!_uiState.value.isCreatingFolder) {
+                    _uiState.update { it.copy(showCreateFolderDialog = false) }
+                }
 
             is StaffShellIntent.CreateFolder -> createFolder(intent.name, intent.description)
 
             is StaffShellIntent.ShowEditFolderDialog ->
-                _uiState.update { it.copy(editingFolderId = intent.folderId) }
+                _uiState.update { it.copy(editingFolderId = intent.folderId, errorMessage = null) }
 
             StaffShellIntent.DismissEditFolderDialog ->
-                _uiState.update { it.copy(editingFolderId = null) }
+                if (!_uiState.value.isUpdatingFolder) {
+                    _uiState.update { it.copy(editingFolderId = null) }
+                }
 
             is StaffShellIntent.UpdateFolder ->
                 updateFolder(intent.folderId, intent.name, intent.description)
 
             is StaffShellIntent.RequestDeleteFolder -> {
-                if (folderDeleteInFlight) return
-                _uiState.update { it.copy(deletingFolderId = intent.folderId) }
+                if (_uiState.value.isDeletingFolder) return
+                _uiState.update { it.copy(deletingFolderId = intent.folderId, errorMessage = null) }
             }
 
             StaffShellIntent.DismissDeleteFolderDialog ->
-                _uiState.update { it.copy(deletingFolderId = null) }
+                if (!_uiState.value.isDeletingFolder) {
+                    _uiState.update { it.copy(deletingFolderId = null) }
+                }
 
             StaffShellIntent.ConfirmDeleteFolder -> confirmDeleteFolder()
 
@@ -157,34 +179,38 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     }
 
     private fun createFolder(name: String, description: String) {
-        if (name.isBlank()) return
+        if (name.isBlank() || _uiState.value.isCreatingFolder) return
         viewModelScope.launch {
             staffLog("createFolder start name=$name")
-            runCatching {
-                val folder = deps.createQuizFolderUseCase(name.trim(), description.trim())
-                folder
-            }.onSuccess { folder ->
-                staffLog("createFolder ok id=${folder.id} displayName=${folder.displayName}")
-                _uiState.update {
-                    it.copy(
-                        showCreateFolderDialog = false,
-                        selectedFolderId = folder.id,
-                        errorMessage = null,
-                    )
+            _uiState.update { it.copy(isCreatingFolder = true, errorMessage = null) }
+            try {
+                runCatching {
+                    deps.createQuizFolderUseCase(name.trim(), description.trim())
+                }.onSuccess { folder ->
+                    staffLog("createFolder ok id=${folder.id} displayName=${folder.displayName}")
+                    _uiState.update {
+                        it.copy(
+                            showCreateFolderDialog = false,
+                            selectedFolderId = folder.id,
+                            errorMessage = null,
+                        )
+                    }
+                    refresh()
+                }.onFailure { error ->
+                    staffLog("createFolder failed: ${error.message}")
+                    error.printStackTrace()
+                    _uiState.update {
+                        it.copy(errorMessage = error.message ?: "フォルダの作成に失敗しました")
+                    }
                 }
-                refresh()
-            }.onFailure { error ->
-                staffLog("createFolder failed: ${error.message}")
-                error.printStackTrace()
-                _uiState.update {
-                    it.copy(errorMessage = error.message ?: "フォルダの作成に失敗しました")
-                }
+            } finally {
+                _uiState.update { it.copy(isCreatingFolder = false) }
             }
         }
     }
 
     private fun updateFolder(folderId: String, name: String, description: String) {
-        if (name.isBlank()) return
+        if (name.isBlank() || _uiState.value.isUpdatingFolder) return
         val current = _uiState.value.folders.find { it.id == folderId } ?: return
         val updated = current.copy(name = name.trim(), description = description.trim())
         if (updated == current) {
@@ -193,22 +219,27 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
         }
         viewModelScope.launch {
             staffLog("updateFolder start id=$folderId name=$name")
-            runCatching { deps.updateQuizFolderUseCase(updated) }
-                .onSuccess {
-                    _uiState.update { state -> state.copy(editingFolderId = null, errorMessage = null) }
-                    refresh()
-                }
-                .onFailure { error ->
-                    staffLog("updateFolder failed: ${error.message}")
-                    _uiState.update {
-                        it.copy(errorMessage = error.message ?: "フォルダの更新に失敗しました")
+            _uiState.update { it.copy(isUpdatingFolder = true, errorMessage = null) }
+            try {
+                runCatching { deps.updateQuizFolderUseCase(updated) }
+                    .onSuccess {
+                        _uiState.update { state -> state.copy(editingFolderId = null, errorMessage = null) }
+                        refresh()
                     }
-                }
+                    .onFailure { error ->
+                        staffLog("updateFolder failed: ${error.message}")
+                        _uiState.update {
+                            it.copy(errorMessage = error.message ?: "フォルダの更新に失敗しました")
+                        }
+                    }
+            } finally {
+                _uiState.update { it.copy(isUpdatingFolder = false) }
+            }
         }
     }
 
     private fun confirmDeleteFolder() {
-        if (folderDeleteInFlight) return
+        if (_uiState.value.isDeletingFolder) return
         val current = _uiState.value
         val folderId = current.deletingFolderId
         when {
@@ -227,8 +258,8 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                 }
 
             else -> viewModelScope.launch {
-                folderDeleteInFlight = true
                 staffLog("deleteFolder start id=$folderId")
+                _uiState.update { it.copy(isDeletingFolder = true, errorMessage = null) }
                 try {
                     runCatching { deps.deleteQuizFolderUseCase(folderId) }
                         .onSuccess {
@@ -256,18 +287,23 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                             }
                         }
                 } finally {
-                    folderDeleteInFlight = false
+                    _uiState.update { it.copy(isDeletingFolder = false) }
                 }
             }
         }
     }
 
     private fun toggleSitePublished() {
-        if (sitePublishInFlight) return
+        if (_uiState.value.isTogglingSitePublished) return
         val next = !_uiState.value.sitePublished
         viewModelScope.launch {
-            sitePublishInFlight = true
-            _uiState.update { it.copy(showSitePublishConfirm = false) }
+            _uiState.update {
+                it.copy(
+                    isTogglingSitePublished = true,
+                    showSitePublishConfirm = false,
+                    errorMessage = null,
+                )
+            }
             try {
                 runCatching { deps.setSitePublishedUseCase(next) }
                     .onSuccess { refresh() }
@@ -278,7 +314,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                         }
                     }
             } finally {
-                sitePublishInFlight = false
+                _uiState.update { it.copy(isTogglingSitePublished = false) }
             }
         }
     }
@@ -290,10 +326,26 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     }
 
     private fun publishSelected() {
+        if (_uiState.value.isPublishingFolder) return
         val folderId = _uiState.value.selectedFolderId ?: return
         viewModelScope.launch {
-            runCatching { deps.setActiveQuizFolderUseCase(folderId) }
-                .onSuccess { refresh() }
+            staffLog("publishFolder start id=$folderId")
+            _uiState.update { it.copy(isPublishingFolder = true, errorMessage = null) }
+            try {
+                runCatching { deps.setActiveQuizFolderUseCase(folderId) }
+                    .onSuccess {
+                        _uiState.update { it.copy(showPublishFolderConfirm = false) }
+                        refresh()
+                    }
+                    .onFailure { error ->
+                        staffLog("publishFolder failed: ${error.message}")
+                        _uiState.update {
+                            it.copy(errorMessage = error.message ?: "フォルダの公開に失敗しました")
+                        }
+                    }
+            } finally {
+                _uiState.update { it.copy(isPublishingFolder = false) }
+            }
         }
     }
 

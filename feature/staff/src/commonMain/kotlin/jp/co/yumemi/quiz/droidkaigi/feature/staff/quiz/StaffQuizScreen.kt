@@ -34,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,6 +75,7 @@ fun StaffQuizScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var questionToDelete by remember { mutableStateOf<Question?>(null) }
+    var deleteConfirmed by remember { mutableStateOf(false) }
     val draft = state.editorDraft
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -87,7 +89,9 @@ fun StaffQuizScreen(
                 quizSubtitle = folderDescription,
                 questions = state.quizSet?.questions.orEmpty(),
                 isLoading = state.isLoading,
+                isSaving = state.isSaving,
                 errorMessage = state.errorMessage,
+                saveError = state.saveError,
                 onRefresh = { viewModel.onIntent(StaffQuizIntent.Refresh) },
                 onPreview = onPreview,
                 onAddQuestion = { viewModel.onIntent(StaffQuizIntent.AddQuestion) },
@@ -118,6 +122,8 @@ fun StaffQuizScreen(
                 onDraftChange = { viewModel.onIntent(StaffQuizIntent.UpdateEditorDraft(it)) },
                 onDismiss = { viewModel.onIntent(StaffQuizIntent.DismissEditor) },
                 onSave = { viewModel.onIntent(StaffQuizIntent.SaveEditor) },
+                isSaving = state.isSaving,
+                saveError = state.saveError,
             )
         }
     }
@@ -129,12 +135,28 @@ fun StaffQuizScreen(
             message = "「${truncateForDialog(deleteTarget.prompt)}」を削除しますか？\nこの操作は取り消せません。",
             confirmLabel = "削除",
             destructive = true,
+            confirmLoading = state.isSaving && deleteConfirmed,
+            errorMessage = if (state.isSaving) null else state.saveError,
             onConfirm = {
+                deleteConfirmed = true
                 viewModel.onIntent(StaffQuizIntent.DeleteQuestion(deleteTarget.id))
-                questionToDelete = null
             },
-            onDismiss = { questionToDelete = null },
+            onDismiss = {
+                if (!state.isSaving) {
+                    questionToDelete = null
+                    deleteConfirmed = false
+                }
+            },
         )
+    }
+
+    LaunchedEffect(state.isSaving, state.saveError, deleteConfirmed) {
+        if (deleteConfirmed && !state.isSaving) {
+            if (state.saveError == null) {
+                questionToDelete = null
+            }
+            deleteConfirmed = false
+        }
     }
 }
 
@@ -152,14 +174,55 @@ fun StaffQuizContent(
     onReorderQuestions: (fromIndex: Int, toIndex: Int) -> Unit,
     onPreview: () -> Unit = {},
     modifier: Modifier = Modifier,
+    isSaving: Boolean = false,
+    saveError: String? = null,
 ) {
+    val actionsEnabled = !isLoading && !isSaving
     StaffContentPane(modifier = modifier.fillMaxSize()) {
         StaffSectionHeader(title = quizTitle ?: "クイズ内容", subtitle = quizSubtitle) {
-            StaffTextButton(text = "再読込", icon = Icons.Default.Refresh, onClick = onRefresh)
-            StaffTextButton(text = "プレビュー", icon = Icons.Default.Visibility, onClick = onPreview)
-            StaffFilledButton(text = "問題を追加", icon = Icons.Default.Add, onClick = onAddQuestion)
+            StaffTextButton(
+                text = "再読込",
+                icon = Icons.Default.Refresh,
+                onClick = onRefresh,
+                enabled = actionsEnabled,
+            )
+            StaffTextButton(
+                text = "プレビュー",
+                icon = Icons.Default.Visibility,
+                onClick = onPreview,
+                enabled = actionsEnabled,
+            )
+            StaffFilledButton(
+                text = if (isSaving) "保存中…" else "問題を追加",
+                icon = Icons.Default.Add,
+                onClick = onAddQuestion,
+                enabled = actionsEnabled,
+            )
         }
         Spacer(modifier = Modifier.height(QuizTokens.spacingExtraLarge))
+        if (isSaving && questions.isNotEmpty()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = QuizTokens.spacingSmall),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
+                Text(
+                    text = "保存中…",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+        }
+        saveError?.let { message ->
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = QuizTokens.spacingMedium),
+            )
+        }
         if (questions.isNotEmpty()) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -229,6 +292,7 @@ fun StaffQuizContent(
                     onMove = onReorderQuestions,
                     onEdit = onEditQuestion,
                     onRequestDelete = onRequestDeleteQuestion,
+                    reorderEnabled = actionsEnabled,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -245,6 +309,7 @@ internal fun StaffQuestionCard(
     modifier: Modifier = Modifier,
     isDragging: Boolean = false,
     dragHandleModifier: Modifier = Modifier,
+    actionsEnabled: Boolean = true,
 ) {
     Row(
         modifier = modifier
@@ -303,11 +368,12 @@ internal fun StaffQuestionCard(
             StaffCorrectAnswerChip(question = question)
             Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
             Row {
-                StaffTextButton(text = "編集", icon = null, onClick = onEdit)
+                StaffTextButton(text = "編集", icon = null, onClick = onEdit, enabled = actionsEnabled)
                 StaffTextButton(
                     text = "削除",
                     icon = null,
                     onClick = onDelete,
+                    enabled = actionsEnabled,
                     color = MaterialTheme.colorScheme.error,
                 )
             }

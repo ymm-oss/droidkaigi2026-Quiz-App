@@ -19,10 +19,13 @@ fun StaffQuestionReorderList(
     onEdit: (Question) -> Unit,
     onRequestDelete: (Question) -> Unit,
     modifier: Modifier = Modifier,
+    reorderEnabled: Boolean = true,
 ) {
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        onMove(from.index, to.index)
+        if (reorderEnabled) {
+            onMove(from.index, to.index)
+        }
     }
     LazyColumn(
         state = lazyListState,
@@ -38,7 +41,8 @@ fun StaffQuestionReorderList(
                     index = index + 1,
                     question = question,
                     isDragging = isDragging,
-                    dragHandleModifier = Modifier.draggableHandle(),
+                    dragHandleModifier = if (reorderEnabled) Modifier.draggableHandle() else Modifier,
+                    actionsEnabled = reorderEnabled,
                     onEdit = { onEdit(question) },
                     onDelete = { onRequestDelete(question) },
                 )

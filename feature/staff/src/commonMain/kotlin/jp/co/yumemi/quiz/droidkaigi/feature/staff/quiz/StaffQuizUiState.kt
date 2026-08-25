@@ -7,6 +7,8 @@ data class StaffQuizUiState(
     val quizSet: QuizSet? = null,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val isSaving: Boolean = false,
+    val saveError: String? = null,
     val editorDraft: StaffQuestionDraft? = null,
     val isNewQuestion: Boolean = false,
 )
