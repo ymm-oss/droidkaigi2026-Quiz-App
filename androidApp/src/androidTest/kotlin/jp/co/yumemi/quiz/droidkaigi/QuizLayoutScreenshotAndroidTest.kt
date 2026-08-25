@@ -88,7 +88,7 @@ class QuizLayoutScreenshotAndroidTest {
         render(QuizPreviewFixtures.multipleChoiceState())
         composeRule.onNode(
             hasTestTag("choice:count の変更で UI が再 Composition される")
-                .and(hasRole(Role.Checkbox)),
+                .and(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox)),
         ).assertIsDisplayed()
         capture("android-quiz-multiple-choice-code.png")
     }
