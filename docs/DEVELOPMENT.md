@@ -170,6 +170,17 @@ Desktop / Wasm では上記 [切り替え方](#切り替え方) の `gradle.prop
 | **Firebase プロジェクトへのアクセス** | [.firebaserc](../.firebaserc) のプロジェクト（本番: `ymm-droidkaigi26`）への権限 |
 | **`google-services.json`** | 下記パスに配置（Android `prod`・Desktop / スタッフ Desktop 共通） |
 | **スタッフ用ログイン** | prod 用メール / パスワード（運営から共有。fake の `staff@droidkaigi.local` は使えない） |
+| **Cloud Firestore API** | [Google Cloud Console](https://console.cloud.google.com/apis/library/firestore.googleapis.com?project=ymm-droidkaigi26) で **有効化**（未有効だと `PERMISSION_DENIED` / API disabled で書き込み失敗） |
+
+### Cloud Firestore API の有効化
+
+スタッフ Desktop（GitLive / Android SDK ブリッジ）で `Cloud Firestore API has not been used in project ymm-droidkaigi26 before or it is disabled` が出る場合:
+
+1. [Cloud Firestore API](https://console.cloud.google.com/apis/library/firestore.googleapis.com?project=ymm-droidkaigi26) を開き **有効にする**
+2. [Firebase Console](https://console.firebase.google.com/project/ymm-droidkaigi26/firestore) で Firestore データベースを作成（Native モード、リージョンは運用方針に合わせる）
+3. 数分待ってからスタッフアプリを再起動
+
+ルール・インデックスは別途 `firebase deploy --only firestore`（下記）で反映する。
 
 ### `google-services.json`
 
