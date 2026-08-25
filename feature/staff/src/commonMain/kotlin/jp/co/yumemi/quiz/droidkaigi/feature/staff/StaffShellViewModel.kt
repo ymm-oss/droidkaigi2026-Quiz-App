@@ -371,7 +371,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             try {
                 runCatching { deps.setActiveQuizFolderUseCase(folderId) }
                     .onSuccess {
-                        _uiState.update { it.copy(showPublishFolderConfirm = false) }
+                        _uiState.update { state -> state.copy(showPublishFolderConfirm = false) }
                         refresh()
                     }
                     .onFailure { error ->
