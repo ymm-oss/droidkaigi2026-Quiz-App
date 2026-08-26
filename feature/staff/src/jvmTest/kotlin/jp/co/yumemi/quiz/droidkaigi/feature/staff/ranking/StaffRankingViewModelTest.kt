@@ -107,7 +107,8 @@ class StaffRankingViewModelTest {
 
         val state = viewModel.uiState.value
         assertTrue(state.entries.isEmpty())
-        assertEquals("操作は完了しましたが、一覧の更新に失敗しました", state.mutationError)
+        assertEquals("操作は完了しましたが、一覧の更新に失敗しました", state.reloadWarning)
+        assertNull(state.mutationError)
         assertFalse(state.isMutating)
     }
 

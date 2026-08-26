@@ -24,9 +24,11 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +62,9 @@ fun StaffRankingScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var entryToDelete by remember(folderId) { mutableStateOf<RankingEntry?>(null) }
+    var deleteConfirmed by remember(folderId) { mutableStateOf(false) }
     var showClearTodayConfirm by remember(folderId) { mutableStateOf(false) }
+    var clearTodayConfirmed by remember(folderId) { mutableStateOf(false) }
 
     StaffRankingContent(
         entries = state.entries,
@@ -68,39 +72,154 @@ fun StaffRankingScreen(
         isMutating = state.isMutating,
         loadError = state.loadError,
         mutationError = state.mutationError,
+        reloadWarning = state.reloadWarning,
         onRefresh = { viewModel.onIntent(StaffRankingIntent.Refresh) },
-        onRequestDeleteEntry = { entryToDelete = it },
-        onRequestClearToday = { showClearTodayConfirm = true },
+        onRequestDeleteEntry = {
+            viewModel.onIntent(StaffRankingIntent.ClearMutationFeedback)
+            deleteConfirmed = false
+            entryToDelete = it
+        },
+        onRequestClearToday = {
+            viewModel.onIntent(StaffRankingIntent.ClearMutationFeedback)
+            clearTodayConfirmed = false
+            showClearTodayConfirm = true
+        },
     )
 
-    val deleteTarget = entryToDelete
-    if (deleteTarget != null) {
-        StaffConfirmDialog(
-            title = "ランキングを削除",
-            message = "「${truncateForDialog(deleteTarget.nickname)}」のスコアを削除しますか？\nこの操作は取り消せません。",
-            confirmLabel = "削除",
-            onConfirm = {
-                viewModel.onIntent(StaffRankingIntent.DeleteEntry(deleteTarget.id))
+    StaffRankingConfirmDialogs(
+        deleteTarget = entryToDelete,
+        showClearTodayConfirm = showClearTodayConfirm,
+        isMutating = state.isMutating,
+        mutationError = state.mutationError,
+        onDeleteConfirm = { entryId ->
+            deleteConfirmed = true
+            viewModel.onIntent(StaffRankingIntent.DeleteEntry(entryId))
+        },
+        onDeleteDismiss = {
+            entryToDelete = null
+            deleteConfirmed = false
+        },
+        onClearTodayConfirm = {
+            clearTodayConfirmed = true
+            viewModel.onIntent(StaffRankingIntent.ClearToday)
+        },
+        onClearTodayDismiss = {
+            showClearTodayConfirm = false
+            clearTodayConfirmed = false
+        },
+        deleteConfirmed = deleteConfirmed,
+        clearTodayConfirmed = clearTodayConfirmed,
+        onDeleteMutationFinished = {
+            if (state.mutationError == null) {
                 entryToDelete = null
-            },
-            onDismiss = { entryToDelete = null },
-            destructive = true,
+                deleteConfirmed = false
+            }
+        },
+        onClearTodayMutationFinished = {
+            if (state.mutationError == null) {
+                showClearTodayConfirm = false
+                clearTodayConfirmed = false
+            }
+        },
+    )
+}
+
+@Composable
+private fun StaffRankingConfirmDialogs(
+    deleteTarget: RankingEntry?,
+    showClearTodayConfirm: Boolean,
+    isMutating: Boolean,
+    mutationError: String?,
+    onDeleteConfirm: (String) -> Unit,
+    onDeleteDismiss: () -> Unit,
+    onClearTodayConfirm: () -> Unit,
+    onClearTodayDismiss: () -> Unit,
+    deleteConfirmed: Boolean,
+    clearTodayConfirmed: Boolean,
+    onDeleteMutationFinished: () -> Unit,
+    onClearTodayMutationFinished: () -> Unit,
+) {
+    if (deleteTarget != null) {
+        StaffRankingDeleteConfirmDialog(
+            deleteTarget = deleteTarget,
+            isMutating = isMutating,
+            deleteConfirmed = deleteConfirmed,
+            mutationError = mutationError,
+            onConfirm = { onDeleteConfirm(deleteTarget.id) },
+            onDismiss = onDeleteDismiss,
         )
     }
 
     if (showClearTodayConfirm) {
-        StaffConfirmDialog(
-            title = "本日のランキングをすべて削除",
-            message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
-            confirmLabel = "すべて削除",
-            onConfirm = {
-                viewModel.onIntent(StaffRankingIntent.ClearToday)
-                showClearTodayConfirm = false
-            },
-            onDismiss = { showClearTodayConfirm = false },
-            destructive = true,
+        StaffRankingClearTodayConfirmDialog(
+            isMutating = isMutating,
+            clearTodayConfirmed = clearTodayConfirmed,
+            mutationError = mutationError,
+            onConfirm = onClearTodayConfirm,
+            onDismiss = onClearTodayDismiss,
         )
     }
+
+    LaunchedEffect(isMutating, mutationError, deleteConfirmed) {
+        if (deleteConfirmed && !isMutating) {
+            onDeleteMutationFinished()
+        }
+    }
+
+    LaunchedEffect(isMutating, mutationError, clearTodayConfirmed) {
+        if (clearTodayConfirmed && !isMutating) {
+            onClearTodayMutationFinished()
+        }
+    }
+}
+
+@Composable
+private fun StaffRankingDeleteConfirmDialog(
+    deleteTarget: RankingEntry,
+    isMutating: Boolean,
+    deleteConfirmed: Boolean,
+    mutationError: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    StaffConfirmDialog(
+        title = "ランキングを削除",
+        message = "「${truncateForDialog(deleteTarget.nickname)}」のスコアを削除しますか？\nこの操作は取り消せません。",
+        confirmLabel = "削除",
+        confirmLoading = isMutating && deleteConfirmed,
+        errorMessage = if (deleteConfirmed && !isMutating) mutationError else null,
+        onConfirm = onConfirm,
+        onDismiss = {
+            if (!isMutating) {
+                onDismiss()
+            }
+        },
+        destructive = true,
+    )
+}
+
+@Composable
+private fun StaffRankingClearTodayConfirmDialog(
+    isMutating: Boolean,
+    clearTodayConfirmed: Boolean,
+    mutationError: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    StaffConfirmDialog(
+        title = "本日のランキングをすべて削除",
+        message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
+        confirmLabel = "すべて削除",
+        confirmLoading = isMutating && clearTodayConfirmed,
+        errorMessage = if (clearTodayConfirmed && !isMutating) mutationError else null,
+        onConfirm = onConfirm,
+        onDismiss = {
+            if (!isMutating) {
+                onDismiss()
+            }
+        },
+        destructive = true,
+    )
 }
 
 @Composable
@@ -112,6 +231,7 @@ fun StaffRankingContent(
     modifier: Modifier = Modifier,
     isMutating: Boolean = false,
     mutationError: String? = null,
+    reloadWarning: String? = null,
     onRequestDeleteEntry: (RankingEntry) -> Unit = {},
     onRequestClearToday: () -> Unit = {},
 ) {
@@ -133,6 +253,16 @@ fun StaffRankingContent(
             )
         }
         Spacer(modifier = Modifier.height(QuizTokens.spacingExtraLarge))
+        if (isMutating) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+            Text(
+                text = "処理中…",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = QuizTokens.spacingMedium),
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,6 +273,10 @@ fun StaffRankingContent(
             StaffRankingHeaderRow()
             StaffHorizontalDivider()
             mutationError?.let { message ->
+                StaffRankingNote(text = message, isError = true)
+                StaffHorizontalDivider(alpha = 0.15f)
+            }
+            reloadWarning?.let { message ->
                 StaffRankingNote(text = message, isError = true)
                 StaffHorizontalDivider(alpha = 0.15f)
             }
@@ -217,12 +351,7 @@ private fun RowScope.StaffRankingCell(text: String, weight: Float, align: TextAl
 }
 
 @Composable
-private fun StaffRankingRow(
-    rank: Int,
-    entry: RankingEntry,
-    deleteEnabled: Boolean,
-    onDelete: () -> Unit,
-) {
+private fun StaffRankingRow(rank: Int, entry: RankingEntry, deleteEnabled: Boolean, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

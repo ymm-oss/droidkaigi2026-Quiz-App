@@ -63,8 +63,12 @@ fun StaffFolderSidebar(
     onNewFolderDescriptionChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var showPublishConfirm by remember { mutableStateOf(false) }
     val selectedFolder = state.folders.find { it.id == state.selectedFolderId }
+    val sidebarBusy = state.isLoading ||
+        state.isCreatingFolder ||
+        state.isUpdatingFolder ||
+        state.isDeletingFolder ||
+        state.isPublishingFolder
 
     Row(modifier = modifier.fillMaxHeight()) {
         Column(
@@ -73,7 +77,10 @@ fun StaffFolderSidebar(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surfaceContainer),
         ) {
-            StaffFolderSidebarHeader(onAddClick = { onIntent(StaffShellIntent.ShowCreateFolderDialog) })
+            StaffFolderSidebarHeader(
+                onAddClick = { onIntent(StaffShellIntent.ShowCreateFolderDialog) },
+                enabled = !sidebarBusy,
+            )
             StaffHorizontalDivider(alpha = 0.1f)
             StaffFolderList(
                 state = state,
@@ -82,10 +89,10 @@ fun StaffFolderSidebar(
             )
             StaffHorizontalDivider(alpha = 0.1f)
             StaffOutlinedButton(
-                text = "参加者向けに公開",
+                text = if (state.isPublishingFolder) "公開中…" else "参加者向けに公開",
                 icon = Icons.Default.Publish,
-                onClick = { showPublishConfirm = true },
-                enabled = selectedFolder != null && !state.isLoading,
+                onClick = { onIntent(StaffShellIntent.RequestPublishFolder) },
+                enabled = selectedFolder != null && !sidebarBusy,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(QuizTokens.spacingMedium),
@@ -97,8 +104,6 @@ fun StaffFolderSidebar(
     StaffFolderDialogs(
         state = state,
         selectedFolder = selectedFolder,
-        showPublishConfirm = showPublishConfirm,
-        onDismissPublishConfirm = { showPublishConfirm = false },
         onIntent = onIntent,
         newFolderName = newFolderName,
         onNewFolderNameChange = onNewFolderNameChange,
@@ -108,7 +113,7 @@ fun StaffFolderSidebar(
 }
 
 @Composable
-private fun StaffFolderSidebarHeader(onAddClick: () -> Unit) {
+private fun StaffFolderSidebarHeader(onAddClick: () -> Unit, enabled: Boolean = true) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,7 +136,7 @@ private fun StaffFolderSidebarHeader(onAddClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        IconButton(onClick = onAddClick) {
+        IconButton(onClick = onAddClick, enabled = enabled) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "フォルダを追加",
@@ -204,15 +209,13 @@ private fun StaffFolderList(
 private fun StaffFolderDialogs(
     state: StaffShellUiState,
     selectedFolder: QuizFolder?,
-    showPublishConfirm: Boolean,
-    onDismissPublishConfirm: () -> Unit,
     onIntent: (StaffShellIntent) -> Unit,
     newFolderName: String,
     onNewFolderNameChange: (String) -> Unit,
     newFolderDescription: String,
     onNewFolderDescriptionChange: (String) -> Unit,
 ) {
-    if (showPublishConfirm && selectedFolder != null) {
+    if (state.showPublishFolderConfirm && selectedFolder != null) {
         val folder = selectedFolder
         val alreadyActive = folder.id == state.activeFolderId
         StaffConfirmDialog(
@@ -223,11 +226,10 @@ private fun StaffFolderDialogs(
                 "「${folder.displayName}」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。"
             },
             confirmLabel = "公開",
-            onConfirm = {
-                onDismissPublishConfirm()
-                onIntent(StaffShellIntent.PublishSelectedFolder)
-            },
-            onDismiss = onDismissPublishConfirm,
+            confirmLoading = state.isPublishingFolder,
+            errorMessage = if (state.isPublishingFolder) null else state.errorMessage,
+            onConfirm = { onIntent(StaffShellIntent.ConfirmPublishFolder) },
+            onDismiss = { onIntent(StaffShellIntent.DismissPublishFolderConfirm) },
         )
     }
 
@@ -237,6 +239,8 @@ private fun StaffFolderDialogs(
             onNameChange = onNewFolderNameChange,
             description = newFolderDescription,
             onDescriptionChange = onNewFolderDescriptionChange,
+            confirmLoading = state.isCreatingFolder,
+            errorMessage = state.errorMessage,
             onConfirm = { onIntent(StaffShellIntent.CreateFolder(newFolderName, newFolderDescription)) },
             onDismiss = { onIntent(StaffShellIntent.DismissCreateFolderDialog) },
         )
@@ -246,6 +250,8 @@ private fun StaffFolderDialogs(
     if (editingFolder != null) {
         StaffFolderEditDialog(
             folder = editingFolder,
+            confirmLoading = state.isUpdatingFolder,
+            errorMessage = state.errorMessage,
             onConfirm = { name, description ->
                 onIntent(StaffShellIntent.UpdateFolder(editingFolder.id, name, description))
             },
@@ -266,6 +272,8 @@ private fun StaffFolderDialogs(
                 }
             },
             confirmLabel = "削除",
+            confirmLoading = state.isDeletingFolder,
+            errorMessage = if (state.isDeletingFolder) null else state.errorMessage,
             onConfirm = { onIntent(StaffShellIntent.ConfirmDeleteFolder) },
             onDismiss = { onIntent(StaffShellIntent.DismissDeleteFolderDialog) },
             destructive = true,
@@ -281,9 +289,11 @@ private fun StaffFolderCreateDialog(
     onDescriptionChange: (String) -> Unit,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
+    confirmLoading: Boolean = false,
+    errorMessage: String? = null,
 ) {
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!confirmLoading) onDismiss() },
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = RoundedCornerShape(QuizTokens.cornerMedium),
         title = { Text(text = "フォルダを追加", style = MaterialTheme.typography.titleLarge) },
@@ -299,15 +309,38 @@ private fun StaffFolderCreateDialog(
                     onValueChange = onDescriptionChange,
                     label = "説明",
                 )
+                if (confirmLoading) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Text(
+                            text = "作成中…",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                errorMessage?.let { message ->
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm, enabled = name.isNotBlank()) {
+            TextButton(
+                onClick = onConfirm,
+                enabled = name.isNotBlank() && !confirmLoading,
+            ) {
                 Text(text = "作成", style = MaterialTheme.typography.labelLarge)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !confirmLoading) {
                 Text(
                     text = "キャンセル",
                     style = MaterialTheme.typography.labelLarge,
@@ -323,11 +356,13 @@ private fun StaffFolderEditDialog(
     folder: QuizFolder,
     onConfirm: (name: String, description: String) -> Unit,
     onDismiss: () -> Unit,
+    confirmLoading: Boolean = false,
+    errorMessage: String? = null,
 ) {
     var name by remember(folder.id) { mutableStateOf(folder.name) }
     var description by remember(folder.id) { mutableStateOf(folder.description) }
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!confirmLoading) onDismiss() },
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = RoundedCornerShape(QuizTokens.cornerMedium),
         title = { Text(text = "フォルダを編集", style = MaterialTheme.typography.titleLarge) },
@@ -343,18 +378,38 @@ private fun StaffFolderEditDialog(
                     onValueChange = { description = it },
                     label = "説明",
                 )
+                if (confirmLoading) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Text(
+                            text = "保存中…",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                errorMessage?.let { message ->
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
         },
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(name, description) },
-                enabled = name.isNotBlank(),
+                enabled = name.isNotBlank() && !confirmLoading,
             ) {
                 Text(text = "保存", style = MaterialTheme.typography.labelLarge)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !confirmLoading) {
                 Text(
                     text = "キャンセル",
                     style = MaterialTheme.typography.labelLarge,

@@ -25,7 +25,12 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     fun onIntent(intent: StaffRankingIntent) {
         when (intent) {
             StaffRankingIntent.Refresh -> refresh()
+
+            StaffRankingIntent.ClearMutationFeedback ->
+                _uiState.update { it.copy(mutationError = null, reloadWarning = null) }
+
             is StaffRankingIntent.DeleteEntry -> deleteEntry(intent.entryId)
+
             StaffRankingIntent.ClearToday -> clearToday()
         }
     }
@@ -33,7 +38,7 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     private fun refresh() {
         val generation = ++dataGeneration
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, loadError = null) }
+            _uiState.update { it.copy(isLoading = true, loadError = null, reloadWarning = null) }
             try {
                 val entries = deps.getTodayRankingsUseCase(folderId)
                 if (generation != dataGeneration) return@launch
@@ -58,7 +63,7 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
         if (entryId.isBlank()) return
         val generation = ++dataGeneration
         viewModelScope.launch {
-            _uiState.update { it.copy(isMutating = true, mutationError = null) }
+            _uiState.update { it.copy(isMutating = true, mutationError = null, reloadWarning = null) }
             try {
                 deps.deleteRankingEntryUseCase(folderId, entryId)
                 reloadEntriesAfterMutation(
@@ -84,7 +89,7 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     private fun clearToday() {
         val generation = ++dataGeneration
         viewModelScope.launch {
-            _uiState.update { it.copy(isMutating = true, mutationError = null) }
+            _uiState.update { it.copy(isMutating = true, mutationError = null, reloadWarning = null) }
             try {
                 deps.clearTodayRankingsUseCase(folderId)
                 reloadEntriesAfterMutation(
@@ -115,13 +120,14 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
         if (generation != dataGeneration) return
         reloadResult
             .onSuccess { entries ->
-                _uiState.update { it.copy(entries = entries, mutationError = null) }
+                _uiState.update { it.copy(entries = entries, mutationError = null, reloadWarning = null) }
             }
             .onFailure {
                 _uiState.update { state ->
                     state.copy(
                         entries = optimisticEntries(state.entries),
-                        mutationError = "操作は完了しましたが、一覧の更新に失敗しました",
+                        mutationError = null,
+                        reloadWarning = "操作は完了しましたが、一覧の更新に失敗しました",
                     )
                 }
             }

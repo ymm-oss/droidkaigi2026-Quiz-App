@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -61,6 +63,8 @@ fun StaffQuestionEditorPanel(
     onDismiss: () -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
+    isSaving: Boolean = false,
+    saveError: String? = null,
 ) {
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var showPromptPreview by remember { mutableStateOf(false) }
@@ -100,7 +104,7 @@ fun StaffQuestionEditorPanel(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            IconButton(onClick = onDismiss) {
+            IconButton(onClick = onDismiss, enabled = !isSaving) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "閉じる",
@@ -215,6 +219,13 @@ fun StaffQuestionEditorPanel(
                     QuizMarkdownText(draft.explanationMarkdown)
                 }
             }
+            saveError?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
         }
         StaffHorizontalDivider(alpha = 0.15f)
         Row(
@@ -224,12 +235,13 @@ fun StaffQuestionEditorPanel(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
                 Text("キャンセル", style = MaterialTheme.typography.labelLarge)
             }
             Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
             Button(
                 onClick = onSave,
+                enabled = !isSaving,
                 shape = RoundedCornerShape(percent = 50),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -238,7 +250,15 @@ fun StaffQuestionEditorPanel(
                 elevation = null,
                 modifier = Modifier.height(40.dp),
             ) {
-                Text("保存", style = MaterialTheme.typography.labelLarge)
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text("保存", style = MaterialTheme.typography.labelLarge)
+                }
             }
         }
     }

@@ -7,11 +7,14 @@ data class StaffQuizUiState(
     val quizSet: QuizSet? = null,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val isSaving: Boolean = false,
+    val saveError: String? = null,
     val editorDraft: StaffQuestionDraft? = null,
     val isNewQuestion: Boolean = false,
 )
 
 sealed interface StaffQuizIntent {
+    data object ClearSaveError : StaffQuizIntent
     data object Refresh : StaffQuizIntent
     data object AddQuestion : StaffQuizIntent
     data class EditQuestion(val question: Question) : StaffQuizIntent

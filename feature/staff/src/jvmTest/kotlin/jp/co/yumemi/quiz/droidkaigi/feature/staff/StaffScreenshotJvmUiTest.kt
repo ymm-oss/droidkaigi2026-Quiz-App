@@ -242,6 +242,137 @@ class StaffScreenshotJvmUiTest {
 
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun captureCreateFolderProcessing() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(
+                    selectedTab = StaffTab.Quiz,
+                    shellState = sampleShellState.copy(
+                        showCreateFolderDialog = true,
+                        isCreatingFolder = true,
+                    ),
+                ) {
+                    StaffQuizContent(
+                        quizTitle = "Day 1 · Easy",
+                        quizSubtitle = "会場向け初級",
+                        questions = sampleQuestions,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onAddQuestion = {},
+                        onEditQuestion = {},
+                        onRequestDeleteQuestion = {},
+                        onReorderQuestions = { _, _ -> },
+                    )
+                }
+            }
+        }
+        onNodeWithText("作成中…").assertIsDisplayed()
+        captureSurfacePng("05d-create-folder-processing.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureDeleteFolderProcessing() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(
+                    selectedTab = StaffTab.Quiz,
+                    shellState = sampleShellState.copy(
+                        deletingFolderId = "day1-easy",
+                        isDeletingFolder = true,
+                    ),
+                ) {
+                    StaffQuizContent(
+                        quizTitle = "Day 1 · Easy",
+                        quizSubtitle = "会場向け初級",
+                        questions = sampleQuestions,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onAddQuestion = {},
+                        onEditQuestion = {},
+                        onRequestDeleteQuestion = {},
+                        onReorderQuestions = { _, _ -> },
+                    )
+                }
+            }
+        }
+        onNodeWithText("処理中…").assertIsDisplayed()
+        captureSurfacePng("05e-delete-folder-processing.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureRankingMutating() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(selectedTab = StaffTab.Ranking) {
+                    StaffRankingContent(
+                        entries = sampleRanking,
+                        isLoading = false,
+                        isMutating = true,
+                        loadError = null,
+                        onRefresh = {},
+                        onRequestDeleteEntry = {},
+                        onRequestClearToday = {},
+                    )
+                }
+            }
+        }
+        onNodeWithText("処理中…").assertIsDisplayed()
+        captureSurfacePng("03b-console-ranking-processing.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureQuestionEditorSaving() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(selectedTab = StaffTab.Quiz) {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
+                        ) {
+                            StaffQuizContent(
+                                quizTitle = "Day 1 · Easy",
+                                quizSubtitle = "会場向け初級",
+                                questions = sampleQuestions,
+                                isLoading = false,
+                                isSaving = true,
+                                errorMessage = null,
+                                onRefresh = {},
+                                onAddQuestion = {},
+                                onEditQuestion = {},
+                                onRequestDeleteQuestion = {},
+                                onReorderQuestions = { _, _ -> },
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+                            )
+                        }
+                        StaffQuestionEditorPanel(
+                            draft = sampleEditorDraft,
+                            isNew = false,
+                            onDraftChange = {},
+                            onDismiss = {},
+                            onSave = {},
+                            isSaving = true,
+                        )
+                    }
+                }
+            }
+        }
+        onNodeWithText("問題を編集").assertIsDisplayed()
+        captureSurfacePng("04b-question-editor-saving.png")
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun capturePublishConfirmDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
         setContent {
             QuizStaffTheme {

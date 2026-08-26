@@ -22,17 +22,24 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
         when (intent) {
             StaffQuizIntent.Refresh -> refresh()
 
+            StaffQuizIntent.ClearSaveError -> _uiState.update { it.copy(saveError = null) }
+
             StaffQuizIntent.AddQuestion -> openNewEditor()
 
             is StaffQuizIntent.EditQuestion -> _uiState.update {
-                it.copy(editorDraft = intent.question.toDraft(), isNewQuestion = false)
+                it.copy(editorDraft = intent.question.toDraft(), isNewQuestion = false, saveError = null)
             }
 
             is StaffQuizIntent.DeleteQuestion -> deleteQuestion(intent.questionId)
 
-            StaffQuizIntent.DismissEditor -> _uiState.update { it.copy(editorDraft = null) }
+            StaffQuizIntent.DismissEditor ->
+                if (!_uiState.value.isSaving) {
+                    _uiState.update { it.copy(editorDraft = null, saveError = null) }
+                }
 
-            is StaffQuizIntent.UpdateEditorDraft -> _uiState.update { it.copy(editorDraft = intent.draft) }
+            is StaffQuizIntent.UpdateEditorDraft -> _uiState.update {
+                it.copy(editorDraft = intent.draft, saveError = null)
+            }
 
             StaffQuizIntent.SaveEditor -> saveEditor()
 
@@ -54,7 +61,7 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
                         it.copy(
                             quizSet = null,
                             isLoading = false,
-                            errorMessage = error.message ?: "Failed to load quiz set",
+                            errorMessage = error.message ?: "クイズの読み込みに失敗しました",
                         )
                     }
                 }
@@ -62,11 +69,13 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
     }
 
     private fun openNewEditor() {
+        if (_uiState.value.isSaving) return
         val questions = _uiState.value.quizSet?.questions.orEmpty()
         val defaultChoices = defaultItems()
         _uiState.update {
             it.copy(
                 isNewQuestion = true,
+                saveError = null,
                 editorDraft = StaffQuestionDraft(
                     id = nextAutoQuestionId(questions),
                     prompt = "",
@@ -80,6 +89,7 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
     }
 
     private fun reorderQuestions(fromIndex: Int, toIndex: Int) {
+        if (_uiState.value.isSaving) return
         val quizSet = _uiState.value.quizSet ?: return
         if (fromIndex !in quizSet.questions.indices ||
             toIndex !in quizSet.questions.indices ||
@@ -94,42 +104,56 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
     }
 
     private fun saveEditor() {
-        val draft = _uiState.value.editorDraft ?: return
-        val quizSet = _uiState.value.quizSet ?: return
-        val resolvedDraft = if (_uiState.value.isNewQuestion && quizSet.questions.any { it.id == draft.id }) {
+        val state = _uiState.value
+        if (state.isSaving || state.editorDraft == null || state.quizSet == null) return
+
+        val draft = state.editorDraft
+        val quizSet = state.quizSet
+        val resolvedDraft = if (state.isNewQuestion && quizSet.questions.any { it.id == draft.id }) {
             draft.copy(id = nextAutoQuestionId(quizSet.questions))
         } else {
             draft
         }
-        val question = runCatching { resolvedDraft.toQuestion() }.getOrElse { error ->
-            _uiState.update { state -> state.copy(errorMessage = error.message) }
-            return
-        }
-        val questions = if (_uiState.value.isNewQuestion) {
-            quizSet.questions + question
-        } else {
-            quizSet.questions.map { if (it.id == question.id) question else it }
-        }
-        persist(quizSet.copy(questions = questions)) {
-            _uiState.update { state -> state.copy(editorDraft = null) }
-        }
+        runCatching { resolvedDraft.toQuestion() }
+            .onSuccess { question ->
+                val questions = if (state.isNewQuestion) {
+                    quizSet.questions + question
+                } else {
+                    quizSet.questions.map { if (it.id == question.id) question else it }
+                }
+                persist(quizSet.copy(questions = questions)) {
+                    _uiState.update { current -> current.copy(editorDraft = null, saveError = null) }
+                }
+            }
+            .onFailure { error ->
+                _uiState.update { current -> current.copy(saveError = error.message) }
+            }
     }
 
     private fun deleteQuestion(questionId: String) {
+        if (_uiState.value.isSaving) return
         val quizSet = _uiState.value.quizSet ?: return
         persist(quizSet.copy(questions = quizSet.questions.filter { it.id != questionId })) {}
     }
 
     private fun persist(quizSet: jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet, onSuccess: () -> Unit) {
+        if (_uiState.value.isSaving) return
         viewModelScope.launch {
-            runCatching { deps.saveQuizSetUseCase(quizSet) }
-                .onSuccess {
-                    _uiState.update { state -> state.copy(quizSet = quizSet, errorMessage = null) }
-                    onSuccess()
-                }
-                .onFailure { error ->
-                    _uiState.update { state -> state.copy(errorMessage = error.message) }
-                }
+            _uiState.update { it.copy(isSaving = true, saveError = null) }
+            try {
+                runCatching { deps.saveQuizSetUseCase(quizSet) }
+                    .onSuccess {
+                        _uiState.update { state -> state.copy(quizSet = quizSet, saveError = null) }
+                        onSuccess()
+                    }
+                    .onFailure { error ->
+                        _uiState.update { state ->
+                            state.copy(saveError = error.message ?: "クイズの保存に失敗しました")
+                        }
+                    }
+            } finally {
+                _uiState.update { it.copy(isSaving = false) }
+            }
         }
     }
 }
