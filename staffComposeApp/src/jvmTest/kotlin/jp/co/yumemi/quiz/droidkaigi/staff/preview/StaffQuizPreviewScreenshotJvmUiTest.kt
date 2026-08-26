@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizStaffTheme
 import jp.co.yumemi.quiz.droidkaigi.di.initStaffQuizAppGraph
+import kotlinx.coroutines.delay
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 import java.io.File
@@ -35,7 +36,7 @@ class StaffQuizPreviewScreenshotJvmUiTest {
             }.getOrDefault(false)
             if (quizLoaded) break
             check(attempt < 99) { "Quiz preview did not load in time" }
-            Thread.sleep(100)
+            delay(100)
         }
 
         captureSurfacePng("staff-participant-preview.png")
