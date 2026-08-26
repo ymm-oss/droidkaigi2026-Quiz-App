@@ -84,7 +84,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             StaffShellIntent.ConfirmPublishFolder -> publishSelected()
 
             StaffShellIntent.RequestToggleSitePublished ->
-                _uiState.update { it.copy(showSitePublishConfirm = true) }
+                _uiState.update { it.copy(showSitePublishConfirm = true, errorMessage = null) }
 
             StaffShellIntent.DismissSitePublishConfirm ->
                 if (!_uiState.value.isTogglingSitePublished) {
