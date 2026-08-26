@@ -7,8 +7,8 @@
 - `composeApp` — 共有 UI（Nav3 + adaptive）
 - `androidApp` — Android エントリ（参加者向け）
 - `desktopApp` — Desktop エントリ（参加者向け）
-- `staffComposeApp` / `staffDesktopApp` — **スタッフ用** Desktop（クイズ内容・ランキング確認、PC 運営向け）
-- `wasmApp` — Web（Wasm）エントリ（fake / prod 両対応。CI でビルド検証。`master` マージで Firebase Hosting 本番デプロイ、PR でプレビューチャネル）
+- `staffComposeApp` / `staffDesktopApp` — **スタッフ用**（Desktop JVM。Web は同じ Hosting の `/staff`）
+- `wasmApp` — Web（Wasm）エントリ（`/` 参加者、`/staff` スタッフ。fake / prod 両対応。CI でビルド検証。`master` マージで Firebase Hosting 本番デプロイ、PR でプレビューチャネル）
 - `core:domain` / `core:data` / `core:ui`
 - `feature:quiz` / `feature:ranking` / `feature:staff`
 
@@ -313,6 +313,9 @@ Android Studio では Run Configuration **`staffDesktop[Fake]`** / **`staffDeskt
 ### Web（Wasm）
 
 Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで動作する対象として整備済み（CI で `:wasmApp:compileKotlinWasmJs` を検証）。prod は Firebase JS SDK（npm `firebase`）で Firestore / Auth に接続する。接続情報は `:core:data:generateFirebaseWebConfig` タスクがビルド時に `google-services.json` から生成する（JVM と同じ設定ソース。パスは `-Pquiz.firebase.config` で上書き可）。本番配布は Firebase Hosting（[CD](#cdwasm-firebase-hosting)）。
+
+- `/` — 参加者アプリ
+- `/staff` — スタッフコンソール（ログイン必須。DMG 自動更新は Desktop のみ）
 
 ```bash
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun                      # fake（既定）

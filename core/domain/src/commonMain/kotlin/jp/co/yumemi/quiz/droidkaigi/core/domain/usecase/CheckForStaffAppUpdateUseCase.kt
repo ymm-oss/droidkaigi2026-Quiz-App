@@ -9,6 +9,9 @@ class CheckForStaffAppUpdateUseCase(
     private val localStaffAppVersionProvider: LocalStaffAppVersionProvider,
 ) {
     suspend operator fun invoke(): StaffAppUpdateStatus {
+        if (!localStaffAppVersionProvider.supportsDesktopAutoUpdate) {
+            return StaffAppUpdateStatus.Unavailable
+        }
         val latest = staffAppReleaseRepository.fetchLatestRelease()
             ?: return StaffAppUpdateStatus.Unavailable
         val local = localStaffAppVersionProvider.current()

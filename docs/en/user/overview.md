@@ -7,7 +7,7 @@ DroidKaigi 2026 ships **two** quiz-related apps.
 | App | Audience | Platforms | What you can do |
 |-----|----------|-----------|-----------------|
 | **Participant** | Attendees | Android / Desktop (Web in progress) | Nickname → quiz → score → today's ranking |
-| **Staff** | Organizers | Desktop only | Edit questions/folders, publish, view rankings |
+| **Staff** | Organizers | Desktop, and participant Web `/staff` | Edit questions/folders, publish, view rankings |
 
 ## Participant flow (summary)
 

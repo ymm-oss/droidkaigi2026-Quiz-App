@@ -9,15 +9,15 @@ Package: `jp.co.yumemi.quiz.droidkaigi`
 | `:androidApp` | Android entry (`MainActivity`) — `com.android.application` |
 | `:desktopApp` | Desktop entry (`main`) — `kotlin.jvm` + Compose Desktop |
 | `:staffDesktopApp` | Staff desktop entry — `kotlin.jvm` + Compose Desktop; `quiz.runtime=fake` (dev) or `prod` (venue Firestore) |
-| `:staffComposeApp` | Staff shared UI (`StaffApp`) — JVM only; Metro graph follows `quiz.runtime` (`FakeStaffQuizAppGraph` / `ProdStaffQuizAppGraph`) |
-| `:wasmApp` | Web entry (`main`) — `wasmJs` + `ComposeViewport` |
+| `:staffComposeApp` | Staff shared UI (`StaffApp`) — JVM + wasmJs; Metro graph follows `quiz.runtime` (`FakeStaffQuizAppGraph` / `ProdStaffQuizAppGraph`) |
+| `:wasmApp` | Web entry (`main`) — `wasmJs` + `ComposeViewport`; `/` is the participant app, `/staff` is the staff console |
 | `:composeApp` | Shared UI + Nav3 (`App`, routes) — `androidKmpLibrary` + `jvm` + `wasmJs` |
 | `:core:domain` | Models, scoring, use cases |
 | `:core:data` | Repositories, Metro bindings, `fakeMain`/`prodMain`, `AppDependencies.shared` |
 | `:core:ui` | `QuizTheme`, tokens, shared components |
 | `:feature:quiz` | Home, Quiz, Result |
 | `:feature:ranking` | Ranking list |
-| `:feature:staff` | Staff console (quiz preview + rankings) — JVM only |
+| `:feature:staff` | Staff console (quiz preview + rankings) — JVM + wasmJs |
 
 Dependency direction: `feature → core:ui, domain` · `data → domain` · `composeApp → feature` · `staffComposeApp → feature:staff, feature:quiz`（プレビューホスト。feature 同士の逆依存なし）.
 

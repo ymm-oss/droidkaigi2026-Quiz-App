@@ -59,10 +59,10 @@
 | `composeApp` | 共有 Compose UI・Nav3 |
 | `androidApp` | Android エントリ（`MainActivity`） |
 | `desktopApp` | Desktop エントリ（`main`） |
-| `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`） |
-| `staffComposeApp` / `staffDesktopApp` | スタッフ運営コンソール（Desktop） |
+| `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`）。`/` は参加者、`/staff` はスタッフコンソール |
+| `staffComposeApp` / `staffDesktopApp` | スタッフ運営コンソール（Desktop JVM。Web は同じ Hosting の `/staff`） |
 
-## スタッフアプリ（`staffDesktopApp`）
+## スタッフアプリ（`staffDesktopApp` + Wasm `/staff`）
 
 | ランタイム | 認証 | データ |
 |------------|------|--------|
@@ -75,7 +75,7 @@
 - **サイト公開**の ON/OFF（`sitePublished`。参加者受付の可否）
 - 選択フォルダの **参加者プレビュー**（スマホ枠ダイアログで Quiz→Result。ランキング送信なし）
 - 当日ランキングの **個別削除・本日分一括削除**（いずれも確認ダイアログ必須。prod では `request.auth != null` のときのみ Firestore 上で削除可）
-- **アプリ更新通知**（prod）: ログイン後に `staffAppRelease/latest` を参照し、古い場合は Storage から DMG をダウンロードして手動インストール
+- **アプリ更新通知**（prod・Desktop のみ）: ログイン後に `staffAppRelease/latest` を参照し、古い場合は Storage から DMG をダウンロードして手動インストール。Wasm `/staff` では DMG 更新は出さない
 
 `quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。
 
