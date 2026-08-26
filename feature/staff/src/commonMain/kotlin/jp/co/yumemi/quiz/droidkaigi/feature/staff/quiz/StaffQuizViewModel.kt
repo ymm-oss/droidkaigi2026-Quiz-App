@@ -22,6 +22,8 @@ class StaffQuizViewModel(private val folderId: String, private val deps: AppDepe
         when (intent) {
             StaffQuizIntent.Refresh -> refresh()
 
+            StaffQuizIntent.ClearSaveError -> _uiState.update { it.copy(saveError = null) }
+
             StaffQuizIntent.AddQuestion -> openNewEditor()
 
             is StaffQuizIntent.EditQuestion -> _uiState.update {

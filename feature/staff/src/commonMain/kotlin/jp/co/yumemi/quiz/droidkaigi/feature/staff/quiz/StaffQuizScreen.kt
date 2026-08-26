@@ -96,7 +96,11 @@ fun StaffQuizScreen(
                 onPreview = onPreview,
                 onAddQuestion = { viewModel.onIntent(StaffQuizIntent.AddQuestion) },
                 onEditQuestion = { viewModel.onIntent(StaffQuizIntent.EditQuestion(it)) },
-                onRequestDeleteQuestion = { questionToDelete = it },
+                onRequestDeleteQuestion = {
+                    viewModel.onIntent(StaffQuizIntent.ClearSaveError)
+                    deleteConfirmed = false
+                    questionToDelete = it
+                },
                 onReorderQuestions = { from, to ->
                     viewModel.onIntent(StaffQuizIntent.ReorderQuestions(from, to))
                 },
@@ -136,7 +140,7 @@ fun StaffQuizScreen(
             confirmLabel = "削除",
             destructive = true,
             confirmLoading = state.isSaving && deleteConfirmed,
-            errorMessage = if (state.isSaving) null else state.saveError,
+            errorMessage = if (deleteConfirmed && !state.isSaving) state.saveError else null,
             onConfirm = {
                 deleteConfirmed = true
                 viewModel.onIntent(StaffQuizIntent.DeleteQuestion(deleteTarget.id))

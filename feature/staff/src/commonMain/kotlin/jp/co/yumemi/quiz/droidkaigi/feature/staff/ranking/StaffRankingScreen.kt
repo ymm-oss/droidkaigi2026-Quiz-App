@@ -72,9 +72,18 @@ fun StaffRankingScreen(
         isMutating = state.isMutating,
         loadError = state.loadError,
         mutationError = state.mutationError,
+        reloadWarning = state.reloadWarning,
         onRefresh = { viewModel.onIntent(StaffRankingIntent.Refresh) },
-        onRequestDeleteEntry = { entryToDelete = it },
-        onRequestClearToday = { showClearTodayConfirm = true },
+        onRequestDeleteEntry = {
+            viewModel.onIntent(StaffRankingIntent.ClearMutationFeedback)
+            deleteConfirmed = false
+            entryToDelete = it
+        },
+        onRequestClearToday = {
+            viewModel.onIntent(StaffRankingIntent.ClearMutationFeedback)
+            clearTodayConfirmed = false
+            showClearTodayConfirm = true
+        },
     )
 
     StaffRankingConfirmDialogs(
@@ -131,36 +140,23 @@ private fun StaffRankingConfirmDialogs(
     onClearTodayMutationFinished: () -> Unit,
 ) {
     if (deleteTarget != null) {
-        StaffConfirmDialog(
-            title = "ランキングを削除",
-            message = "「${truncateForDialog(deleteTarget.nickname)}」のスコアを削除しますか？\nこの操作は取り消せません。",
-            confirmLabel = "削除",
-            confirmLoading = isMutating && deleteConfirmed,
-            errorMessage = if (isMutating) null else mutationError,
+        StaffRankingDeleteConfirmDialog(
+            deleteTarget = deleteTarget,
+            isMutating = isMutating,
+            deleteConfirmed = deleteConfirmed,
+            mutationError = mutationError,
             onConfirm = { onDeleteConfirm(deleteTarget.id) },
-            onDismiss = {
-                if (!isMutating) {
-                    onDeleteDismiss()
-                }
-            },
-            destructive = true,
+            onDismiss = onDeleteDismiss,
         )
     }
 
     if (showClearTodayConfirm) {
-        StaffConfirmDialog(
-            title = "本日のランキングをすべて削除",
-            message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
-            confirmLabel = "すべて削除",
-            confirmLoading = isMutating && clearTodayConfirmed,
-            errorMessage = if (isMutating) null else mutationError,
+        StaffRankingClearTodayConfirmDialog(
+            isMutating = isMutating,
+            clearTodayConfirmed = clearTodayConfirmed,
+            mutationError = mutationError,
             onConfirm = onClearTodayConfirm,
-            onDismiss = {
-                if (!isMutating) {
-                    onClearTodayDismiss()
-                }
-            },
-            destructive = true,
+            onDismiss = onClearTodayDismiss,
         )
     }
 
@@ -178,6 +174,55 @@ private fun StaffRankingConfirmDialogs(
 }
 
 @Composable
+private fun StaffRankingDeleteConfirmDialog(
+    deleteTarget: RankingEntry,
+    isMutating: Boolean,
+    deleteConfirmed: Boolean,
+    mutationError: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    StaffConfirmDialog(
+        title = "ランキングを削除",
+        message = "「${truncateForDialog(deleteTarget.nickname)}」のスコアを削除しますか？\nこの操作は取り消せません。",
+        confirmLabel = "削除",
+        confirmLoading = isMutating && deleteConfirmed,
+        errorMessage = if (deleteConfirmed && !isMutating) mutationError else null,
+        onConfirm = onConfirm,
+        onDismiss = {
+            if (!isMutating) {
+                onDismiss()
+            }
+        },
+        destructive = true,
+    )
+}
+
+@Composable
+private fun StaffRankingClearTodayConfirmDialog(
+    isMutating: Boolean,
+    clearTodayConfirmed: Boolean,
+    mutationError: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    StaffConfirmDialog(
+        title = "本日のランキングをすべて削除",
+        message = "本日のランキングをすべて削除しますか？\nこの操作は取り消せません。",
+        confirmLabel = "すべて削除",
+        confirmLoading = isMutating && clearTodayConfirmed,
+        errorMessage = if (clearTodayConfirmed && !isMutating) mutationError else null,
+        onConfirm = onConfirm,
+        onDismiss = {
+            if (!isMutating) {
+                onDismiss()
+            }
+        },
+        destructive = true,
+    )
+}
+
+@Composable
 fun StaffRankingContent(
     entries: List<RankingEntry>,
     isLoading: Boolean,
@@ -186,6 +231,7 @@ fun StaffRankingContent(
     modifier: Modifier = Modifier,
     isMutating: Boolean = false,
     mutationError: String? = null,
+    reloadWarning: String? = null,
     onRequestDeleteEntry: (RankingEntry) -> Unit = {},
     onRequestClearToday: () -> Unit = {},
 ) {
@@ -227,6 +273,10 @@ fun StaffRankingContent(
             StaffRankingHeaderRow()
             StaffHorizontalDivider()
             mutationError?.let { message ->
+                StaffRankingNote(text = message, isError = true)
+                StaffHorizontalDivider(alpha = 0.15f)
+            }
+            reloadWarning?.let { message ->
                 StaffRankingNote(text = message, isError = true)
                 StaffHorizontalDivider(alpha = 0.15f)
             }

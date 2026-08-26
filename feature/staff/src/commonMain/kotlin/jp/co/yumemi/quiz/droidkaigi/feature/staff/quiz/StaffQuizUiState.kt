@@ -14,6 +14,7 @@ data class StaffQuizUiState(
 )
 
 sealed interface StaffQuizIntent {
+    data object ClearSaveError : StaffQuizIntent
     data object Refresh : StaffQuizIntent
     data object AddQuestion : StaffQuizIntent
     data class EditQuestion(val question: Question) : StaffQuizIntent
