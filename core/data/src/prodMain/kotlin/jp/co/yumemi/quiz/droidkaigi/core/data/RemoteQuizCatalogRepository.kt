@@ -8,6 +8,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.data.firestore.FolderFirestoreDocument
 import jp.co.yumemi.quiz.droidkaigi.core.data.firestore.toQuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.data.firestore.toQuizSet
 import jp.co.yumemi.quiz.droidkaigi.core.data.firestore.toFirestoreDocument
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.PublishedFolderIds
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
@@ -51,7 +52,7 @@ class RemoteQuizCatalogRepository(
         FirestoreDiagnostics.log("QuizCatalog", "createFolder wrote folderId=$folderId")
         if (existing.isEmpty()) {
             writeAppConfig { current ->
-                current.copy(activeFolderId = folderId, updatedAtEpochMillis = now)
+                current.withPublishedFolderIds(listOf(folderId), now)
             }
         }
         return document.toQuizFolder(folderId)
@@ -74,16 +75,13 @@ class RemoteQuizCatalogRepository(
 
     override suspend fun deleteFolder(folderId: String) {
         firestore.deleteFolder(folderId)
-        val config = firestore.getAppConfig()
-        if (config?.activeFolderId == folderId) {
-            val fallback = listFolders().firstOrNull()?.id.orEmpty()
-            if (fallback.isNotEmpty()) {
-                writeAppConfig { current ->
-                    current.copy(
-                        activeFolderId = fallback,
-                        updatedAtEpochMillis = instantProvider.nowEpochMillis(),
-                    )
-                }
+        val published = firestore.getAppConfig()?.resolvedPublishedFolderIds().orEmpty()
+        if (folderId in published) {
+            writeAppConfig { current ->
+                current.withPublishedFolderIds(
+                    folderIds = current.resolvedPublishedFolderIds().filter { it != folderId },
+                    updatedAtEpochMillis = instantProvider.nowEpochMillis(),
+                )
             }
         }
     }
@@ -103,22 +101,38 @@ class RemoteQuizCatalogRepository(
         firestore.setFolder(folderId, baseFolder.toFirestoreDocument(quizSet, now))
     }
 
-    override suspend fun getActiveFolderId(): String {
-        val configured = firestore.getAppConfig()?.activeFolderId?.takeIf { it.isNotBlank() }
-        if (configured != null && firestore.getFolder(configured) != null) return configured
-        return listFolders().firstOrNull()?.id
+    override suspend fun getActiveFolderId(): String =
+        getPublishedFolderIds().firstOrNull()
             ?: error(
-                "アクティブなフォルダがありません。Firestore に folders と appConfig/default を作成してください。",
+                "公開中のフォルダがありません。Firestore の appConfig/default.publishedFolderIds を確認してください。",
             )
-    }
 
     override suspend fun setActiveFolderId(folderId: String) {
-        require(firestore.getFolder(folderId) != null) { "Unknown folder: $folderId" }
+        setPublishedFolderIds(listOf(folderId))
+    }
+
+    override suspend fun getPublishedFolderIds(): List<String> {
+        val ids = firestore.getAppConfig()?.resolvedPublishedFolderIds().orEmpty()
+        return ids.filter { firestore.getFolder(it) != null }
+    }
+
+    override suspend fun setPublishedFolderIds(folderIds: List<String>) {
+        val cleaned = PublishedFolderIds.resolve(
+            publishedFolderIds = folderIds,
+            activeFolderId = "",
+        )
+        cleaned.forEach { id ->
+            require(firestore.getFolder(id) != null) { "Unknown folder: $id" }
+        }
         writeAppConfig { current ->
-            current.copy(
-                activeFolderId = folderId,
-                updatedAtEpochMillis = instantProvider.nowEpochMillis(),
-            )
+            current.withPublishedFolderIds(cleaned, instantProvider.nowEpochMillis())
+        }
+    }
+
+    override suspend fun listPublishedFolders(): List<QuizFolder> {
+        val ids = firestore.getAppConfig()?.resolvedPublishedFolderIds().orEmpty()
+        return ids.mapNotNull { id ->
+            firestore.getFolder(id)?.toQuizFolder(id)
         }
     }
 

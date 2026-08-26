@@ -11,7 +11,10 @@
     <string name="home_player_info">プレイヤー情報</string>
     <string name="home_nickname">ニックネーム</string>
     <string name="home_start">クイズを始める</string>
+    <string name="home_quiz_set_label">クイズの種類</string>
     <string name="home_error_empty_nickname">ニックネームを入力してください</string>
+    <string name="home_error_no_published_folders">公開中のクイズがありません。スタッフの公開設定をお待ちください。</string>
+    <string name="home_error_select_quiz_set">クイズの種類を選んでください</string>
     <string name="home_error_load_failed">読み込みに失敗しました</string>
     <string name="home_site_closed_message">現在は公開されていません。公開までお待ちください。</string>
     <string name="home_site_closed_button">受付開始前</string>
@@ -48,6 +51,7 @@
 
     <string name="ranking_title">今日のランキング</string>
     <string name="ranking_subtitle">今日のベストスコア</string>
+    <string name="ranking_quiz_set_label">クイズの種類</string>
     <string name="ranking_empty">まだエントリーがありません</string>
     <string name="ranking_error_load_failed">ランキングの取得に失敗しました</string>
     <string name="ranking_retry">再試行</string>

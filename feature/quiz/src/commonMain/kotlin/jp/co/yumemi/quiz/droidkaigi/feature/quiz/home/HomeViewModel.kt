@@ -33,6 +33,9 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
         when (intent) {
             is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
 
+            is HomeIntent.SelectPublishedFolder ->
+                _uiState.update { it.copy(selectedFolderId = intent.folderId, error = null) }
+
             HomeIntent.StartQuiz -> startQuiz()
 
             HomeIntent.Shown -> {
@@ -69,8 +72,35 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 null
             }
             if (generation != siteStatusGeneration) return@launch
-            _uiState.update {
-                it.copy(sitePublished = published, siteStatusCheckFailed = published == null)
+            val folders = if (published == true) {
+                try {
+                    deps.listPublishedQuizFoldersUseCase()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+                    if (generation != siteStatusGeneration) return@launch
+                    _uiState.update {
+                        it.copy(sitePublished = null, siteStatusCheckFailed = true)
+                    }
+                    return@launch
+                }
+            } else {
+                emptyList()
+            }
+            if (generation != siteStatusGeneration) return@launch
+            _uiState.update { state ->
+                val selected = when {
+                    folders.isEmpty() -> null
+                    folders.any { it.id == state.selectedFolderId } -> state.selectedFolderId
+                    folders.size == 1 -> folders.first().id
+                    else -> state.selectedFolderId?.takeIf { id -> folders.any { it.id == id } }
+                }
+                state.copy(
+                    sitePublished = published,
+                    siteStatusCheckFailed = published == null,
+                    publishedFolders = folders,
+                    selectedFolderId = selected,
+                )
             }
             deps.siteStatusHolder.updateSitePublished(published)
         }
@@ -95,7 +125,36 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     deps.siteStatusHolder.updateSitePublished(false)
                     return@launch
                 }
-                val folderId = deps.getActiveQuizFolderIdUseCase()
+                val folders = deps.listPublishedQuizFoldersUseCase()
+                val folderId = when {
+                    folders.isEmpty() -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                publishedFolders = folders,
+                                selectedFolderId = null,
+                                error = HomeError.NoPublishedFolders,
+                            )
+                        }
+                        return@launch
+                    }
+                    folders.size == 1 -> folders.first().id
+                    else -> {
+                        val selected = _uiState.value.selectedFolderId
+                            ?.takeIf { id -> folders.any { it.id == id } }
+                        if (selected == null) {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    publishedFolders = folders,
+                                    error = HomeError.NoFolderSelected,
+                                )
+                            }
+                            return@launch
+                        }
+                        selected
+                    }
+                }
                 val quizSet = deps.getQuizSetForFolderUseCase(folderId)
                 val session = deps.quizEngine.startSession(
                     folderId = folderId,

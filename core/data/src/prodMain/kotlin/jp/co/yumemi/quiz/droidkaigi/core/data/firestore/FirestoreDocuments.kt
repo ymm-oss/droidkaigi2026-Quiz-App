@@ -1,6 +1,7 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data.firestore
 
 import jp.co.yumemi.quiz.droidkaigi.core.data.dto.QuestionDto
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.PublishedFolderIds
 import kotlinx.serialization.Serializable
 
 /** 一覧取得用（`questions` を含まないため Console 手投入でもデコードしやすい） */
@@ -46,10 +47,29 @@ data class FolderFirestoreDocument(
 @Serializable
 data class AppConfigFirestoreDocument(
     val activeFolderId: String = "",
+    val publishedFolderIds: List<String> = emptyList(),
     /** When false, participant apps show Home as closed (default for new configs). */
     val sitePublished: Boolean = false,
     val updatedAtEpochMillis: Long? = null,
-)
+) {
+    fun resolvedPublishedFolderIds(): List<String> =
+        PublishedFolderIds.resolve(
+            publishedFolderIds = publishedFolderIds,
+            activeFolderId = activeFolderId,
+        )
+
+    fun withPublishedFolderIds(folderIds: List<String>, updatedAtEpochMillis: Long?): AppConfigFirestoreDocument {
+        val cleaned = PublishedFolderIds.resolve(
+            publishedFolderIds = folderIds,
+            activeFolderId = "",
+        )
+        return copy(
+            publishedFolderIds = cleaned,
+            activeFolderId = cleaned.firstOrNull().orEmpty(),
+            updatedAtEpochMillis = updatedAtEpochMillis,
+        )
+    }
+}
 
 /** Firestore `staffAppRelease/latest` — staff Desktop auto-update metadata. */
 @Serializable

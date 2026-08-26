@@ -44,6 +44,22 @@ class InMemoryQuizCatalogRepository(
 
     override suspend fun setActiveFolderId(folderId: String) = catalog.withLock { setActiveFolderId(folderId) }
 
+    override suspend fun getPublishedFolderIds(): List<String> {
+        ensureSeeded()
+        return catalog.withLock { getPublishedFolderIds() }
+    }
+
+    override suspend fun setPublishedFolderIds(folderIds: List<String>) =
+        catalog.withLock { setPublishedFolderIds(folderIds) }
+
+    override suspend fun listPublishedFolders(): List<QuizFolder> {
+        ensureSeeded()
+        return catalog.withLock {
+            val byId = listFolders().associateBy { it.id }
+            getPublishedFolderIds().mapNotNull { byId[it] }
+        }
+    }
+
     override suspend fun getSitePublished(): Boolean {
         ensureSeeded()
         return catalog.withLock { getSitePublished() }

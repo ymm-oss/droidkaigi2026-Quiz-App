@@ -11,7 +11,8 @@ folders/{folderId}
   updatedAtEpochMillis?
 
 appConfig/default
-  activeFolderId
+  publishedFolderIds      # participant-selectable folders (multiple)
+  activeFolderId          # compatibility (first published id)
   sitePublished           # site/reception open flag (default false)
   updatedAtEpochMillis?
 
@@ -32,8 +33,8 @@ Folder id and quiz-set id are **1:1**.
 
 | Path | Read | Write |
 |------|------|-------|
-| `folders` / `appConfig` | Everyone | Authenticated staff |
-| `rankings` | Everyone | `create` (participant scores); `delete` authenticated staff; no `update` |
+| `folders` / `rankings` | Unauthenticated: published folders only. Staff: all | Folder writes: authenticated staff. Ranking `create` on published folders; `delete` authenticated staff; no `update` |
+| `appConfig` | Everyone | Authenticated staff |
 | `staffAppRelease` | Authenticated staff | Clients denied (CD / Admin SDK) |
 | Storage `releases/staff-desktop/**` | Authenticated staff | Clients denied (CD / Admin SDK) |
 
@@ -41,11 +42,11 @@ Folder id and quiz-set id are **1:1**.
 
 | Repository | Firestore / Storage |
 |------------|---------------------|
-| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` (`activeFolderId` / `sitePublished`) |
+| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default` (`publishedFolderIds` / `activeFolderId` / `sitePublished`) |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage DMG |
 
-Participant load is two reads: `getActiveFolderId` → `getQuizSet`.
+Participant load: published folder list, then `getQuizSet` for the folder they start.
 
 ## CD (rules)
 

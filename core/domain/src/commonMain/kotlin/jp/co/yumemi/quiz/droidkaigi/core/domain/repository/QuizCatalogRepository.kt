@@ -14,4 +14,25 @@ interface QuizCatalogRepository {
     suspend fun setActiveFolderId(folderId: String)
     suspend fun getSitePublished(): Boolean
     suspend fun setSitePublished(published: Boolean)
+
+    /**
+     * Participant-visible folder IDs. Default maps the legacy single [getActiveFolderId].
+     * Prod/fake implementations persist a list and keep `activeFolderId` as the first entry.
+     */
+    suspend fun getPublishedFolderIds(): List<String> {
+        val active = runCatching { getActiveFolderId() }.getOrNull().orEmpty()
+        return if (active.isBlank()) emptyList() else listOf(active)
+    }
+
+    suspend fun setPublishedFolderIds(folderIds: List<String>) {
+        folderIds.firstOrNull { it.isNotBlank() }?.let { setActiveFolderId(it) }
+    }
+
+    /** Metadata for published folders, in publish-list order. Does not require a full catalog list. */
+    suspend fun listPublishedFolders(): List<QuizFolder> {
+        val ids = getPublishedFolderIds()
+        if (ids.isEmpty()) return emptyList()
+        val byId = listFolders().associateBy { it.id }
+        return ids.mapNotNull { byId[it] }
+    }
 }

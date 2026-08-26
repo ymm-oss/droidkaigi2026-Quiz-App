@@ -19,7 +19,8 @@ folders/{folderId}
   updatedAtEpochMillis: number?  # 任意
 
 appConfig/default              # ドキュメント ID 固定
-  activeFolderId: string        # 参加者向けに公開中のフォルダ
+  activeFolderId: string        # 互換用。公開リストの先頭（書き込み時も同期）
+  publishedFolderIds: array<string>  # 参加者が選べる公開フォルダ（複数可）
   sitePublished: boolean        # サイト／受付の公開可否（既定 false）
   updatedAtEpochMillis: number?
 
@@ -50,7 +51,7 @@ releases/staff-desktop/{version}.dmg
 
 | 観点 | 説明 |
 |------|------|
-| 読み取り回数 | 参加者起動時は `getActiveFolderId` → `getQuizSet` の **2 読み取り**で足りる |
+| 読み取り回数 | 参加者起動時は `appConfig` + 公開フォルダのメタ。クイズ本体は開始時に選んだ 1 ドキュメント |
 | シード | fake は同梱 `quiz_set.json`。Firestore 上の `questions` は同型（参考: [firestore-seed.json](firestore-seed.json)） |
 | ドキュメントサイズ | 会場想定の問題数なら 1 フォルダ 1 ドキュメントで 1 MiB 以内 |
 | ランキング | サブコレクションに分離し、提出増加でフォルダ本体が肥大化しない |
@@ -89,8 +90,8 @@ firebase deploy --only firestore:indexes
 
 要点:
 
-- `folders` / `appConfig`: 読み取り全員、書き込み `request.auth != null`（スタッフ）
-- `rankings`: 読み取り全員、`create`（参加者のスコア送信）、`delete` はログイン済みスタッフのみ、`update` 不可
+- `folders` / `rankings`: 未認証は `publishedFolderIds`（なければ `activeFolderId`）に含まれるフォルダのみ読取。書き込み `request.auth != null`（スタッフ）。ランキング `create` は公開フォルダのみ
+- `appConfig`: 読み取り全員、書き込み `request.auth != null`（スタッフ）
 - `staffAppRelease`: 読み取り `request.auth != null`、クライアント書き込み不可（CD / Admin SDK）
 - Storage `releases/staff-desktop/**`: 読み取り `request.auth != null`、クライアント書き込み不可
 
@@ -98,10 +99,10 @@ firebase deploy --only firestore:indexes
 
 | Repository | Firestore / Storage |
 |------------|---------------------|
-| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`activeFolderId` / `sitePublished`） |
+| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`publishedFolderIds` / `activeFolderId` / `sitePublished`） |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage `releases/staff-desktop/{version}.dmg` |
-| 参加者クイズ取得 | `getActiveQuizFolderIdUseCase` → `getQuizSetForFolderUseCase`（`folders/{activeFolderId}`） |
+| 参加者クイズ取得 | `listPublishedFolders` → 選択フォルダの `getQuizSet` |
 | サイト公開 | `getSitePublishedUseCase` / `setSitePublishedUseCase`（`appConfig/default.sitePublished`） |
 | スタッフ Desktop 更新 | `checkForStaffAppUpdateUseCase` / `downloadStaffAppUpdateUseCase` |
 

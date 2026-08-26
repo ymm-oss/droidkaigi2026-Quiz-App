@@ -11,7 +11,7 @@ DroidKaigi 2026 ships **two** quiz-related apps.
 
 ## Participant flow (summary)
 
-1. **Home** — language + nickname, start quiz
+1. **Home** — language + nickname, pick published quiz type, start quiz
 2. **Quiz** — single / multi / reorder, then correct/incorrect feedback
 3. **Result** — correct count and score
 4. **Ranking** — today's Top N with your row highlighted
@@ -21,7 +21,7 @@ See [Screen flow](/en/user/participant/flow).
 ## Staff flow (summary)
 
 1. **Sign-in** — staff account
-2. **Console** — edit folders/questions, switch the published folder
+2. **Console** — edit folders/questions, publish multiple folders
 3. **Ranking** — inspect today's ranking per folder
 
 See [Staff overview](/en/user/staff/overview).

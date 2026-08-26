@@ -36,8 +36,8 @@ internal object FakeQuizCatalogSeeder {
             seedFolder(
                 folder = QuizFolder(
                     id = quizSet.id,
-                    name = "Day 1 — デモ",
-                    description = "同梱 JSON（初級）",
+                    name = "一般向け",
+                    description = "会場向け（初級）",
                     sortOrder = 0,
                 ),
                 quizSet = quizSet.copy(
@@ -65,10 +65,19 @@ internal object FakeQuizCatalogSeeder {
             )
             seedFolder(
                 folder = QuizFolder(
+                    id = "day1-hard",
+                    name = "高難易度",
+                    description = "上級者向け",
+                    sortOrder = 1,
+                ),
+                quizSet = quizSet.copy(id = "day1-hard", title = "高難易度"),
+            )
+            seedFolder(
+                folder = QuizFolder(
                     id = "day2-intermediate",
                     name = "Day 2 — 中級",
                     description = "会場午後枠（空セット）",
-                    sortOrder = 1,
+                    sortOrder = 2,
                 ),
                 quizSet = jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet(
                     id = "day2-intermediate",
@@ -76,6 +85,7 @@ internal object FakeQuizCatalogSeeder {
                     questions = emptyList(),
                 ),
             )
+            setPublishedFolderIds(listOf(quizSet.id, "day1-hard"))
             seeded = true
             // Fake harness: open the site so participant Home Start works without staff toggle.
             setSitePublished(true)

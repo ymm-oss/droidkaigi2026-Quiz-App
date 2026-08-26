@@ -50,7 +50,7 @@ class StaffShellViewModelFolderDeleteTest {
         assertNull(state.deletingFolderId)
         assertTrue(state.folders.none { it.id == "day1" })
         assertEquals("day2", state.selectedFolderId)
-        assertEquals("day2", state.activeFolderId)
+        assertTrue(state.publishedFolderIds.none { it == "day1" })
     }
 
     @Test
@@ -122,7 +122,7 @@ class StaffShellViewModelFolderDeleteTest {
     ) : QuizCatalogRepository {
         val deletedIds = mutableListOf<String>()
         private val folders = initialFolders.toMutableList()
-        private var activeFolderId: String = folders.first().id
+        private val publishedIds = mutableListOf(folders.first().id)
 
         override suspend fun listFolders(): List<QuizFolder> = folders.toList()
 
@@ -135,16 +135,16 @@ class StaffShellViewModelFolderDeleteTest {
             deleteError?.let { throw it }
             deletedIds += folderId
             folders.removeAll { it.id == folderId }
-            if (activeFolderId == folderId) {
-                activeFolderId = folders.minByOrNull { it.sortOrder }?.id.orEmpty()
-            }
+            publishedIds.removeAll { it == folderId }
         }
 
         override suspend fun getQuizSet(folderId: String): QuizSet = error("unused")
 
         override suspend fun saveQuizSet(quizSet: QuizSet) = error("unused")
 
-        override suspend fun getActiveFolderId(): String = activeFolderId
+        override suspend fun getActiveFolderId(): String = publishedIds.firstOrNull().orEmpty()
+
+        override suspend fun getPublishedFolderIds(): List<String> = publishedIds.toList()
 
         override suspend fun setActiveFolderId(folderId: String) = error("unused")
 

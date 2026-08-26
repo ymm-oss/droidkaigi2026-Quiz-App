@@ -199,10 +199,72 @@ class HomeViewModelTest {
         assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
     }
 
+    @Test
+    fun shown_whenPublished_loadsPublishedFoldersAndSelectsSingle() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.sitePublishedResults += Result.success(true)
+        catalog.publishedFolders = listOf(QuizFolder(id = "easy", name = "一般向け", sortOrder = 0))
+        val viewModel = HomeViewModel(testAppDependencies(catalog))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("easy"), state.publishedFolders.map { it.id })
+        assertEquals("easy", state.selectedFolderId)
+    }
+
+    @Test
+    fun startQuiz_twoFoldersWithoutSelection_showsSelectError() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.sitePublishedResults += Result.success(true)
+        catalog.sitePublishedResults += Result.success(true)
+        catalog.publishedFolders = listOf(
+            QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
+            QuizFolder(id = "hard", name = "高難易度", sortOrder = 1),
+        )
+        val viewModel = HomeViewModel(testAppDependencies(catalog))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        advanceUntilIdle()
+        viewModel.onIntent(HomeIntent.NicknameChanged("Alice"))
+        viewModel.onIntent(HomeIntent.StartQuiz)
+        advanceUntilIdle()
+
+        assertIs<HomeError.NoFolderSelected>(viewModel.uiState.value.error)
+        assertEquals(false, viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun startQuiz_twoFoldersWithSelection_startsSelectedFolder() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.sitePublishedResults += Result.success(true)
+        catalog.sitePublishedResults += Result.success(true)
+        catalog.publishedFolders = listOf(
+            QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
+            QuizFolder(id = "hard", name = "高難易度", description = "上級者向け", sortOrder = 1),
+        )
+        catalog.quizSets["hard"] = QuizSet(id = "hard", title = "高難易度", questions = emptyList())
+        val viewModel = HomeViewModel(testAppDependencies(catalog))
+
+        viewModel.onIntent(HomeIntent.Shown)
+        advanceUntilIdle()
+        viewModel.onIntent(HomeIntent.SelectPublishedFolder("hard"))
+        viewModel.onIntent(HomeIntent.NicknameChanged("Alice"))
+        viewModel.onIntent(HomeIntent.StartQuiz)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.error)
+        assertEquals("hard", catalog.lastQuizSetFolderId)
+    }
+
     private class ControllableCatalog(private val hangSitePublished: Boolean = false) : QuizCatalogRepository {
         val sitePublishedResults = ArrayDeque<Result<Boolean>>()
         /** 次の N 回の getSitePublished を awaitCancellation する（再入 cancel の検証用）。 */
         var hangNextCalls: Int = 0
+        var publishedFolders: List<QuizFolder> = emptyList()
+        val quizSets = mutableMapOf<String, QuizSet>()
+        var lastQuizSetFolderId: String? = null
 
         override suspend fun getSitePublished(): Boolean {
             if (hangSitePublished || hangNextCalls > 0) {
@@ -212,14 +274,18 @@ class HomeViewModelTest {
             return sitePublishedResults.removeFirst().getOrThrow()
         }
 
-        override suspend fun listFolders(): List<QuizFolder> = fail("unused")
+        override suspend fun listFolders(): List<QuizFolder> = publishedFolders
         override suspend fun createFolder(name: String, description: String): QuizFolder = fail("unused")
         override suspend fun updateFolder(folder: QuizFolder) = fail("unused")
         override suspend fun deleteFolder(folderId: String) = fail("unused")
-        override suspend fun getQuizSet(folderId: String): QuizSet = fail("unused")
+        override suspend fun getQuizSet(folderId: String): QuizSet {
+            lastQuizSetFolderId = folderId
+            return quizSets[folderId] ?: fail("unused")
+        }
         override suspend fun saveQuizSet(quizSet: QuizSet) = fail("unused")
         override suspend fun getActiveFolderId(): String = fail("unused")
         override suspend fun setActiveFolderId(folderId: String) = fail("unused")
+        override suspend fun getPublishedFolderIds(): List<String> = publishedFolders.map { it.id }
         override suspend fun setSitePublished(published: Boolean) = fail("unused")
     }
 

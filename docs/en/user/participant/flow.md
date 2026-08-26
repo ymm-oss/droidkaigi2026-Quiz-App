@@ -8,7 +8,7 @@ Home → Quiz (multiple questions) → Result → Ranking
 
 | Screen | Role |
 |--------|------|
-| [Home](/en/user/participant/home) | Nickname, language, start |
+| [Home](/en/user/participant/home) | Nickname, language, published quiz type, start |
 | [Quiz](/en/user/participant/quiz) | Answer UI + feedback |
 | [Result](/en/user/participant/result) | Correct count and score |
 | [Ranking](/en/user/participant/ranking) | Today's leaders and your place |

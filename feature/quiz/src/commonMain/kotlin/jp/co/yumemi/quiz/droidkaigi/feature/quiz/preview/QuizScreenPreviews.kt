@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.preview
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.ui.preview.QuizPreview
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.home.HomeContent
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.quiz.QuizContent
@@ -15,6 +16,8 @@ private fun HomeScreenPreview() {
             nickname = "Kaigi太郎",
             isLoading = false,
             errorMessage = null,
+            publishedFolders = previewPublishedFolders,
+            selectedFolderId = "easy",
             onNicknameChange = {},
             onStartClick = {},
         )
@@ -160,3 +163,8 @@ private fun ResultScreenDarkPreview() {
         )
     }
 }
+
+private val previewPublishedFolders = listOf(
+    QuizFolder(id = "easy", name = "一般向け", description = "会場向け初級", sortOrder = 0),
+    QuizFolder(id = "hard", name = "高難易度", description = "上級者向け", sortOrder = 1),
+)

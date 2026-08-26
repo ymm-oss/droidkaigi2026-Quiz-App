@@ -1,12 +1,30 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isStaff() {
+      return request.auth != null;
+    }
+
+    function appConfigExists() {
+      return exists(/databases/$(database)/documents/appConfig/default);
+    }
+
+    function isPublishedFolder(folderId) {
+      return appConfigExists() &&
+        (
+          folderId in get(/databases/$(database)/documents/appConfig/default).data.get(
+            'publishedFolderIds', []) ||
+          get(/databases/$(database)/documents/appConfig/default).data.activeFolderId == folderId
+        );
+    }
+
     match /folders/{folderId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read: if isStaff() || isPublishedFolder(folderId);
+      allow write: if isStaff();
       match /rankings/{entryId} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasAll(
+        allow read: if isStaff() || isPublishedFolder(folderId);
+        allow create: if (isStaff() || isPublishedFolder(folderId))
+          && request.resource.data.keys().hasAll(
             ['nickname', 'score', 'completedAtEpochMillis', 'dateKey'])
           && request.resource.data.nickname is string
           && request.resource.data.nickname.size() > 0
@@ -14,17 +32,17 @@ service cloud.firestore {
           && request.resource.data.score is int
           && request.resource.data.score >= 0;
         allow update: if false;
-        allow delete: if request.auth != null;
+        allow delete: if isStaff();
       }
     }
     match /appConfig/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isStaff();
     }
     // Staff Desktop release metadata — authenticated staff only.
     // Writes are via Admin SDK / CI service account (bypasses these rules).
     match /staffAppRelease/{docId} {
-      allow read: if request.auth != null;
+      allow read: if isStaff();
       allow write: if false;
     }
   }

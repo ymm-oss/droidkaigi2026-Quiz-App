@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.formatCompletedAtLabel
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizHeroTitle
@@ -38,11 +39,13 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizPrimaryButton
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizRankingRow
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizScreenBackground
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSecondaryButton
+import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSelectableOptionCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSurfaceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_empty
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_error_load_failed
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_quiz_set_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_retry
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_subtitle
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_title
@@ -72,8 +75,11 @@ fun RankingScreen(onGoHome: () -> Unit, viewModel: RankingViewModel = viewModel 
     RankingContent(
         entries = state.entries,
         highlightNickname = state.highlightNickname,
+        publishedFolders = state.publishedFolders,
+        selectedFolderId = state.selectedFolderId,
         isLoading = state.isLoading,
         errorMessage = errorMessage,
+        onSelectFolder = { viewModel.onIntent(RankingIntent.SelectFolder(it)) },
         onRetryClick = { viewModel.onIntent(RankingIntent.Refresh) },
         onGoHomeClick = { viewModel.onIntent(RankingIntent.GoHome) },
     )
@@ -86,7 +92,10 @@ fun RankingContent(
     isLoading: Boolean,
     onGoHomeClick: () -> Unit,
     modifier: Modifier = Modifier,
+    publishedFolders: List<QuizFolder> = emptyList(),
+    selectedFolderId: String? = null,
     errorMessage: String? = null,
+    onSelectFolder: (String) -> Unit = {},
     onRetryClick: (() -> Unit)? = null,
 ) {
     val unknownCompletedAt = stringResource(Res.string.time_unknown)
@@ -113,6 +122,25 @@ fun RankingContent(
                     subtitle = stringResource(Res.string.ranking_subtitle),
                     badge = "RANKING",
                 )
+                if (publishedFolders.size > 1) {
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                    Text(
+                        text = stringResource(Res.string.ranking_quiz_set_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+                    Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                        publishedFolders.forEach { folder ->
+                            QuizSelectableOptionCard(
+                                title = folder.displayName,
+                                subtitle = folder.description.takeIf { it.isNotBlank() },
+                                selected = folder.id == selectedFolderId,
+                                onClick = { onSelectFolder(folder.id) },
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(QuizTokens.spacingLarge))
                 if (isLoading) {
                     Box(

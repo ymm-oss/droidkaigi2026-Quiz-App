@@ -22,10 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.LanguageSelector
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizHeroTitle
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizPrimaryButton
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizScreenBackground
+import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSelectableOptionCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSurfaceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizTextField
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
@@ -33,8 +35,11 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.app_title
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_badge
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_empty_nickname
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_load_failed
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_no_published_folders
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_select_quiz_set
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_nickname
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_player_info
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_quiz_set_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_site_closed_button
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_site_closed_message
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_site_status_error_message
@@ -70,6 +75,10 @@ fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { H
 
         HomeError.EmptyNickname -> stringResource(Res.string.home_error_empty_nickname)
 
+        HomeError.NoPublishedFolders -> stringResource(Res.string.home_error_no_published_folders)
+
+        HomeError.NoFolderSelected -> stringResource(Res.string.home_error_select_quiz_set)
+
         is HomeError.LoadFailed -> error.detail?.takeIf { it.isNotBlank() }
             ?: stringResource(Res.string.home_error_load_failed)
     }
@@ -79,10 +88,13 @@ fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { H
         isLoading = state.isLoading,
         sitePublished = state.sitePublished,
         siteStatusCheckFailed = state.siteStatusCheckFailed,
+        publishedFolders = state.publishedFolders,
+        selectedFolderId = state.selectedFolderId,
         errorMessage = errorMessage,
         localePreference = localeController.preference,
         onLocalePreferenceChange = localeController::select,
         onNicknameChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
+        onSelectFolder = { viewModel.onIntent(HomeIntent.SelectPublishedFolder(it)) },
         onStartClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
         onRetrySiteStatusClick = { viewModel.onIntent(HomeIntent.RetrySiteStatus) },
     )
@@ -98,8 +110,11 @@ fun HomeContent(
     modifier: Modifier = Modifier,
     sitePublished: Boolean? = true,
     siteStatusCheckFailed: Boolean = false,
+    publishedFolders: List<QuizFolder>? = null,
+    selectedFolderId: String? = null,
     localePreference: AppLocalePreference = AppLocalePreference.System,
     onLocalePreferenceChange: (AppLocalePreference) -> Unit = {},
+    onSelectFolder: (String) -> Unit = {},
     onRetrySiteStatusClick: () -> Unit = {},
 ) {
     val siteOpen = sitePublished == true
@@ -194,10 +209,40 @@ fun HomeContent(
                                 )
                             }
                         }
+                        if (publishedFolders != null && publishedFolders.size > 1) {
+                            QuizSurfaceCard {
+                                Text(
+                                    text = stringResource(Res.string.home_quiz_set_label),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+                                Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                                    publishedFolders.forEach { folder ->
+                                        QuizSelectableOptionCard(
+                                            title = folder.displayName,
+                                            subtitle = folder.description.takeIf { it.isNotBlank() },
+                                            selected = folder.id == selectedFolderId,
+                                            onClick = { onSelectFolder(folder.id) },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        if (publishedFolders != null && publishedFolders.isEmpty()) {
+                            QuizSurfaceCard {
+                                Text(
+                                    text = stringResource(Res.string.home_error_no_published_folders),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        }
                         QuizPrimaryButton(
                             text = stringResource(Res.string.home_start),
                             onClick = onStartClick,
                             loading = isLoading,
+                            enabled = publishedFolders == null || publishedFolders.isNotEmpty(),
                         )
                     }
                 }
