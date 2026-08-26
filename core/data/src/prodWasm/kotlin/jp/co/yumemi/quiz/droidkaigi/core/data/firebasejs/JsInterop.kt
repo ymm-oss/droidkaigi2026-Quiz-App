@@ -23,6 +23,6 @@ internal fun jsErrorMessageOrNull(value: JsAny?): String? =
 
 internal fun <T : JsAny> JsArray<T>.toKotlinList(): List<T> = buildList {
     for (index in 0 until length) {
-        add(get(index))
+        add(checkNotNull(this@toKotlinList[index]))
     }
 }
