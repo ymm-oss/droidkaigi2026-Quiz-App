@@ -6,26 +6,27 @@
 |--------|------|
 | `:androidApp` | Android entry (`MainActivity`) |
 | `:desktopApp` | Desktop entry (`main`) |
-| `:wasmApp` | Web (Wasm) entry |
-| `:composeApp` | Shared UI + Nav3 (routes live here) |
-| `:staffComposeApp` / `:staffDesktopApp` | Staff console (JVM) |
+| `:wasmApp` | Web (Wasm) entry. `/` is the participant app, `/staff` is the staff console |
+| `:composeApp` | Shared UI + Nav3 (participant routes live here) |
+| `:staffComposeApp` / `:staffDesktopApp` | Staff console (JVM Desktop; Web hosts `staffComposeApp` from wasm) |
 | `:core:domain` | Models, scoring, use cases |
 | `:core:data` | Repositories, Metro, `fakeMain`/`prodMain` |
 | `:core:ui` | `QuizTheme`, tokens, shared components |
 | `:feature:quiz` | Home / Quiz / Result |
 | `:feature:ranking` | Ranking |
-| `:feature:staff` | Staff UI (JVM only) |
+| `:feature:staff` | Staff UI (JVM + wasmJs) |
 
 ## Dependency direction
 
 ```
 feature → core:ui, core:domain
 data → domain
-composeApp → feature
-staffComposeApp → feature:staff
+composeApp → feature:quiz, feature:ranking
+staffComposeApp → feature:staff, feature:quiz
+wasmApp → composeApp, staffComposeApp
 ```
 
-No reverse dependencies. Nav routes only in `composeApp`. Do not add `main()` / `MainActivity` to `composeApp`.
+No reverse dependencies. Participant Nav routes only in `composeApp`. Staff Web starts `StaffApp` at `/staff` and is not mixed into Nav3. Do not add `main()` / `MainActivity` to `composeApp`.
 
 ## MVI per screen
 
@@ -34,7 +35,7 @@ No reverse dependencies. Nav routes only in `composeApp`. Do not add `main()` / 
 
 ## Shared graph
 
-Use only `AppDependencies.shared`, initialized once via `initQuizAppGraph()` (Metro).
+Use only `AppDependencies.shared`, initialized once via Metro. Participant uses `initQuizAppGraph()`; staff (Desktop / Wasm `/staff`) uses `initStaffQuizAppGraph()`.
 
 ## Theming
 

@@ -11,4 +11,5 @@ import dev.zacsweers.metro.Inject
 @ContributesBinding(AppScope::class)
 class UnsupportedLocalStaffAppVersionProvider : LocalStaffAppVersionProvider {
     override fun current(): LocalStaffAppVersion = LocalStaffAppVersion(version = "0.0.0", versionCode = 0)
+    override val supportsDesktopAutoUpdate: Boolean = false
 }

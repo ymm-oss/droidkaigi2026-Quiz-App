@@ -31,6 +31,20 @@ class CheckForStaffAppUpdateUseCaseTest {
     }
 
     @Test
+    fun returnsUnavailableWhenDesktopAutoUpdateUnsupported() = runBlocking {
+        val release = sampleRelease(versionCode = 10_100)
+        val useCase = CheckForStaffAppUpdateUseCase(
+            staffAppReleaseRepository = FakeReleaseRepo(release),
+            localStaffAppVersionProvider = object : LocalStaffAppVersionProvider {
+                override fun current(): LocalStaffAppVersion =
+                    LocalStaffAppVersion("0.0.0", 0)
+                override val supportsDesktopAutoUpdate: Boolean = false
+            },
+        )
+        assertEquals(StaffAppUpdateStatus.Unavailable, useCase())
+    }
+
+    @Test
     fun returnsUpdateAvailableWhenRemoteNewer() = runBlocking {
         val release = sampleRelease(version = "1.1.0", versionCode = 10_100)
         val useCase = CheckForStaffAppUpdateUseCase(

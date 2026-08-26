@@ -40,7 +40,7 @@ prod ではログイン後に最新版チェックがあり、古い場合は DM
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun
 ```
 
-fake で CI 検証済み。本番配布は未定。
+`/` が参加者アプリ、`/staff` がスタッフコンソール（ログイン必須）。fake で CI 検証済み。本番は Firebase Hosting。
 
 ## テスト
 
