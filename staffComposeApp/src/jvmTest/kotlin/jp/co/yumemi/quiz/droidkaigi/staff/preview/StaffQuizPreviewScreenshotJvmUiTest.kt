@@ -3,11 +3,11 @@ package jp.co.yumemi.quiz.droidkaigi.staff.preview
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizStaffTheme
 import jp.co.yumemi.quiz.droidkaigi.di.initStaffQuizAppGraph
-import kotlinx.coroutines.delay
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 import java.io.File
@@ -29,14 +29,8 @@ class StaffQuizPreviewScreenshotJvmUiTest {
 
         onNodeWithText("参加者プレビュー").assertIsDisplayed()
         onNodeWithText("393 dp").assertIsDisplayed()
-        for (attempt in 0 until 100) {
-            val quizLoaded = runCatching {
-                onNodeWithText("Compose Multiplatform").assertIsDisplayed()
-                true
-            }.getOrDefault(false)
-            if (quizLoaded) break
-            check(attempt < 99) { "Quiz preview did not load in time" }
-            delay(100)
+        waitUntil(timeoutMillis = 10_000) {
+            onNodeWithText("Compose Multiplatform").isDisplayed()
         }
 
         captureSurfacePng("staff-participant-preview.png")
