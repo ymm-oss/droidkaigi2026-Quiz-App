@@ -41,7 +41,7 @@ Dependency direction: `feature → core:ui, domain` · `data → domain` · `com
 | [`droidkaigi-quiz-test`](.cursor/skills/droidkaigi-quiz-test/SKILL.md) | テストの追加・実行（`commonTest` / `androidInstrumentedTest`） |
 | [`droidkaigi-quiz-verify`](.cursor/skills/droidkaigi-quiz-verify/SKILL.md) | Android CLI + スクショで手順どおりに動作確認する |
 | [`droidkaigi-quiz-device-review`](.cursor/skills/droidkaigi-quiz-device-review/SKILL.md) | 参加者 Android を実機で通しレビューし、UI/UX・画面サイズ・アクセシビリティ・保守性の指摘を Issue 化する |
-| [`droidkaigi-quiz-review`](.cursor/skills/droidkaigi-quiz-review/SKILL.md) | PR / ブランチ変更のコードレビュー（CI の Cursor Code Review と同じ観点） |
+| [`droidkaigi-quiz-review`](.cursor/skills/droidkaigi-quiz-review/SKILL.md) | PR / ブランチ変更のコードレビュー（Cursor Agent） |
 | [`android-pr-screenshots`](.cursor/skills/android-pr-screenshots/SKILL.md) | 参加者 Android の UI 変更 PR にスクショを比較表で埋め込む（必須） |
 | [`android-compose-screenshot`](.cursor/skills/android-compose-screenshot/SKILL.md) | instrumented テストから Android Compose UI の決定的 PNG を撮る撮影ハーネス |
 | [`staff-pr-screenshots`](.cursor/skills/staff-pr-screenshots/SKILL.md) | スタッフ（管理者）UI 変更 PR にスクショを比較表で埋め込む（必須） |
