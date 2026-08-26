@@ -2,8 +2,12 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.quiz
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import jp.co.yumemi.quiz.droidkaigi.core.ui.locale.LocalAppLocale
@@ -37,6 +41,10 @@ class QuizLayoutScreenshotJvmUiTest {
             }
         }
         onNodeWithText("2 / 5").assertIsDisplayed()
+        onNode(
+            hasTestTag("choice:count の変更で UI が再 Composition される")
+                .and(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox)),
+        ).assertIsDisplayed()
         captureSurfacePng("04-quiz-multiple-choice-code.png")
     }
 
