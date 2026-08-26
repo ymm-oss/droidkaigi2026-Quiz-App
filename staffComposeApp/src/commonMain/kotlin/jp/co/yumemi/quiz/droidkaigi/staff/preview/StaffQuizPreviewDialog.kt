@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -41,6 +44,17 @@ import kotlinx.coroutines.flow.emptyFlow
 
 private enum class PreviewPhase { Loading, Quiz, Result, Error }
 
+private val DefaultPreviewViewportWidth = 393.dp
+private val MinPreviewViewportWidth = 320.dp
+private val MaxPreviewViewportWidth = 520.dp
+private val PreviewViewportWidthStep = 20.dp
+private const val PREVIEW_VIEWPORT_ASPECT_RATIO = 640f / 360f
+
+private fun previewViewportHeight(width: Dp): Dp = width * PREVIEW_VIEWPORT_ASPECT_RATIO
+
+private fun previewDialogWidth(viewportWidth: Dp): Dp =
+    viewportWidth + QuizTokens.spacingLarge * 2 + QuizTokens.spacingMedium * 2
+
 @Composable
 fun StaffQuizPreviewDialog(
     folderId: String,
@@ -49,6 +63,8 @@ fun StaffQuizPreviewDialog(
     var phase by remember(folderId) { mutableStateOf(PreviewPhase.Loading) }
     var errorMessage by remember(folderId) { mutableStateOf<String?>(null) }
     var previewResult by remember(folderId) { mutableStateOf<QuizResult?>(null) }
+    var viewportWidth by remember { mutableStateOf(DefaultPreviewViewportWidth) }
+    val viewportHeight = previewViewportHeight(viewportWidth)
     val deps = AppDependencies.shared
 
     LaunchedEffect(folderId) {
@@ -84,14 +100,13 @@ fun StaffQuizPreviewDialog(
     ) {
         Surface(
             modifier = Modifier
-                .width(400.dp)
-                .height(760.dp)
+                .width(previewDialogWidth(viewportWidth))
                 .padding(QuizTokens.spacingMedium),
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = 6.dp,
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -110,9 +125,12 @@ fun StaffQuizPreviewDialog(
                         Text("閉じる")
                     }
                 }
+                PreviewViewportWidthControls(
+                    viewportWidth = viewportWidth,
+                    onViewportWidthChange = { viewportWidth = it },
+                )
                 Box(
                     modifier = Modifier
-                        .weight(1f)
                         .fillMaxWidth()
                         .padding(
                             horizontal = QuizTokens.spacingLarge,
@@ -120,7 +138,10 @@ fun StaffQuizPreviewDialog(
                         ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    PhoneFrame {
+                    PhoneFrame(
+                        width = viewportWidth,
+                        height = viewportHeight,
+                    ) {
                         PreviewBody(
                             phase = phase,
                             errorMessage = errorMessage,
@@ -213,12 +234,63 @@ private fun PreviewBody(
 }
 
 @Composable
-private fun PhoneFrame(content: @Composable () -> Unit) {
+private fun PreviewViewportWidthControls(
+    viewportWidth: Dp,
+    onViewportWidthChange: (Dp) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = QuizTokens.spacingMedium),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            onClick = {
+                onViewportWidthChange(
+                    (viewportWidth - PreviewViewportWidthStep).coerceIn(
+                        MinPreviewViewportWidth,
+                        MaxPreviewViewportWidth,
+                    ),
+                )
+            },
+            enabled = viewportWidth > MinPreviewViewportWidth,
+        ) {
+            Text("−")
+        }
+        Text(
+            text = "${viewportWidth.value.toInt()} dp",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.widthIn(min = 72.dp),
+        )
+        IconButton(
+            onClick = {
+                onViewportWidthChange(
+                    (viewportWidth + PreviewViewportWidthStep).coerceIn(
+                        MinPreviewViewportWidth,
+                        MaxPreviewViewportWidth,
+                    ),
+                )
+            },
+            enabled = viewportWidth < MaxPreviewViewportWidth,
+        ) {
+            Text("+")
+        }
+    }
+}
+
+@Composable
+private fun PhoneFrame(
+    width: Dp,
+    height: Dp,
+    content: @Composable () -> Unit,
+) {
     val frameShape = RoundedCornerShape(28.dp)
     Box(
         modifier = Modifier
-            .width(360.dp)
-            .height(640.dp)
+            .width(width)
+            .height(height)
             .clip(frameShape)
             .border(2.dp, MaterialTheme.colorScheme.outlineVariant, frameShape)
             .background(MaterialTheme.colorScheme.surface),
