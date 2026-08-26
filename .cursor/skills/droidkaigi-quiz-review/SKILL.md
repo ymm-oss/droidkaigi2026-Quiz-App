@@ -1,14 +1,14 @@
 ---
 name: droidkaigi-quiz-review
 description: >-
-  DroidKaigi Quiz の PR / ブランチ変更をレビューする。CI の Cursor Code Review と同じ観点。
+  DroidKaigi Quiz の PR / ブランチ変更をレビューする。
   ユーザーがレビュー依頼、droidkaigi-quiz-review、PR 前の自己レビュー、観点の調整を求めたときに使用。
   ローカルは Cursor Agent のみで完結（cursor-agent CLI 不要）。
 ---
 
 # DroidKaigi Quiz — code review
 
-CI（`.github/workflows/cursor-code-review.yml`）と **同じ観点** でレビューする。観点の正本は [`.github/cursor-review-instructions.md`](../../../.github/cursor-review-instructions.md)。
+Cursor Agent で PR / ブランチ変更をレビューする。観点の正本はこのスキル。
 
 ## トリガー
 
@@ -19,7 +19,7 @@ CI（`.github/workflows/cursor-code-review.yml`）と **同じ観点** でレビ
 
 ## ローカル実行（デフォルト）
 
-**Cursor Agent だけで完結する。** `cursor-agent` CLI や `.github/scripts/` は使わない。
+**Cursor Agent だけで完結する。** `cursor-agent` CLI は使わない。
 
 - ファイルの変更・コミット・`gh` による PR コメント投稿は **しない**（ユーザーが明示的に投稿を依頼した場合のみ `gh` コマンドを提案してよい）
 - 結果はチャットにマークダウンで返す
@@ -47,14 +47,11 @@ CI（`.github/workflows/cursor-code-review.yml`）と **同じ観点** でレビ
 
 ## レビュー前に読むもの
 
-1. [`.github/cursor-review-instructions.md`](../../../.github/cursor-review-instructions.md)（必須）
-2. [AGENTS.md](../../../AGENTS.md)
-3. 変更ファイルに応じて `.cursor/rules/*.mdc`
-4. PR 説明・Issue 文脈（あれば）
+1. [AGENTS.md](../../../AGENTS.md)
+2. 変更ファイルに応じて `.cursor/rules/*.mdc`
+3. PR 説明・Issue 文脈（あれば）
 
 ## レビュー観点（優先度順）
-
-[`.github/cursor-review-instructions.md`](../../../.github/cursor-review-instructions.md) に委譲。要約:
 
 1. 正しさ（クラッシュ、採点・ランキング誤り、競合）
 2. アーキテクチャ（逆依存、ViewModel のビジネスロジック、Repository 直叩き）
@@ -63,6 +60,36 @@ CI（`.github/workflows/cursor-code-review.yml`）と **同じ観点** でレビ
 5. domain/scoring 変更時のテスト不足
 
 **報告するのは重大な問題のみ**（最大 10 件）。フォーマット nit・命名の好みは省略。
+
+### アーキテクチャ（`AGENTS.md`）
+
+- 依存方向: `feature → core:ui, domain` · `data → domain` · `composeApp → feature`（**逆依存禁止**）
+- エントリポイントは `:androidApp` / `:desktopApp` / `:wasmApp` / `:staffDesktopApp` のみ。`composeApp` に `main()` や `MainActivity` を置かない
+- ナビゲーションルートは `composeApp` のみ
+
+### MVI（`.cursor/rules/quiz-feature.mdc`）
+
+- 画面: `XxxScreen` — stateless、`StateFlow` 収集、`Event` は `LaunchedEffect`
+- ViewModel に `android.*` を import しない。`AppDependencies.shared` を使う
+- Feature から `RankingRepository` を直接呼ばず use case 経由
+
+### Domain / Data（`.cursor/rules/quiz-domain-data.mdc`）
+
+- `core:domain` は Compose / Android に依存しない
+- 採点は `QuizScorer`、セッション進行は `QuizEngine` のみ
+- **prod**: リモート必須。fake / JSON へのサイレントフォールバック禁止
+- **fake**: 開発・テスト用。`quiz.runtime` と Metro グラフの整合
+- 「今日」のフィルタは `InstantProvider` + `isSameDay`（UI で日付ハードコードしない）
+
+### UI / テーマ
+
+- `QuizTheme { }` と `QuizTokens` / `QuizColors` を使用（feature で `Color(0x…)` 直書きしない）
+
+### テスト
+
+- 採点・日付ロジック: `commonTest`
+- UI フロー: `androidInstrumentedTest`
+- domain / data 変更時は `./gradlew :core:domain:jvmTest :core:data:jvmTest` の追加・更新を確認
 
 ## 出力フォーマット
 
@@ -92,18 +119,7 @@ CI（`.github/workflows/cursor-code-review.yml`）と **同じ観点** でレビ
 
 - **修正はしない**（ユーザーが依頼した場合のみ）
 - 再レビューはユーザーが依頼するまで行わない
-- 観点の変更は [`.github/cursor-review-instructions.md`](../../../.github/cursor-review-instructions.md) を編集（ローカル・CI 共通の正本）
-
-## CI との関係
-
-| 環境 | 実行主体 | 投稿 |
-|------|----------|------|
-| ローカル（このスキル） | Cursor Agent | チャットのみ |
-| GitHub Actions | `cursor-agent` CLI | `gh` で PR コメント |
-
-**推奨フロー:** このスキルでローカル確認 → 観点 OK ならテスト PR で CI 確認。
-
-CI セットアップ: `CURSOR_API_KEY` をリポジトリ Secret に登録し、非ドラフト PR で [`.github/workflows/cursor-code-review.yml`](../../../.github/workflows/cursor-code-review.yml) を確認。
+- 観点の変更はこのスキルを編集する
 
 ## ユーザー向けの依頼例
 

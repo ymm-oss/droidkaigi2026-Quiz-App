@@ -413,7 +413,6 @@ PR 中は本番（live）へデプロイしない。
 | `FIREBASE_SERVICE_ACCOUNT` | Firestore / Storage ルール CD、スタッフ DMG 公開 CD（Hosting CD でも未設定時のフォールバック） |
 | `FIREBASE_SERVICE_ACCOUNT_YMM_DROIDKAIGI26` | Wasm Hosting CD（`firebase init hosting:github` / `ymm-droidkaigi26`） |
 | `FIREBASE_SERVICE_ACCOUNT_DROIDKAIGI26` | 旧 init 名（Hosting CD フォールバック） |
-| `CURSOR_API_KEY` | 既存の Cursor Code Review 用（CI/CD 本体とは別） |
 
 CI（fake）は Secret 不要。将来の署名 APK 用（#31）: `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`
 
