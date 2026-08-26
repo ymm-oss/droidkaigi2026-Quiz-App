@@ -155,10 +155,8 @@ fun StaffQuizScreen(
     }
 
     LaunchedEffect(state.isSaving, state.saveError, deleteConfirmed) {
-        if (deleteConfirmed && !state.isSaving) {
-            if (state.saveError == null) {
-                questionToDelete = null
-            }
+        if (deleteConfirmed && !state.isSaving && state.saveError == null) {
+            questionToDelete = null
             deleteConfirmed = false
         }
     }

@@ -112,14 +112,14 @@ fun StaffRankingScreen(
         onDeleteMutationFinished = {
             if (state.mutationError == null) {
                 entryToDelete = null
+                deleteConfirmed = false
             }
-            deleteConfirmed = false
         },
         onClearTodayMutationFinished = {
             if (state.mutationError == null) {
                 showClearTodayConfirm = false
+                clearTodayConfirmed = false
             }
-            clearTodayConfirmed = false
         },
     )
 }
