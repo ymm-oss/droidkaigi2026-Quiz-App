@@ -48,15 +48,12 @@ private val DefaultPreviewViewportWidth = 393.dp
 private val MinPreviewViewportWidth = 320.dp
 private val MaxPreviewViewportWidth = 520.dp
 private val PreviewViewportWidthStep = 20.dp
-private val PreviewViewportAspectRatio = 640f / 360f
+private const val PREVIEW_VIEWPORT_ASPECT_RATIO = 640f / 360f
 
-private fun previewViewportHeight(width: Dp): Dp = width * PreviewViewportAspectRatio
+private fun previewViewportHeight(width: Dp): Dp = width * PREVIEW_VIEWPORT_ASPECT_RATIO
 
 private fun previewDialogWidth(viewportWidth: Dp): Dp =
     viewportWidth + QuizTokens.spacingLarge * 2 + QuizTokens.spacingMedium * 2
-
-private fun previewDialogHeight(viewportHeight: Dp): Dp =
-    viewportHeight + 116.dp
 
 @Composable
 fun StaffQuizPreviewDialog(
@@ -104,13 +101,12 @@ fun StaffQuizPreviewDialog(
         Surface(
             modifier = Modifier
                 .width(previewDialogWidth(viewportWidth))
-                .height(previewDialogHeight(viewportHeight))
                 .padding(QuizTokens.spacingMedium),
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = 6.dp,
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -135,7 +131,6 @@ fun StaffQuizPreviewDialog(
                 )
                 Box(
                     modifier = Modifier
-                        .weight(1f)
                         .fillMaxWidth()
                         .padding(
                             horizontal = QuizTokens.spacingLarge,

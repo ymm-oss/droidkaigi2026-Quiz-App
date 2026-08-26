@@ -28,9 +28,8 @@ class StaffQuizPreviewScreenshotJvmUiTest {
 
         onNodeWithText("参加者プレビュー").assertIsDisplayed()
         onNodeWithText("393 dp").assertIsDisplayed()
-        var quizLoaded = false
         for (attempt in 0 until 100) {
-            quizLoaded = runCatching {
+            val quizLoaded = runCatching {
                 onNodeWithText("Compose Multiplatform").assertIsDisplayed()
                 true
             }.getOrDefault(false)
