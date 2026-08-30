@@ -13,7 +13,7 @@ DroidKaigi 2026 ships **two** quiz-related apps.
 
 1. **Home** — language + nickname, start quiz
 2. **Quiz** — single / multi / reorder, then correct/incorrect feedback
-3. **Result** — correct count (`correct / total`)
+3. **Result** — accuracy (0–100%)
 4. **Ranking** — today's Top N with your row highlighted
 
 See [Screen flow](/en/user/participant/flow).

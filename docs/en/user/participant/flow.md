@@ -10,7 +10,7 @@ Home → Quiz (multiple questions) → Result → Ranking
 |--------|------|
 | [Home](/en/user/participant/home) | Nickname, language, start |
 | [Quiz](/en/user/participant/quiz) | Answer UI + feedback |
-| [Result](/en/user/participant/result) | Correct count (`correct / total`) |
+| [Result](/en/user/participant/result) | Accuracy (0–100%) |
 | [Ranking](/en/user/participant/ranking) | Today's leaders and your place |
 
 Wide layouts (e.g. tablets) show a navigation rail.

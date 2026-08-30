@@ -22,7 +22,6 @@ fun QuizRankingRow(
     rank: Int,
     nickname: String,
     score: Int,
-    totalCount: Int,
     highlighted: Boolean,
     modifier: Modifier = Modifier,
     completedAtLabel: String? = null,
@@ -60,11 +59,7 @@ fun QuizRankingRow(
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text(
-                    text = if (totalCount > 0) {
-                        stringResource(Res.string.ranking_score, score, totalCount)
-                    } else {
-                        "$score"
-                    },
+                    text = stringResource(Res.string.ranking_score, score),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

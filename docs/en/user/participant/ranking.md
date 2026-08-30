@@ -1,6 +1,6 @@
 # Ranking
 
-Today's ranking by correct answers.
+Today's ranking by accuracy.
 
 ## Screenshot
 
@@ -10,7 +10,7 @@ Today's ranking by correct answers.
 
 | Item | Description |
 |------|-------------|
-| **Rank / nickname / correct** | Today's Top N (`correct / total`) |
+| **Rank / nickname / accuracy** | Today's Top N (`n%`; closer multi/reorder answers score higher) |
 | **Your row** | Highlighted when nickname matches Home input |
 | **Completed at** | `MM/dd HH:mm`, or “unknown” if missing |
 | **Go home** | Back to Home |

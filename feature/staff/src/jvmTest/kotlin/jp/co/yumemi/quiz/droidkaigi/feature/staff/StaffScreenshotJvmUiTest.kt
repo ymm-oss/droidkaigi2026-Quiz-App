@@ -644,21 +644,21 @@ private const val SAMPLE_COMPLETED_AT = 1_783_607_520_000L
 private val sampleRanking = listOf(
     RankingEntry(
         nickname = "Alice",
-        score = 3,
+        score = 100,
         completedAtEpochMillis = SAMPLE_COMPLETED_AT,
         id = "alice",
         totalCount = 3,
     ),
     RankingEntry(
         nickname = "Bob",
-        score = 2,
+        score = 83,
         completedAtEpochMillis = SAMPLE_COMPLETED_AT - 420_000L,
         id = "bob",
         totalCount = 3,
     ),
     RankingEntry(
         nickname = "Carol",
-        score = 1,
+        score = 50,
         completedAtEpochMillis = SAMPLE_COMPLETED_AT - 1_020_000L,
         id = "carol",
         totalCount = 3,

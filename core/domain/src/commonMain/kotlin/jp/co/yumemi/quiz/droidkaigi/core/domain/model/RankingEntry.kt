@@ -6,7 +6,7 @@ import kotlin.time.Instant
 @Serializable
 data class RankingEntry(
     val nickname: String,
-    /** Number of correct answers; used to sort today's ranking. */
+    /** Ranking sort key: 0–100 percent accuracy (partial credit for multi / reorder). */
     val score: Int,
     val completedAtEpochMillis: Long,
     /** Firestore document id / fake catalog key. Empty for display-only fixtures. */

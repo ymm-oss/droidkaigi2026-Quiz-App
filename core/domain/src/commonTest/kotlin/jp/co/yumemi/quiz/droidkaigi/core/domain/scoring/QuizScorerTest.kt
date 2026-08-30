@@ -24,10 +24,12 @@ class QuizScorerTest {
         )
         assertTrue(QuizScorer.isCorrect(q, SingleChoiceAnswer("1", "a")))
         assertFalse(QuizScorer.isCorrect(q, SingleChoiceAnswer("1", "b")))
+        assertEquals(1.0, QuizScorer.questionAccuracy(q, SingleChoiceAnswer("1", "a")))
+        assertEquals(0.0, QuizScorer.questionAccuracy(q, SingleChoiceAnswer("1", "b")))
     }
 
     @Test
-    fun multipleChoice_requiresExactSet() {
+    fun multipleChoice_requiresExactSet_forFullyCorrect() {
         val q = MultipleChoice(
             id = "2",
             prompt = "Pick many",
@@ -40,7 +42,21 @@ class QuizScorerTest {
     }
 
     @Test
-    fun reorder_requiresExactOrder() {
+    fun multipleChoice_partialOverlapRaisesAccuracy() {
+        val q = MultipleChoice(
+            id = "2",
+            prompt = "Pick many",
+            options = listOf(ChoiceOption("a", "A"), ChoiceOption("b", "B"), ChoiceOption("c", "C")),
+            correctIds = setOf("a", "c"),
+        )
+        assertEquals(1.0, QuizScorer.questionAccuracy(q, MultipleChoiceAnswer("2", setOf("a", "c"))))
+        assertEquals(0.5, QuizScorer.questionAccuracy(q, MultipleChoiceAnswer("2", setOf("a"))))
+        assertEquals(2.0 / 3.0, QuizScorer.questionAccuracy(q, MultipleChoiceAnswer("2", setOf("a", "b", "c"))))
+        assertEquals(0.0, QuizScorer.questionAccuracy(q, MultipleChoiceAnswer("2", setOf("b"))))
+    }
+
+    @Test
+    fun reorder_requiresExactOrder_forFullyCorrect() {
         val q = Reorder(
             id = "3",
             prompt = "Order",
@@ -52,8 +68,28 @@ class QuizScorerTest {
     }
 
     @Test
-    fun score_isCorrectCount_withoutTimeBonus() {
-        assertEquals(3, QuizScorer.calculateScore(3))
-        assertEquals(0, QuizScorer.calculateScore(0))
+    fun reorder_adjacentSwapScoresHigherThanReverse() {
+        val q = Reorder(
+            id = "3",
+            prompt = "Order",
+            items = listOf(ReorderItem("a", "A"), ReorderItem("b", "B"), ReorderItem("c", "C")),
+            correctOrder = listOf("a", "b", "c"),
+        )
+        val exact = QuizScorer.questionAccuracy(q, ReorderAnswer("3", listOf("a", "b", "c")))
+        val adjacent = QuizScorer.questionAccuracy(q, ReorderAnswer("3", listOf("a", "c", "b")))
+        val reverse = QuizScorer.questionAccuracy(q, ReorderAnswer("3", listOf("c", "b", "a")))
+        assertEquals(1.0, exact)
+        assertEquals(2.0 / 3.0, adjacent)
+        assertEquals(0.0, reverse)
+        assertTrue(adjacent > reverse)
+    }
+
+    @Test
+    fun percentScore_averagesQuestionAccuracies() {
+        assertEquals(0, QuizScorer.percentScore(emptyList()))
+        assertEquals(100, QuizScorer.percentScore(listOf(1.0, 1.0, 1.0)))
+        assertEquals(50, QuizScorer.percentScore(listOf(1.0, 0.0)))
+        // 1.0 + 0.5 + 2/3 → 72
+        assertEquals(72, QuizScorer.percentScore(listOf(1.0, 0.5, 2.0 / 3.0)))
     }
 }

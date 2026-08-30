@@ -168,7 +168,6 @@ fun RankingContent(
                                     rank = index + 1,
                                     nickname = entry.nickname,
                                     score = entry.score,
-                                    totalCount = entry.totalCount,
                                     highlighted = entry.nickname == highlightNickname,
                                     completedAtLabel = formatCompletedAtLabel(entry.completedAtEpochMillis)
                                         ?: unknownCompletedAt,

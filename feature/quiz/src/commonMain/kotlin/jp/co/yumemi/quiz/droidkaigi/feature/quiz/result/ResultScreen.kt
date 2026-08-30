@@ -30,6 +30,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_correct_count
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_go_ranking
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_percent
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_score_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_section
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_subtitle
@@ -69,6 +70,7 @@ fun ResultScreen(
         nickname = state.nickname,
         correctCount = state.correctCount,
         totalCount = state.totalCount,
+        score = state.score,
         rankingVisible = rankingVisible,
         onGoToRankingClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
         onGoHomeClick = onGoHome,
@@ -80,6 +82,7 @@ fun ResultContent(
     nickname: String,
     correctCount: Int,
     totalCount: Int,
+    score: Int,
     onGoToRankingClick: () -> Unit,
     onGoHomeClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -87,10 +90,10 @@ fun ResultContent(
     primaryActionLabel: String? = null,
     rankingVisible: Boolean = true,
 ) {
-    val displayedCorrect = if (animateScore) {
-        QuizMotion.animateScore(correctCount)
+    val displayedScore = if (animateScore) {
+        QuizMotion.animateScore(score)
     } else {
-        correctCount
+        score
     }
     val actionLabel = primaryActionLabel ?: stringResource(Res.string.result_go_ranking)
 
@@ -131,9 +134,15 @@ fun ResultContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = stringResource(Res.string.result_correct_count, displayedCorrect, totalCount),
+                        text = stringResource(Res.string.result_percent, displayedScore),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+                    Text(
+                        text = stringResource(Res.string.result_correct_count, correctCount, totalCount),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (rankingVisible) {

@@ -42,17 +42,18 @@
     <string name="result_title">クイズ完了</string>
     <string name="result_subtitle">おつかれさま、%1$s さん！</string>
     <string name="result_section">あなたの結果</string>
-    <string name="result_score_label">正解数</string>
-    <string name="result_correct_count">%1$d / %2$d</string>
+    <string name="result_score_label">正解率</string>
+    <string name="result_percent">%1$d%%</string>
+    <string name="result_correct_count">完全正解 %1$d / %2$d 問</string>
     <string name="result_go_ranking">ランキングを見る</string>
 
     <string name="ranking_title">今日のランキング</string>
-    <string name="ranking_subtitle">正解数の多い順</string>
+    <string name="ranking_subtitle">正解率の高い順</string>
     <string name="ranking_empty">まだエントリーがありません</string>
     <string name="ranking_error_load_failed">ランキングの取得に失敗しました</string>
     <string name="ranking_retry">再試行</string>
     <string name="ranking_go_home">ホームに戻る</string>
-    <string name="ranking_score">%1$d / %2$d</string>
+    <string name="ranking_score">%1$d%%</string>
 
     <string name="time_unknown">不明</string>
     <string name="cd_reorder">並び替え</string>

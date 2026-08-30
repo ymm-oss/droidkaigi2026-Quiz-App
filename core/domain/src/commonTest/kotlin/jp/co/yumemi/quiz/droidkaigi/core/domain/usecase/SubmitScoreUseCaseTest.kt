@@ -30,7 +30,7 @@ class SubmitScoreUseCaseTest {
                 override suspend fun clearTodayRankings(folderId: String) = Unit
             },
         )
-        val result = QuizResult("Alice", 2, 3, 2, 10_000)
+        val result = QuizResult("Alice", 2, 3, 72, 10_000)
 
         useCase(
             result = result,
@@ -51,7 +51,7 @@ class SubmitScoreUseCaseTest {
             assertEquals(1_700_000_100_000L, call.completedAtEpochMillis)
             assertEquals("demo", call.folderId)
             assertEquals(expectedId, call.entryId)
-            assertEquals(2, call.result.score)
+            assertEquals(72, call.result.score)
         }
     }
 

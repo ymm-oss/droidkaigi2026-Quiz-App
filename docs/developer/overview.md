@@ -7,7 +7,7 @@
 | ページ | 内容 |
 |--------|------|
 | [アーキテクチャ](/developer/architecture) | モジュール構成・依存方向・MVI |
-| [採点ロジック](/developer/scoring) | 正解数・ランキング順 |
+| [採点ロジック](/developer/scoring) | 正解率・部分点・ランキング順 |
 | [ランタイム](/developer/runtime) | `quiz.runtime=fake` / `prod` |
 | [Firestore](/developer/firestore) | 本番 DB 構造・ルール |
 | [ビルド・実行](/developer/build) | Gradle・Variant・スタッフ Desktop |

@@ -26,11 +26,11 @@ class RankingScreenshotJvmUiTest {
     @Test
     fun captureRanking() = runDesktopComposeUiTest(width = 1080, height = 1920) {
         val entries = listOf(
-            RankingEntry("Compose 太郎", 3, 1_780_000_000_000L, totalCount = 3),
-            RankingEntry("Kotlin 花子", 2, 1_780_000_100_000L, totalCount = 3),
-            RankingEntry("Metro 次郎", 2, 1_780_000_200_000L, totalCount = 3),
-            RankingEntry("Nav3 三郎", 1, 1_780_000_300_000L, totalCount = 3),
-            RankingEntry("Wasm 四郎", 1, 1_780_000_400_000L, totalCount = 3),
+            RankingEntry("Compose 太郎", 100, 1_780_000_000_000L, totalCount = 3),
+            RankingEntry("Kotlin 花子", 83, 1_780_000_100_000L, totalCount = 3),
+            RankingEntry("Metro 次郎", 72, 1_780_000_200_000L, totalCount = 3),
+            RankingEntry("Nav3 三郎", 50, 1_780_000_300_000L, totalCount = 3),
+            RankingEntry("Wasm 四郎", 33, 1_780_000_400_000L, totalCount = 3),
         )
         setContent {
             CompositionLocalProvider(LocalAppLocale provides "ja") {
