@@ -81,8 +81,7 @@ fun QuizAnswerFeedbackOverlay(
         modifier = modifier
             .fillMaxSize()
             .testTag("answerFeedbackOverlay")
-            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.72f))
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)),
+            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.72f)),
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -96,6 +95,7 @@ fun QuizAnswerFeedbackOverlay(
         )
         Surface(
             modifier = Modifier
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
                 .padding(QuizTokens.spacingMedium)
                 .fillMaxWidth()
                 .widthIn(max = 420.dp)
