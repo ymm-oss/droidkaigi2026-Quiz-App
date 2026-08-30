@@ -12,7 +12,10 @@ class StaffQuestionDraftLocalizationTest {
             id = "q1",
             prompt = "問題",
             explanationMarkdown = "解説",
-            options = listOf(ChoiceOption("a", "回答", "Answer")),
+            options = listOf(
+                ChoiceOption("a", "回答", "Answer"),
+                ChoiceOption("b", "不正解", "Incorrect"),
+            ),
             correctId = "a",
             promptEn = "Question",
             explanationMarkdownEn = "Explanation",

@@ -48,7 +48,7 @@ class QuizFeedbackOverlayJvmUiTest {
 
         onNodeWithText("Correct!").assertIsDisplayed()
         onNodeWithText("Which Jetpack library lets you share UI across platforms?").assertIsDisplayed()
-        onNodeWithText("Compose Multiplatform").assertIsDisplayed()
+        onNodeWithTag("feedbackCorrectAnswer", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithText("Explanation").assertIsDisplayed()
     }
 
