@@ -10,10 +10,7 @@ import androidx.compose.ui.text.font.FontFamily
  * @property isReady false while a bundled font is still loading — text drawn in that window falls
  * back to a font that may lack the glyphs the UI needs.
  */
-data class QuizFonts(
-    val fontFamily: FontFamily?,
-    val isReady: Boolean,
-)
+data class QuizFonts(val fontFamily: FontFamily?, val isReady: Boolean)
 
 /**
  * Font applied to the whole theme.
