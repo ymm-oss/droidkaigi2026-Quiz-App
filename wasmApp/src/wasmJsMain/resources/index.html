@@ -16,6 +16,12 @@
     <link rel="preload" as="fetch" type="font/ttf" crossorigin
           href="/composeResources/jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources/font/noto_sans_jp.ttf">
     <script type="text/javascript">
+        // The staff console is dark-only, so mark it before the first paint (see styles.css).
+        if (/\/staff\/?$/.test(window.location.pathname)) {
+            document.documentElement.classList.add("staff");
+        }
+    </script>
+    <script type="text/javascript">
         var currentLanguagesImplementation = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
         var newLanguagesImplementation = Object.assign({}, currentLanguagesImplementation, {
             get: function () {
