@@ -35,6 +35,7 @@ Drag the handle on the right to reorder, then submit.
 <img src="/screenshots/android/android-01-feedback-correct.png" alt="Correct feedback" width="280" />
 <img src="/screenshots/android/android-02-feedback-incorrect.png" alt="Incorrect feedback" width="280" />
 <img src="/screenshots/android/android-03-feedback-finish.png" alt="Finishing feedback" width="280" />
+<img src="/screenshots/android/android-04-feedback-english.png" alt="English question, answer, and explanation" width="280" />
 
 Explanations are rendered as Markdown. Long explanations can be scrolled, while the explanation section is omitted when none is registered.
 
