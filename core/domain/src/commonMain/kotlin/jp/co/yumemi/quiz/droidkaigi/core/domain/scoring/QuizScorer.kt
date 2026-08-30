@@ -25,19 +25,17 @@ object QuizScorer {
 
     fun questionAccuracy(question: Question, answer: Answer?): Double {
         if (answer == null || answer.questionId != question.id) return 0.0
-        return when (question) {
-            is SingleChoice -> {
-                val selected = (answer as? SingleChoiceAnswer)?.selectedId
-                if (selected == question.correctId) 1.0 else 0.0
-            }
-            is MultipleChoice -> {
-                val selected = (answer as? MultipleChoiceAnswer)?.selectedIds ?: return 0.0
-                jaccard(selected, question.correctIds)
-            }
-            is Reorder -> {
-                val ordered = (answer as? ReorderAnswer)?.orderedIds ?: return 0.0
-                reorderAccuracy(question.correctOrder, ordered)
-            }
+        return when {
+            question is SingleChoice && answer is SingleChoiceAnswer ->
+                if (answer.selectedId == question.correctId) 1.0 else 0.0
+
+            question is MultipleChoice && answer is MultipleChoiceAnswer ->
+                jaccard(answer.selectedIds, question.correctIds)
+
+            question is Reorder && answer is ReorderAnswer ->
+                reorderAccuracy(question.correctOrder, answer.orderedIds)
+
+            else -> 0.0
         }
     }
 
@@ -74,9 +72,13 @@ object QuizScorer {
         return selected.intersect(correct).size.toDouble() / unionSize.toDouble()
     }
 
-    internal fun reorderAccuracy(correctOrder: List<String>, orderedIds: List<String>): Double {
-        if (correctOrder.isEmpty()) return 0.0
-        if (orderedIds == correctOrder) return 1.0
+    internal fun reorderAccuracy(correctOrder: List<String>, orderedIds: List<String>): Double = when {
+        correctOrder.isEmpty() -> 0.0
+        orderedIds == correctOrder -> 1.0
+        else -> pairwiseReorderAccuracy(correctOrder, orderedIds)
+    }
+
+    private fun pairwiseReorderAccuracy(correctOrder: List<String>, orderedIds: List<String>): Double {
         val rank = correctOrder.withIndex().associate { it.value to it.index }
         val sequence = orderedIds.filter { it in rank }
         val coverage = sequence.size.toDouble() / correctOrder.size.toDouble()
