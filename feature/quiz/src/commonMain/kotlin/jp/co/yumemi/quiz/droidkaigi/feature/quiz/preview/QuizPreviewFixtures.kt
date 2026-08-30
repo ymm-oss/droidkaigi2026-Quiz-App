@@ -29,11 +29,16 @@ object QuizPreviewFixtures {
             Jetpack XML は Android の View システム、Flutter は別の UI フレームワークです。
         """.trimIndent(),
         options = listOf(
-            ChoiceOption("a", "Jetpack XML"),
-            ChoiceOption("b", "Compose Multiplatform"),
-            ChoiceOption("c", "Flutter"),
+            ChoiceOption("a", "Jetpack XML", "Jetpack XML"),
+            ChoiceOption("b", "Compose Multiplatform", "Compose Multiplatform"),
+            ChoiceOption("c", "Flutter", "Flutter"),
         ),
         correctId = "b",
+        promptEn = "Which Jetpack library lets you share UI across platforms?",
+        explanationMarkdownEn = """
+            **Compose Multiplatform** lets you share declarative Compose UI across
+            Android, Desktop, iOS, and Web.
+        """.trimIndent(),
     )
 
     val multipleChoiceQuestion = MultipleChoice(

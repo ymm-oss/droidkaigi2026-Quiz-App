@@ -25,6 +25,35 @@ import kotlin.test.assertTrue
 class QuizFeedbackOverlayJvmUiTest {
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun englishLocaleShowsEnglishQuestionAnswerAndExplanation() = runComposeUiTest {
+        setContent {
+            CompositionLocalProvider(LocalAppLocale provides "en-US") {
+                key("en-US") {
+                    QuizTheme {
+                        QuizContent(
+                            state = QuizPreviewFixtures.singleChoiceState(
+                                showFeedback = true,
+                                lastAnswerCorrect = true,
+                            ),
+                            onSelectSingle = {},
+                            onToggleMultiple = {},
+                            onMoveReorder = { _, _ -> },
+                            onSubmitAnswer = {},
+                            onContinueAfterFeedback = {},
+                        )
+                    }
+                }
+            }
+        }
+
+        onNodeWithText("Correct!").assertIsDisplayed()
+        onNodeWithText("Which Jetpack library lets you share UI across platforms?").assertIsDisplayed()
+        onNodeWithText("Compose Multiplatform").assertIsDisplayed()
+        onNodeWithText("Explanation").assertIsDisplayed()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun correctFeedback_showsOverlayAndNextButton() = runComposeUiTest {
         setContent {
             CompositionLocalProvider(LocalAppLocale provides "ja") {
