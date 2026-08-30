@@ -42,6 +42,8 @@ In prod, after sign-in the app checks for a newer staff Desktop build and can do
 
 `/` is the participant app; `/staff` is the staff console (sign-in required). fake verified in CI. Production is Firebase Hosting.
 
+Wasm has no CJK fallback font, so the build bundles a subset of Noto Sans JP and holds text rendering until it loads. See [DEVELOPMENT.md](https://github.com/ymm-oss/droidkaigi2026-Quiz-App/blob/master/docs/DEVELOPMENT.md) for details.
+
 ## Tests
 
 ```bash
