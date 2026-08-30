@@ -27,7 +27,8 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             combine(
                 deps.siteStatusHolder.sitePublished,
                 deps.siteStatusHolder.observeFailed,
-            ) { published, failed ->
+                deps.siteStatusHolder.publishedFolderIds,
+            ) { published, failed, _ ->
                 published to failed
             }.collect { (published, failed) ->
                 _uiState.update {
@@ -39,7 +40,7 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 if (published == true) {
                     loadPublishedFolders()
                 } else if (published == false) {
-                    _uiState.update { it.copy(publishedFolders = emptyList()) }
+                    _uiState.update { it.copy(publishedFolders = emptyList(), error = null) }
                 }
             }
         }
@@ -58,7 +59,12 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 _uiState.update { it.copy(isLoading = false) }
             }
 
-            HomeIntent.RetrySiteStatus -> deps.siteStatusHolder.requestRetry()
+            HomeIntent.RetrySiteStatus -> {
+                deps.siteStatusHolder.requestRetry()
+                if (deps.siteStatusHolder.sitePublished.value == true) {
+                    viewModelScope.launch { loadPublishedFolders() }
+                }
+            }
         }
     }
 
@@ -67,7 +73,13 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             deps.listPublishedQuizFoldersUseCase()
         } catch (e: CancellationException) {
             throw e
-        } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") error: Exception) {
+            _uiState.update {
+                it.copy(
+                    publishedFolders = null,
+                    error = HomeError.LoadFailed(error.message),
+                )
+            }
             return
         }
         _uiState.update { state ->
@@ -77,7 +89,11 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 folders.size == 1 -> folders.first().id
                 else -> state.selectedFolderId?.takeIf { id -> folders.any { it.id == id } }
             }
-            state.copy(publishedFolders = folders, selectedFolderId = selected)
+            state.copy(
+                publishedFolders = folders,
+                selectedFolderId = selected,
+                error = state.error.takeUnless { it is HomeError.LoadFailed },
+            )
         }
     }
 

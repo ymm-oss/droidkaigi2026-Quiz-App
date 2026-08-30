@@ -45,7 +45,7 @@ internal fun QuizComposeRule.waitUntilTag(tag: String, timeoutMillis: Long = UI_
 }
 
 internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
-    waitUntilText("クイズを始める")
+    waitUntilTag("published-folder:droidkaigi2026-demo")
     onNode(hasSetTextAction()).performTextInput(nickname)
     waitForIdle()
     clickStartAfterSelectingGeneralFolder()
@@ -53,8 +53,15 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
 }
 
 internal fun QuizComposeRule.clickStartAfterSelectingGeneralFolder() {
-    waitUntilText("一般向け")
-    onNodeWithText("一般向け").performClick()
+    val folderTag = "published-folder:droidkaigi2026-demo"
+    waitUntilTag(folderTag)
+    val folderNode = onNodeWithTag(folderTag, useUnmergedTree = true)
+    try {
+        folderNode.performScrollTo()
+    } catch (_: AssertionError) {
+        // Already on-screen.
+    }
+    onNodeWithTag(folderTag, useUnmergedTree = true).performClick()
     waitForIdle()
     val startButton = onNodeWithText("クイズを始める")
     try {

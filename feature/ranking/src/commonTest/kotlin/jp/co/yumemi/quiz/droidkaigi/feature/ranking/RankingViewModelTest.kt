@@ -168,7 +168,8 @@ class RankingViewModelTest {
         )
         holder.applyStatus(jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(true, "other"))
 
-        assertEquals(listOf("played"), requested)
+        assertTrue(requested.isNotEmpty())
+        assertTrue(requested.all { it == "played" })
     }
 
     @Test
@@ -282,6 +283,26 @@ class RankingViewModelTest {
 
         assertTrue(requested.contains("hard"))
         assertEquals("hard", viewModel.uiState.value.selectedFolderId)
+    }
+
+    @Test
+    fun playbackFolder_staysWhenUnpublished() = runTest {
+        val requested = mutableListOf<String>()
+        val sessionHolder = QuizSessionHolder().apply { playbackFolderId = "played" }
+        RankingViewModel(
+            rankingTestDeps(
+                rankings = { folderId ->
+                    requested += folderId
+                    emptyList()
+                },
+                sessionHolder = sessionHolder,
+                catalogFolders = {
+                    listOf(QuizFolder(id = "other", name = "別セット", sortOrder = 0))
+                },
+            ),
+        )
+
+        assertEquals(listOf("played"), requested)
     }
 }
 

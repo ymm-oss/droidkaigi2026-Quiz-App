@@ -12,7 +12,8 @@ data class HomeUiState(
     val sitePublished: Boolean? = null,
     /** 受付状況の取得に失敗した（ネットワーク障害など）。受付前（false）とは区別する。 */
     val siteStatusCheckFailed: Boolean = false,
-    val publishedFolders: List<QuizFolder> = emptyList(),
+    /** null = 未取得または取得失敗。empty = 公開フォルダ 0 件。 */
+    val publishedFolders: List<QuizFolder>? = null,
     val selectedFolderId: String? = null,
     val error: HomeError? = null,
 ) {

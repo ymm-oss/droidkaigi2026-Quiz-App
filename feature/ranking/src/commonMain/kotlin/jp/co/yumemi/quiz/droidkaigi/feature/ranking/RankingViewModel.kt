@@ -35,7 +35,11 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
     init {
         viewModelScope.launch {
             @OptIn(ExperimentalCoroutinesApi::class)
-            combine(listenRetry, userSelectedFolderId) { _, selected -> selected }
+            combine(
+                listenRetry,
+                userSelectedFolderId,
+                deps.siteStatusHolder.publishedFolderIds,
+            ) { _, selected, _ -> selected }
                 .flatMapLatest { selected ->
                     rankingFolderFlow(selected).distinctUntilChanged().flatMapLatest { folderId ->
                         listenRankings(folderId)
@@ -90,8 +94,8 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
         emit(initial)
         if (playbackFolderId != null && selected == null) return@flow
         if (selected != null) return@flow
-        deps.siteStatusHolder.activeFolderId.collect { folderId ->
-            if (!folderId.isNullOrBlank()) emit(folderId)
+        deps.siteStatusHolder.publishedFolderIds.collect { ids ->
+            if (ids.isNotEmpty()) emit(resolveFolderId(folders, selected) ?: ids.first())
         }
     }
 
@@ -122,8 +126,9 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
     }
 
     private fun resolveFolderId(folders: List<QuizFolder>, selected: String?): String? {
-        selected?.takeIf { id -> folders.any { it.id == id } }?.let { return it }
-        playbackFolderId?.takeIf { id -> folders.any { it.id == id } || folders.isEmpty() }?.let { return it }
-        return folders.firstOrNull()?.id ?: playbackFolderId
+        val fromSelection = selected?.takeIf { id ->
+            folders.any { it.id == id } || id == playbackFolderId
+        }
+        return fromSelection ?: playbackFolderId ?: folders.firstOrNull()?.id
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
@@ -224,6 +225,7 @@ fun HomeContent(
                                             subtitle = folder.description.takeIf { it.isNotBlank() },
                                             selected = folder.id == selectedFolderId,
                                             onClick = { onSelectFolder(folder.id) },
+                                            modifier = Modifier.testTag("published-folder:${folder.id}"),
                                         )
                                     }
                                 }
@@ -242,7 +244,7 @@ fun HomeContent(
                             text = stringResource(Res.string.home_start),
                             onClick = onStartClick,
                             loading = isLoading,
-                            enabled = publishedFolders == null || publishedFolders.isNotEmpty(),
+                            enabled = publishedFolders != null && publishedFolders.isNotEmpty(),
                         )
                     }
                 }
