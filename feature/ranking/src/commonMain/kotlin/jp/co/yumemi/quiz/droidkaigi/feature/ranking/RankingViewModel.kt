@@ -6,8 +6,6 @@ import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
@@ -33,20 +31,24 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
     private val playbackFolderId: String? = deps.sessionHolder.playbackFolderId
     private val listenRetry = MutableStateFlow(0)
     private val userSelectedFolderId = MutableStateFlow<String?>(null)
+    private val listenKey = MutableStateFlow<ListenKey?>(null)
 
     init {
         viewModelScope.launch {
-            @OptIn(ExperimentalCoroutinesApi::class)
             combine(
                 listenRetry,
                 userSelectedFolderId,
-            ) { _, selected -> selected }
-                .flatMapLatest { selected ->
-                    rankingFolderFlow(selected).distinctUntilChanged().flatMapLatest { folderId ->
-                        listenRankings(folderId)
-                    }
+                deps.siteStatusHolder.publishedFolderIds,
+            ) { retry, selected, ids -> Triple(retry, selected, ids) }
+                .collect { (retry, selected, ids) ->
+                    updateListenKey(retry, selected, ids)
                 }
-                .collect { }
+        }
+        viewModelScope.launch {
+            @OptIn(ExperimentalCoroutinesApi::class)
+            listenKey.filterNotNull().distinctUntilChanged().flatMapLatest { key ->
+                listenRankings(key.folderId)
+            }.collect { }
         }
     }
 
@@ -58,7 +60,7 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
         }
     }
 
-    private fun rankingFolderFlow(selected: String?) = flow {
+    private suspend fun updateListenKey(retry: Int, selected: String?, publishedIds: List<String>) {
         val folders = try {
             deps.listPublishedQuizFoldersUseCase()
         } catch (e: CancellationException) {
@@ -71,14 +73,14 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
                         error = RankingError.LoadFailed(error.message),
                     )
                 }
-                awaitCancellation()
+                return
             }
-            emptyList()
+            _uiState.value.publishedFolders
         }
         _uiState.update { it.copy(publishedFolders = folders) }
 
-        val initial = resolveListeningFolderId(folders, selected)
-        if (initial == null) {
+        val next = resolveListeningFolderId(folders, selected, publishedIds)
+        if (next == null) {
             _uiState.update {
                 it.copy(
                     entries = emptyList(),
@@ -87,27 +89,9 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
                     error = null,
                 )
             }
-            awaitCancellation()
+            return
         }
-        emit(initial)
-        followPublishedFolderIds(selected)
-    }
-
-    private suspend fun FlowCollector<String>.followPublishedFolderIds(selected: String?) {
-        val keepCurrentFolder = selected != null || playbackFolderId != null
-        deps.siteStatusHolder.publishedFolderIds.drop(1).collect {
-            val refreshed = try {
-                deps.listPublishedQuizFoldersUseCase()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
-                return@collect
-            }
-            _uiState.update { it.copy(publishedFolders = refreshed) }
-            if (keepCurrentFolder) return@collect
-            val next = resolveListeningFolderId(refreshed, selected)
-            if (next != null) emit(next)
-        }
+        listenKey.value = ListenKey(folderId = next, retry = retry)
     }
 
     private fun listenRankings(folderId: String) = flow {
@@ -136,9 +120,14 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
             }
     }
 
-    private suspend fun resolveListeningFolderId(folders: List<QuizFolder>, selected: String?): String? {
+    private suspend fun resolveListeningFolderId(
+        folders: List<QuizFolder>,
+        selected: String?,
+        publishedIds: List<String>,
+    ): String? {
         return resolveFolderId(folders, selected)
             ?: selected?.takeIf { it.isNotBlank() }
+            ?: publishedIds.firstOrNull { it.isNotBlank() }
             ?: deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
             ?: runCatching { deps.getActiveQuizFolderIdUseCase() }.getOrNull()?.takeIf { it.isNotBlank() }
     }
@@ -149,4 +138,6 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
         }
         return fromSelection ?: playbackFolderId ?: folders.firstOrNull()?.id
     }
+
+    private data class ListenKey(val folderId: String, val retry: Int)
 }
