@@ -11,8 +11,7 @@ Shown after the last answer.
 | Item | Description |
 |------|-------------|
 | **Nickname** | From Home |
-| **Correct count** | `correct / total` |
-| **Score** | From correct answers + time bonus (animated) |
+| **Correct count** | `correct / total` (large number) |
 | **Go to ranking** | Opens Ranking |
 
-See [Scoring](/en/developer/scoring) for the formula.
+See [Scoring](/en/developer/scoring) for how ranking order is computed.

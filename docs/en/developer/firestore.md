@@ -19,7 +19,7 @@ staffAppRelease/latest    # staff Desktop latest release (auth required)
   version, versionCode, storagePath, sha256, releaseNotes, publishedAtEpochMillis?
 
 folders/{folderId}/rankings/{entryId}
-  nickname, score, completedAtEpochMillis, dateKey
+  nickname, score, totalCount, completedAtEpochMillis, dateKey
 ```
 
 Folder id and quiz-set id are **1:1**.

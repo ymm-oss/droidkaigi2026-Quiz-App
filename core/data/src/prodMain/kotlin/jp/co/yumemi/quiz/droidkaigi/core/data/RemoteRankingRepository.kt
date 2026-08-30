@@ -21,9 +21,9 @@ class RemoteRankingRepository(
 ) : RankingRepository {
     override suspend fun getTodayRankings(folderId: String): List<RankingEntry> {
         val dateKey = instantProvider.todayLocalDate().toString()
-        return firestore.listRankingsForDate(folderId, dateKey).map { (entryId, document) ->
-            document.toDomain(entryId)
-        }
+        return firestore.listRankingsForDate(folderId, dateKey)
+            .map { (entryId, document) -> document.toDomain(entryId) }
+            .sortedWith(compareByDescending<RankingEntry> { it.score }.thenBy { it.completedAtEpochMillis })
     }
 
     override suspend fun submitScore(
@@ -41,6 +41,7 @@ class RemoteRankingRepository(
                 score = result.score,
                 completedAtEpochMillis = completedAtEpochMillis,
                 dateKey = dateKey,
+                totalCount = result.totalCount,
             ),
         )
     }

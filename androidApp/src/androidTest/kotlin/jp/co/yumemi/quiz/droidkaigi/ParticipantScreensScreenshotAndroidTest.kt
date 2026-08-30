@@ -85,7 +85,6 @@ class ParticipantScreensScreenshotAndroidTest {
                             nickname = "Compose 太郎",
                             correctCount = 3,
                             totalCount = 3,
-                            targetScore = 342,
                             onGoToRankingClick = {},
                             animateScore = false,
                         )
@@ -100,11 +99,11 @@ class ParticipantScreensScreenshotAndroidTest {
     @Test
     fun captureRanking() {
         val entries = listOf(
-            RankingEntry("Compose 太郎", 342, 1_780_000_000_000L),
-            RankingEntry("Kotlin 花子", 318, 1_780_000_100_000L),
-            RankingEntry("Metro 次郎", 305, 1_780_000_200_000L),
-            RankingEntry("Nav3 三郎", 280, 1_780_000_300_000L),
-            RankingEntry("Wasm 四郎", 254, 1_780_000_400_000L),
+            RankingEntry("Compose 太郎", 3, 1_780_000_000_000L, totalCount = 3),
+            RankingEntry("Kotlin 花子", 2, 1_780_000_100_000L, totalCount = 3),
+            RankingEntry("Metro 次郎", 2, 1_780_000_200_000L, totalCount = 3),
+            RankingEntry("Nav3 三郎", 1, 1_780_000_300_000L, totalCount = 3),
+            RankingEntry("Wasm 四郎", 1, 1_780_000_400_000L, totalCount = 3),
         )
         composeRule.setContent {
             CompositionLocalProvider(LocalAppLocale provides "ja") {

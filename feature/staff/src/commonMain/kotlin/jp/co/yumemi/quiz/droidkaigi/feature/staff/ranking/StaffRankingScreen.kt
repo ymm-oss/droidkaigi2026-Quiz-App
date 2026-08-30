@@ -333,7 +333,7 @@ private fun StaffRankingHeaderRow() {
     ) {
         StaffRankingCell(text = "Rank", weight = 2f)
         StaffRankingCell(text = "Nickname", weight = 4f)
-        StaffRankingCell(text = "Score", weight = 3f, align = TextAlign.End)
+        StaffRankingCell(text = "Correct", weight = 3f, align = TextAlign.End)
         StaffRankingCell(text = "Completed Time", weight = 3f, align = TextAlign.End)
         StaffRankingCell(text = "Actions", weight = 1.5f, align = TextAlign.End)
     }
@@ -391,7 +391,11 @@ private fun StaffRankingRow(rank: Int, entry: RankingEntry, deleteEnabled: Boole
             modifier = Modifier.weight(4f),
         )
         Text(
-            text = "スコア ${entry.score}",
+            text = if (entry.totalCount > 0) {
+                "${entry.score} / ${entry.totalCount}"
+            } else {
+                "${entry.score}"
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.End,

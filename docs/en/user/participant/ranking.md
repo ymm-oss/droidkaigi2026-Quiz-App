@@ -1,6 +1,6 @@
 # Ranking
 
-Today's top scores.
+Today's ranking by correct answers.
 
 ## Screenshot
 
@@ -10,7 +10,7 @@ Today's top scores.
 
 | Item | Description |
 |------|-------------|
-| **Rank / nickname / score** | Today's Top N |
+| **Rank / nickname / correct** | Today's Top N (`correct / total`) |
 | **Your row** | Highlighted when nickname matches Home input |
 | **Completed at** | `MM/dd HH:mm`, or “unknown” if missing |
 | **Go home** | Back to Home |
@@ -18,4 +18,4 @@ Today's top scores.
 ## Notes
 
 - Only **today's** entries
-- Production needs network for fetch and score submit
+- Production needs network for fetch and result submit

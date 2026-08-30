@@ -26,7 +26,6 @@ class ResultViewModel(private val deps: AppDependencies = AppDependencies.shared
                     nickname = result.nickname,
                     correctCount = result.correctCount,
                     totalCount = result.totalCount,
-                    targetScore = result.score,
                     hasResult = true,
                 )
             }

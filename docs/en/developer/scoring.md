@@ -3,20 +3,23 @@
 ## Formula
 
 ```
-score = correctCount * 100 + timeBonus
-timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)
+score = correctCount
 ```
+
+The UI shows `correctCount / totalCount` (for example `2 / 3`). There is no time bonus for finishing early.
 
 | Symbol | Meaning |
 |--------|---------|
 | `correctCount` | Number of correct answers |
-| `elapsedSeconds` | From quiz start to **final answer submit** |
-| `timeBonus` | 0–50; faster is higher |
+| `totalCount` | Number of questions in the quiz set |
+| `score` | Ranking sort key; same as `correctCount` |
 
-## Time boundaries
+## Ranking order
 
-- **Included**: question view through each submit
-- **Excluded**: time spent on feedback overlays
+1. `score` (correct count) descending
+2. Ties: `completedAtEpochMillis` ascending (earlier finish ranks higher)
+
+Completion time is shown on ranking rows. Time spent on feedback overlays is not part of completion (final-answer submit).
 
 ## Correctness by type
 

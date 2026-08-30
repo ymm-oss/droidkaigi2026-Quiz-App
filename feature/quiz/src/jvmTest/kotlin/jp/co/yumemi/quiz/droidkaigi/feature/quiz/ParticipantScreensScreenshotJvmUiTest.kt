@@ -51,7 +51,6 @@ class ParticipantScreensScreenshotJvmUiTest {
                             nickname = "Compose 太郎",
                             correctCount = 3,
                             totalCount = 3,
-                            targetScore = 342,
                             onGoToRankingClick = {},
                             animateScore = false,
                         )

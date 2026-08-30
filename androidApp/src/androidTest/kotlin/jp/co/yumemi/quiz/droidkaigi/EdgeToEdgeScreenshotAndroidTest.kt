@@ -190,7 +190,6 @@ class EdgeToEdgeScreenshotAndroidTest {
                             nickname = "EdgeTester",
                             correctCount = 2,
                             totalCount = 3,
-                            targetScore = 1800,
                             onGoToRankingClick = {},
                             animateScore = false,
                         )
@@ -210,9 +209,9 @@ class EdgeToEdgeScreenshotAndroidTest {
                     QuizTheme {
                         RankingContent(
                             entries = listOf(
-                                RankingEntry("EdgeTester", 1800, 1_700_000_000_000L),
-                                RankingEntry("Alice", 1500, 1_700_000_100_000L),
-                                RankingEntry("Bob", 900, 1_700_000_200_000L),
+                                RankingEntry("EdgeTester", 3, 1_700_000_000_000L, totalCount = 3),
+                                RankingEntry("Alice", 2, 1_700_000_100_000L, totalCount = 3),
+                                RankingEntry("Bob", 1, 1_700_000_200_000L, totalCount = 3),
                             ),
                             highlightNickname = "EdgeTester",
                             isLoading = false,

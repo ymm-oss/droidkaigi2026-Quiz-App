@@ -135,14 +135,13 @@ private fun QuizIncorrectFeedbackPreview() {
 @Composable
 private fun ResultScreenPreview() {
     QuizPreview {
-        ResultContent(
-            nickname = "Kaigi太郎",
-            correctCount = 4,
-            totalCount = 5,
-            targetScore = 850,
-            onGoToRankingClick = {},
-            animateScore = false,
-        )
+                        ResultContent(
+                            nickname = "Kaigi太郎",
+                            correctCount = 4,
+                            totalCount = 5,
+                            onGoToRankingClick = {},
+                            animateScore = false,
+                        )
     }
 }
 
@@ -150,13 +149,12 @@ private fun ResultScreenPreview() {
 @Composable
 private fun ResultScreenDarkPreview() {
     QuizPreview(darkTheme = true) {
-        ResultContent(
-            nickname = "Kaigi太郎",
-            correctCount = 4,
-            totalCount = 5,
-            targetScore = 850,
-            onGoToRankingClick = {},
-            animateScore = false,
-        )
+                        ResultContent(
+                            nickname = "Kaigi太郎",
+                            correctCount = 4,
+                            totalCount = 5,
+                            onGoToRankingClick = {},
+                            animateScore = false,
+                        )
     }
 }

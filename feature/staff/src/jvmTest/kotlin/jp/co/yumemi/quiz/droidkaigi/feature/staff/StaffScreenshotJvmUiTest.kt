@@ -646,13 +646,26 @@ private val sampleQuestions = listOf(
 private const val SAMPLE_COMPLETED_AT = 1_783_607_520_000L
 
 private val sampleRanking = listOf(
-    RankingEntry(nickname = "Alice", score = 320, completedAtEpochMillis = SAMPLE_COMPLETED_AT, id = "alice"),
-    RankingEntry(nickname = "Bob", score = 280, completedAtEpochMillis = SAMPLE_COMPLETED_AT - 420_000L, id = "bob"),
+    RankingEntry(
+        nickname = "Alice",
+        score = 3,
+        completedAtEpochMillis = SAMPLE_COMPLETED_AT,
+        id = "alice",
+        totalCount = 3,
+    ),
+    RankingEntry(
+        nickname = "Bob",
+        score = 2,
+        completedAtEpochMillis = SAMPLE_COMPLETED_AT - 420_000L,
+        id = "bob",
+        totalCount = 3,
+    ),
     RankingEntry(
         nickname = "Carol",
-        score = 250,
+        score = 1,
         completedAtEpochMillis = SAMPLE_COMPLETED_AT - 1_020_000L,
         id = "carol",
+        totalCount = 3,
     ),
 )
 

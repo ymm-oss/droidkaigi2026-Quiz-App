@@ -33,7 +33,8 @@ staffAppRelease/latest         # ドキュメント ID 固定。スタッフ Des
 
 folders/{folderId}/rankings/{entryId}
   nickname: string
-  score: number
+  score: number               # 正解数（ランキングの並び）
+  totalCount: number          # 問題数（旧ドキュメントでは欠落しうる）
   completedAtEpochMillis: number
   dateKey: string               # 例 "2026-06-04"（InstantProvider の当日）
 ```

@@ -9,6 +9,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.ReorderItem
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoice
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoiceAnswer
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -51,9 +52,8 @@ class QuizScorerTest {
     }
 
     @Test
-    fun score_includesTimeBonus() {
-        val scoreFast = QuizScorer.calculateScore(3, 3, elapsedMillis = 5_000)
-        val scoreSlow = QuizScorer.calculateScore(3, 3, elapsedMillis = 120_000)
-        assertTrue(scoreFast > scoreSlow)
+    fun score_isCorrectCount_withoutTimeBonus() {
+        assertEquals(3, QuizScorer.calculateScore(3))
+        assertEquals(0, QuizScorer.calculateScore(0))
     }
 }

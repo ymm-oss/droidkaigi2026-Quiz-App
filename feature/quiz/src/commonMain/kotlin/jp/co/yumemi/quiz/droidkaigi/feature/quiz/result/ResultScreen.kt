@@ -69,7 +69,6 @@ fun ResultScreen(
         nickname = state.nickname,
         correctCount = state.correctCount,
         totalCount = state.totalCount,
-        targetScore = state.targetScore,
         rankingVisible = rankingVisible,
         onGoToRankingClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
         onGoHomeClick = onGoHome,
@@ -81,7 +80,6 @@ fun ResultContent(
     nickname: String,
     correctCount: Int,
     totalCount: Int,
-    targetScore: Int,
     onGoToRankingClick: () -> Unit,
     onGoHomeClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -89,10 +87,10 @@ fun ResultContent(
     primaryActionLabel: String? = null,
     rankingVisible: Boolean = true,
 ) {
-    val displayedScore = if (animateScore) {
-        QuizMotion.animateScore(targetScore)
+    val displayedCorrect = if (animateScore) {
+        QuizMotion.animateScore(correctCount)
     } else {
-        targetScore
+        correctCount
     }
     val actionLabel = primaryActionLabel ?: stringResource(Res.string.result_go_ranking)
 
@@ -126,12 +124,6 @@ fun ResultContent(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                    Text(
-                        text = stringResource(Res.string.result_correct_count, correctCount, totalCount),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
                     Text(
                         text = stringResource(Res.string.result_score_label),
@@ -139,7 +131,7 @@ fun ResultContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "$displayedScore",
+                        text = stringResource(Res.string.result_correct_count, displayedCorrect, totalCount),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.primary,
                     )

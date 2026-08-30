@@ -12,7 +12,7 @@
 |------|------|
 | Home | ニックネーム入力、クイズ開始。`sitePublished == false` のときは受付前メッセージを表示し開始不可 |
 | Quiz | 問題形式に応じた UI、進捗（1-based `n / N`）、回答。回答後は全画面フィードバック → タップで次へ／結果へ |
-| Result | スコア表示（アニメーション）、ランキングへ |
+| Result | 正解数（`n / N`）。ランキングへ |
 | Ranking | 当日 Top N、自分の行をハイライト、各エントリの回答完了日時（`MM/dd HH:mm`、欠落時は「不明」）を表示 |
 
 ## 問題形式 AC
@@ -23,11 +23,11 @@
 
 ## 採点
 
-- `score = correctCount * 100 + timeBonus`
-- `timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)`
-- 経過時間はクイズ開始〜**最終回答提出時点**（フィードバック閲覧中は含めない）
+- `score = correctCount`（時間ボーナスなし）
+- 結果・ランキングの表示は `correctCount / totalCount`
+- 同点は完了が早い順
 - 回答提出〜完了判定〜採点〜ランキング送信は `QuizPlayUseCase` に集約する。ViewModel は Intent → use case → UiState/Event の変換に限定する。
-- 共有プレイ状態は `QuizSessionStore`（実装: `QuizSessionHolder`）。`finishedAtEpochMillis` / `pendingResult` は ViewModel 再生成後も保持し、送信失敗時の再試行で timeBonus を変えない。
+- 共有プレイ状態は `QuizSessionStore`（実装: `QuizSessionHolder`）。`finishedAtEpochMillis` / `pendingResult` は ViewModel 再生成後も保持し、送信失敗時の再試行で採点結果を変えない。
 
 ## データ・ランキング
 

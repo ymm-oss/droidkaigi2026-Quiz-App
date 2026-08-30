@@ -126,8 +126,8 @@ class QuizLayoutScreenshotAndroidTest {
                     QuizTheme {
                         RankingContent(
                             entries = listOf(
-                                RankingEntry("Alice", 250, 1_700_000_000_000L),
-                                RankingEntry("Bob", 180, 1_700_000_100_000L),
+                                RankingEntry("Alice", 3, 1_700_000_000_000L, totalCount = 3),
+                                RankingEntry("Bob", 2, 1_700_000_100_000L, totalCount = 3),
                             ),
                             highlightNickname = "Alice",
                             isLoading = false,

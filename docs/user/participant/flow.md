@@ -10,7 +10,7 @@
 |------|------|
 | [ホーム](/user/participant/home) | ニックネーム入力・言語切替・開始 |
 | [クイズ](/user/participant/quiz) | 問題形式に応じた回答 UI と正誤フィードバック |
-| [結果](/user/participant/result) | 正解数とスコア表示 |
+| [結果](/user/participant/result) | 正解数（`正解数 / 問題数`） |
 | [ランキング](/user/participant/ranking) | 当日の上位と自分の位置 |
 
 タブレットなど幅が広い端末では、ナビゲーションレール（NavRail）が表示されます。

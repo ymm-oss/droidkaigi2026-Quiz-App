@@ -13,12 +13,8 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoice
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoiceAnswer
 
 object QuizScorer {
-    /** score = correctCount * 100 + timeBonus (max 50, decreases with elapsed seconds) */
-    fun calculateScore(correctCount: Int, totalCount: Int, elapsedMillis: Long): Int {
-        val base = correctCount * 100
-        val timeBonus = (50 - (elapsedMillis / 1000).toInt()).coerceIn(0, 50)
-        return base + timeBonus
-    }
+    /** Ranking score is the number of correct answers (no time bonus). */
+    fun calculateScore(correctCount: Int): Int = correctCount.coerceAtLeast(0)
 
     fun isCorrect(question: Question, answer: Answer?): Boolean {
         if (answer == null || answer.questionId != question.id) return false
@@ -38,7 +34,7 @@ object QuizScorer {
             nickname = session.nickname,
             correctCount = correct,
             totalCount = session.quizSet.questions.size,
-            score = calculateScore(correct, session.quizSet.questions.size, elapsed),
+            score = calculateScore(correct),
             elapsedMillis = elapsed,
         )
     }

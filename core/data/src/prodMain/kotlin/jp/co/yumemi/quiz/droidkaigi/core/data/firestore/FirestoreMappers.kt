@@ -41,6 +41,7 @@ internal fun RankingFirestoreDocument.toDomain(entryId: String): RankingEntry = 
     score = score,
     completedAtEpochMillis = completedAtEpochMillis,
     id = entryId,
+    totalCount = totalCount,
 )
 
 private fun Question.toQuestionDto(): jp.co.yumemi.quiz.droidkaigi.core.data.dto.QuestionDto = when (this) {

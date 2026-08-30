@@ -13,7 +13,7 @@ import kotlin.coroutines.cancellation.CancellationException
  *
  * UI feedback timing (tap-to-continue, any fixed presentation delay) stays in the presentation
  * layer and must not call into this use case until the user continues — so delays never change
- * [QuizSessionStore.finishedAtEpochMillis] / timeBonus.
+ * [QuizSessionStore.finishedAtEpochMillis] or the stored result used on retry.
  */
 class QuizPlayUseCase(
     private val quizEngine: QuizEngine,
