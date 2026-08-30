@@ -290,7 +290,8 @@ private fun rankingTestDeps(
 
         override suspend fun setSitePublished(published: Boolean) = error("unused")
 
-        override fun observeAppConfig() = kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
+        override fun observeAppConfig() =
+            kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
     val instantProvider = object : InstantProvider {
         override fun nowEpochMillis(): Long = 0L

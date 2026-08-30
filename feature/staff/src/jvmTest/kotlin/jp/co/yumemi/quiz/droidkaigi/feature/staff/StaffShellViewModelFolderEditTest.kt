@@ -127,7 +127,8 @@ class StaffShellViewModelFolderEditTest {
 
         override suspend fun setSitePublished(published: Boolean) = Unit
 
-        override fun observeAppConfig() = kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
+        override fun observeAppConfig() =
+            kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
 
     private object NoopRankingRepository : RankingRepository {
