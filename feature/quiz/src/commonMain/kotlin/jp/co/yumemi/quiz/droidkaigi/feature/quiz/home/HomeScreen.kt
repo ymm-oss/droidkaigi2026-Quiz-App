@@ -240,11 +240,17 @@ fun HomeContent(
                                 )
                             }
                         }
+                        val foldersLoadFailed = publishedFolders == null && errorMessage != null
                         QuizPrimaryButton(
-                            text = stringResource(Res.string.home_start),
-                            onClick = onStartClick,
+                            text = if (foldersLoadFailed) {
+                                stringResource(Res.string.home_site_status_retry)
+                            } else {
+                                stringResource(Res.string.home_start)
+                            },
+                            onClick = if (foldersLoadFailed) onRetrySiteStatusClick else onStartClick,
                             loading = isLoading,
-                            enabled = publishedFolders != null && publishedFolders.isNotEmpty(),
+                            enabled = foldersLoadFailed ||
+                                (publishedFolders != null && publishedFolders.isNotEmpty()),
                         )
                     }
                 }

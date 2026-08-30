@@ -43,4 +43,27 @@ class HomeContentJvmUiTest {
         onNodeWithText("クイズを始める").assertIsDisplayed()
         onNodeWithText("一般向け").assertIsDisplayed()
     }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun homeContent_folderLoadFailed_showsRetry() = runComposeUiTest {
+        setContent {
+            CompositionLocalProvider(LocalAppLocale provides "ja") {
+                key("ja") {
+                    QuizTheme {
+                        HomeContent(
+                            nickname = "",
+                            isLoading = false,
+                            errorMessage = "公開フォルダの取得に失敗しました",
+                            publishedFolders = null,
+                            onNicknameChange = {},
+                            onStartClick = {},
+                        )
+                    }
+                }
+            }
+        }
+
+        onNodeWithText("再試行").assertIsDisplayed()
+    }
 }

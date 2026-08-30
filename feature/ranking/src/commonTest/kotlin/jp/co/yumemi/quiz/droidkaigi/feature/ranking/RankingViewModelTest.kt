@@ -304,6 +304,55 @@ class RankingViewModelTest {
 
         assertEquals(listOf("played"), requested)
     }
+
+    @Test
+    fun publishedFolderIdsChange_sameViewedFolder_doesNotRestartListen() = runTest {
+        var observeCount = 0
+        val rows = kotlinx.coroutines.flow.MutableStateFlow(
+            listOf(RankingEntry("Alice", 100, 1_700_000_000_000)),
+        )
+        val sessionHolder = QuizSessionHolder()
+        val holder = SiteStatusHolder()
+        holder.applyStatus(
+            jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "easy",
+                publishedFolderIds = listOf("easy"),
+            ),
+        )
+        val viewModel = RankingViewModel(
+            rankingTestDeps(
+                rankings = { emptyList() },
+                observeRankings = {
+                    observeCount += 1
+                    rows
+                },
+                sessionHolder = sessionHolder,
+                siteStatusHolder = holder,
+                catalogFolders = {
+                    listOf(
+                        QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
+                        QuizFolder(id = "hard", name = "高難易度", sortOrder = 1),
+                    )
+                },
+            ),
+        )
+
+        assertEquals(1, observeCount)
+        assertEquals(false, viewModel.uiState.value.isLoading)
+        holder.applyStatus(
+            jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "easy",
+                publishedFolderIds = listOf("easy", "hard"),
+            ),
+        )
+
+        assertEquals(1, observeCount)
+        assertEquals(false, viewModel.uiState.value.isLoading)
+        assertEquals("Alice", viewModel.uiState.value.entries.single().nickname)
+        assertEquals(listOf("easy", "hard"), viewModel.uiState.value.publishedFolders.map { it.id })
+    }
 }
 
 private fun rankingTestDeps(

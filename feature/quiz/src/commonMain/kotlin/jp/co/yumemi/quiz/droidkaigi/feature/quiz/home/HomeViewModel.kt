@@ -48,7 +48,12 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
 
     fun onIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
+            is HomeIntent.NicknameChanged -> _uiState.update { state ->
+                state.copy(
+                    nickname = intent.value,
+                    error = state.error.takeIf { it is HomeError.LoadFailed },
+                )
+            }
 
             is HomeIntent.SelectPublishedFolder ->
                 _uiState.update { it.copy(selectedFolderId = intent.folderId, error = null) }

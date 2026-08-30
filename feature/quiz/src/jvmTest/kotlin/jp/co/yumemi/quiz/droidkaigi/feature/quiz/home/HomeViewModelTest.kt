@@ -189,6 +189,41 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun publishedFoldersLoadFailure_keepsErrorWhenNicknameChanges() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.listError = IllegalStateException("config down")
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, holder))
+        holder.applyStatus(AppConfigStatus(sitePublished = true, activeFolderId = "easy"))
+        advanceUntilIdle()
+
+        viewModel.onIntent(HomeIntent.NicknameChanged("Alice"))
+        advanceUntilIdle()
+
+        assertIs<HomeError.LoadFailed>(viewModel.uiState.value.error)
+        assertEquals("Alice", viewModel.uiState.value.nickname)
+    }
+
+    @Test
+    fun retryAfterPublishedFoldersLoadFailure_reloadsPicker() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.listError = IllegalStateException("config down")
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, holder))
+        holder.applyStatus(AppConfigStatus(sitePublished = true, activeFolderId = "easy"))
+        advanceUntilIdle()
+        assertIs<HomeError.LoadFailed>(viewModel.uiState.value.error)
+
+        catalog.listError = null
+        catalog.publishedFolders = listOf(QuizFolder(id = "easy", name = "一般向け", sortOrder = 0))
+        viewModel.onIntent(HomeIntent.RetrySiteStatus)
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.error)
+        assertEquals(listOf("easy"), viewModel.uiState.value.publishedFolders?.map { it.id })
+    }
+
+    @Test
     fun startQuiz_twoFoldersWithoutSelection_showsSelectError() = runTest(dispatcher) {
         val catalog = ControllableCatalog()
         catalog.publishedFolders = listOf(

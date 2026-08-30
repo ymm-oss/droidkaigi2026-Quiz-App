@@ -35,7 +35,7 @@ sealed interface HomeIntent {
     /** Home が再表示されたときに loading を解除（中断復帰後の二重開始防止フラグ残り対策）。 */
     data object Shown : HomeIntent
 
-    /** 受付状況の取得失敗後の再試行。 */
+    /** 受付状況または公開フォルダ一覧の取得失敗後の再試行。 */
     data object RetrySiteStatus : HomeIntent
 }
 

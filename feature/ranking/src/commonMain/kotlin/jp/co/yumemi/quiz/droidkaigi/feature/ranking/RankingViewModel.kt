@@ -7,6 +7,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
@@ -38,8 +40,7 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
             combine(
                 listenRetry,
                 userSelectedFolderId,
-                deps.siteStatusHolder.publishedFolderIds,
-            ) { _, selected, _ -> selected }
+            ) { _, selected -> selected }
                 .flatMapLatest { selected ->
                     rankingFolderFlow(selected).distinctUntilChanged().flatMapLatest { folderId ->
                         listenRankings(folderId)
@@ -76,10 +77,7 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
         }
         _uiState.update { it.copy(publishedFolders = folders) }
 
-        val initial = resolveFolderId(folders, selected)
-            ?: selected?.takeIf { it.isNotBlank() }
-            ?: deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
-            ?: runCatching { deps.getActiveQuizFolderIdUseCase() }.getOrNull()?.takeIf { it.isNotBlank() }
+        val initial = resolveListeningFolderId(folders, selected)
         if (initial == null) {
             _uiState.update {
                 it.copy(
@@ -92,10 +90,23 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
             awaitCancellation()
         }
         emit(initial)
-        if (playbackFolderId != null && selected == null) return@flow
-        if (selected != null) return@flow
-        deps.siteStatusHolder.publishedFolderIds.collect { ids ->
-            if (ids.isNotEmpty()) emit(resolveFolderId(folders, selected) ?: ids.first())
+        followPublishedFolderIds(selected)
+    }
+
+    private suspend fun FlowCollector<String>.followPublishedFolderIds(selected: String?) {
+        val keepCurrentFolder = selected != null || playbackFolderId != null
+        deps.siteStatusHolder.publishedFolderIds.drop(1).collect {
+            val refreshed = try {
+                deps.listPublishedQuizFoldersUseCase()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (@Suppress("TooGenericExceptionCaught") _: Exception) {
+                return@collect
+            }
+            _uiState.update { it.copy(publishedFolders = refreshed) }
+            if (keepCurrentFolder) return@collect
+            val next = resolveListeningFolderId(refreshed, selected)
+            if (next != null) emit(next)
         }
     }
 
@@ -123,6 +134,13 @@ class RankingViewModel(private val deps: AppDependencies = AppDependencies.share
                 }
                 emit(Unit)
             }
+    }
+
+    private suspend fun resolveListeningFolderId(folders: List<QuizFolder>, selected: String?): String? {
+        return resolveFolderId(folders, selected)
+            ?: selected?.takeIf { it.isNotBlank() }
+            ?: deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
+            ?: runCatching { deps.getActiveQuizFolderIdUseCase() }.getOrNull()?.takeIf { it.isNotBlank() }
     }
 
     private fun resolveFolderId(folders: List<QuizFolder>, selected: String?): String? {
