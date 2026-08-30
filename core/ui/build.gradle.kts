@@ -32,6 +32,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core:domain"))
             implementation(libs.compose.runtime)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.material.icons.extended)

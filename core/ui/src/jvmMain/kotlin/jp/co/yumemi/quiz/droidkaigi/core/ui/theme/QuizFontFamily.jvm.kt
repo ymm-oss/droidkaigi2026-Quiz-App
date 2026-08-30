@@ -1,7 +1,8 @@
 package jp.co.yumemi.quiz.droidkaigi.core.ui.theme
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.font.FontFamily
+
+private val systemFonts = QuizFonts(fontFamily = null, isReady = true)
 
 @Composable
-actual fun quizFontFamily(): FontFamily? = null
+actual fun rememberQuizFonts(): QuizFonts = systemFonts
