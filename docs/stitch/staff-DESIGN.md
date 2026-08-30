@@ -61,7 +61,7 @@ Centered card max ~480dp: badge Staff · hero title · email/password · primary
 Page title (folder/set name) · Reload · Add question · drag-reorder list of question cards (type · prompt · correct · explanation · Edit/Delete).
 
 ### Ranking
-`本日のランキング` · Refresh · ranked rows (rank · nickname · correct/total · completed time `MM/dd HH:mm` or 不明).
+`本日のランキング` · ranked rows (rank · nickname · correct/total · completed time `MM/dd HH:mm` or 不明). Live list; no manual refresh.
 
 ### Dialogs
 - Question editor: type dropdown · Markdown prompt+preview · choices (radio/checkbox/reorder) · explanation · Save/Cancel

@@ -65,6 +65,20 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
     init {
         refresh()
+        viewModelScope.launch {
+            deps.siteStatusHolder.sitePublished.collect { published ->
+                if (published != null) {
+                    _uiState.update { it.copy(sitePublished = published) }
+                }
+            }
+        }
+        viewModelScope.launch {
+            deps.siteStatusHolder.activeFolderId.collect { folderId ->
+                if (!folderId.isNullOrBlank()) {
+                    _uiState.update { it.copy(activeFolderId = folderId) }
+                }
+            }
+        }
     }
 
     fun onIntent(intent: StaffShellIntent) {
@@ -176,12 +190,14 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             runCatching {
                 withTimeout(STAFF_SHELL_REFRESH_TIMEOUT_MS) {
                     val folders = deps.listQuizFoldersUseCase()
-                    val activeId = runCatching { deps.getActiveQuizFolderIdUseCase() }
-                        .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
-                        .getOrNull()
-                    val sitePublished = runCatching { deps.getSitePublishedUseCase() }
-                        .onFailure { staffLog("getSitePublished failed: ${it.message}") }
-                        .getOrDefault(false)
+                    val activeId = deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
+                        ?: runCatching { deps.getActiveQuizFolderIdUseCase() }
+                            .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
+                            .getOrNull()
+                    val sitePublished = deps.siteStatusHolder.sitePublished.value
+                        ?: runCatching { deps.getSitePublishedUseCase() }
+                            .onFailure { staffLog("getSitePublished failed: ${it.message}") }
+                            .getOrDefault(false)
                     val selected = _uiState.value.selectedFolderId
                         ?: activeId?.takeIf { id -> folders.any { it.id == id } }
                         ?: folders.firstOrNull()?.id
@@ -193,12 +209,14 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     RefreshPayload(folders, activeId, selected, sitePublished)
                 }
             }.onSuccess { payload ->
+                val liveActiveId = deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
+                val livePublished = deps.siteStatusHolder.sitePublished.value
                 _uiState.update {
                     it.copy(
                         folders = payload.folders,
-                        activeFolderId = payload.activeId,
+                        activeFolderId = liveActiveId ?: payload.activeId,
                         selectedFolderId = payload.selected,
-                        sitePublished = payload.sitePublished,
+                        sitePublished = livePublished ?: payload.sitePublished,
                         isLoading = false,
                     )
                 }

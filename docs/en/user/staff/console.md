@@ -46,7 +46,7 @@ Participants already answering stay on the folder they started, and their score 
 
 ## Ranking management
 
-View and delete today's rankings for the selected folder.
+View and delete today's rankings for the selected folder. New completions appear in the list in realtime, so a manual refresh is not needed.
 
 - **Delete one**: trash icon on a row → confirm dialog → delete
 - **Delete all today**: 「すべて削除」→ confirm dialog → clear today's entries

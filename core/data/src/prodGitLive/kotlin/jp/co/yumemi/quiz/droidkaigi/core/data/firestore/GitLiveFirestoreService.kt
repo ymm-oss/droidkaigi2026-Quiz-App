@@ -4,6 +4,8 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.Source
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 internal class GitLiveFirestoreService : BaseFirestoreService() {
     private val db get() = Firebase.firestore
@@ -56,6 +58,18 @@ internal class GitLiveFirestoreService : BaseFirestoreService() {
             .setAndAwaitServer(AppConfigFirestoreDocument.serializer(), document)
     }
 
+    override fun observeAppConfig(): Flow<AppConfigFirestoreDocument?> =
+        db.collection(FirestorePaths.APP_CONFIG)
+            .document(FirestorePaths.APP_CONFIG_DEFAULT)
+            .snapshots
+            .map { snapshot ->
+                if (!snapshot.exists) {
+                    null
+                } else {
+                    snapshot.data(AppConfigFirestoreDocument.serializer())
+                }
+            }
+
     override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? {
         val snapshot = db.collection(FirestorePaths.STAFF_APP_RELEASE)
             .document(FirestorePaths.STAFF_APP_RELEASE_LATEST)
@@ -99,6 +113,21 @@ internal class GitLiveFirestoreService : BaseFirestoreService() {
                     ?.let { snapshot.id to it }
             }
     }
+
+    override fun observeQueryRankings(
+        folderId: String,
+        dateKey: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>> =
+        rankingsCollection(folderId)
+            .where { "dateKey" equalTo dateKey }
+            .snapshots
+            .map { querySnapshot ->
+                querySnapshot.documents.mapNotNull { snapshot ->
+                    runCatching { snapshot.data(RankingFirestoreDocument.serializer()) }
+                        .getOrNull()
+                        ?.let { snapshot.id to it }
+                }
+            }
 
     override fun isMissingCompositeIndexError(error: Throwable): Boolean = error.isFirestoreMissingCompositeIndexError()
 

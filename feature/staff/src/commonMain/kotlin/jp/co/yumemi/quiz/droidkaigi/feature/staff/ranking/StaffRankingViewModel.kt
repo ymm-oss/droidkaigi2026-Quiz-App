@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -17,9 +19,10 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     val uiState: StateFlow<StaffRankingUiState> = _uiState.asStateFlow()
 
     private var dataGeneration = 0
+    private var listenJob: Job? = null
 
     init {
-        refresh()
+        listen()
     }
 
     fun onIntent(intent: StaffRankingIntent) {
@@ -36,78 +39,79 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     }
 
     private fun refresh() {
+        listen()
+    }
+
+    private fun listen() {
+        listenJob?.cancel()
         val generation = ++dataGeneration
-        viewModelScope.launch {
+        listenJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, loadError = null, reloadWarning = null) }
-            try {
-                val entries = deps.getTodayRankingsUseCase(folderId)
-                if (generation != dataGeneration) return@launch
-                _uiState.update {
-                    it.copy(entries = entries, isLoading = false, loadError = null)
+            deps.observeTodayRankingsUseCase(folderId)
+                .catch { error ->
+                    if (error is CancellationException) throw error
+                    if (generation != dataGeneration) return@catch
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            loadError = error.message ?: "ランキングの読み込みに失敗しました",
+                        )
+                    }
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                if (generation != dataGeneration) return@launch
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        loadError = e.message ?: "ランキングの読み込みに失敗しました",
-                    )
+                .collect { entries ->
+                    if (generation != dataGeneration) return@collect
+                    _uiState.update {
+                        it.copy(entries = entries, isLoading = false, loadError = null)
+                    }
                 }
-            }
         }
     }
 
     private fun deleteEntry(entryId: String) {
         if (entryId.isBlank()) return
-        val generation = ++dataGeneration
         viewModelScope.launch {
             _uiState.update { it.copy(isMutating = true, mutationError = null, reloadWarning = null) }
             try {
                 deps.deleteRankingEntryUseCase(folderId, entryId)
+                listenJob?.cancel()
+                val generation = ++dataGeneration
                 reloadEntriesAfterMutation(
                     generation = generation,
                     optimisticEntries = { current -> current.filterNot { it.id == entryId } },
                 )
+                if (generation == dataGeneration) listen()
             } catch (e: CancellationException) {
                 throw e
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                if (generation == dataGeneration) {
-                    _uiState.update {
-                        it.copy(mutationError = e.message ?: "ランキングの削除に失敗しました")
-                    }
+                _uiState.update {
+                    it.copy(mutationError = e.message ?: "ランキングの削除に失敗しました")
                 }
             } finally {
-                if (generation == dataGeneration) {
-                    _uiState.update { it.copy(isMutating = false) }
-                }
+                _uiState.update { it.copy(isMutating = false) }
             }
         }
     }
 
     private fun clearToday() {
-        val generation = ++dataGeneration
         viewModelScope.launch {
             _uiState.update { it.copy(isMutating = true, mutationError = null, reloadWarning = null) }
             try {
                 deps.clearTodayRankingsUseCase(folderId)
+                listenJob?.cancel()
+                val generation = ++dataGeneration
                 reloadEntriesAfterMutation(
                     generation = generation,
                     optimisticEntries = { emptyList() },
                 )
+                if (generation == dataGeneration) listen()
             } catch (e: CancellationException) {
                 throw e
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-                if (generation == dataGeneration) {
-                    _uiState.update {
-                        it.copy(mutationError = e.message ?: "ランキングの一括削除に失敗しました")
-                    }
+                _uiState.update {
+                    it.copy(mutationError = e.message ?: "ランキングの一括削除に失敗しました")
                 }
             } finally {
-                if (generation == dataGeneration) {
-                    _uiState.update { it.copy(isMutating = false) }
-                }
+                _uiState.update { it.copy(isMutating = false) }
             }
         }
     }

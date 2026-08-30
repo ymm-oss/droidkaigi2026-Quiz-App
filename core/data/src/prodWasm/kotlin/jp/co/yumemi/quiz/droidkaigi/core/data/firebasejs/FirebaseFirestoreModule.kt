@@ -15,6 +15,19 @@ internal external fun collection(firestore: FirestoreJs, path: String): Collecti
 
 internal external fun getDoc(reference: DocumentReferenceJs): Promise<DocumentSnapshotJs>
 
+/** Returns an unsubscribe function. */
+internal external fun onSnapshot(
+    reference: DocumentReferenceJs,
+    onNext: (DocumentSnapshotJs) -> Unit,
+    onError: (error: JsAny) -> Unit,
+): JsAny
+
+internal external fun onSnapshot(
+    query: QueryJs,
+    onNext: (QuerySnapshotJs) -> Unit,
+    onError: (error: JsAny) -> Unit,
+): JsAny
+
 internal external fun setDoc(reference: DocumentReferenceJs, data: JsAny): Promise<JsAny?>
 
 internal external fun deleteDoc(reference: DocumentReferenceJs): Promise<JsAny?>

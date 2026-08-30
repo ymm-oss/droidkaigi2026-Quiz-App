@@ -4,6 +4,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.RankingRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ClearTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.DeleteRankingEntryUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SubmitScoreUseCase
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ContributesTo
@@ -20,6 +21,10 @@ object RankingUseCaseBindings {
     @Provides
     fun provideGetTodayRankingsUseCase(rankingRepository: RankingRepository): GetTodayRankingsUseCase =
         GetTodayRankingsUseCase(rankingRepository)
+
+    @Provides
+    fun provideObserveTodayRankingsUseCase(rankingRepository: RankingRepository): ObserveTodayRankingsUseCase =
+        ObserveTodayRankingsUseCase(rankingRepository)
 
     @Provides
     fun provideDeleteRankingEntryUseCase(rankingRepository: RankingRepository): DeleteRankingEntryUseCase =

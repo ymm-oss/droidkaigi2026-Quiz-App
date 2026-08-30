@@ -99,7 +99,6 @@ class StaffScreenshotJvmUiTest {
                         entries = sampleRanking,
                         isLoading = false,
                         loadError = null,
-                        onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},
                     )
@@ -313,7 +312,6 @@ class StaffScreenshotJvmUiTest {
                         isLoading = false,
                         isMutating = true,
                         loadError = null,
-                        onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},
                     )
@@ -490,7 +488,6 @@ class StaffScreenshotJvmUiTest {
                         entries = sampleRanking,
                         isLoading = false,
                         loadError = null,
-                        onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},
                     )
@@ -519,7 +516,6 @@ class StaffScreenshotJvmUiTest {
                         entries = sampleRanking,
                         isLoading = false,
                         loadError = null,
-                        onRefresh = {},
                         onRequestDeleteEntry = {},
                         onRequestClearToday = {},
                     )

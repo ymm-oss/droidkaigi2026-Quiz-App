@@ -34,8 +34,8 @@
 ### 本番（`quiz.runtime=prod`）
 
 - **問題**: `QuizCatalogRepository` 経由でリモート（`getActiveFolderId` → `getQuizSet`）。
-- **サイト公開**: `appConfig.sitePublished`（スタッフが ON/OFF）。参加者 Home は起動時に参照し、非公開なら開始不可。
-- **ランキング**: リモートから当日分を取得。クイズ完了時に `SubmitScoreUseCase` で送信。
+- **サイト公開**: `appConfig.sitePublished`（スタッフが ON/OFF）。参加者・スタッフは `appConfig/default` をリアルタイム購読する。Home は開きっぱなしでも受付 ON/OFF を追従し、非公開なら開始不可。プレイ中の問題セットは開始時のスナップショットのまま差し替えない。
+- **ランキング**: 当日分を `dateKey` クエリでリアルタイム購読。クイズ完了時に `SubmitScoreUseCase` で送信。回答中は開始時フォルダのスナップショットを維持し、結果ランキングもそのフォルダ（`playbackFolderId`）を表示する。
 - **ネットワーク必須**。取得・送信失敗時はエラー表示（同梱 JSON やインメモリへのサイレントフォールバックなし）。
 
 ### 開発（`quiz.runtime=fake`、Gradle 既定）

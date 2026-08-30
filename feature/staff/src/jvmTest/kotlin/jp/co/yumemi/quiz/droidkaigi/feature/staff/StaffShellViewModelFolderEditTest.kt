@@ -52,6 +52,25 @@ class StaffShellViewModelFolderEditTest {
     }
 
     @Test
+    fun holderUpdates_followSitePublishedAndActiveFolder() = runTest {
+        val holder = jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder()
+        val catalog = RecordingCatalogRepository()
+        val viewModel = StaffShellViewModel(
+            staffTestAppDependencies(catalog, NoopRankingRepository, siteStatusHolder = holder),
+        )
+        holder.applyStatus(
+            jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "day2",
+            ),
+        )
+        val state = viewModel.uiState.value
+        assertEquals(true, state.sitePublished)
+        assertEquals("day2", state.activeFolderId)
+        assertEquals("day1", state.selectedFolderId)
+    }
+
+    @Test
     fun updateFolder_withBlankName_keepsDialogOpenAndSkipsWrite() = runTest {
         val catalog = RecordingCatalogRepository()
         val viewModel = StaffShellViewModel(staffTestAppDependencies(catalog, NoopRankingRepository))
@@ -107,6 +126,9 @@ class StaffShellViewModelFolderEditTest {
         override suspend fun getSitePublished(): Boolean = false
 
         override suspend fun setSitePublished(published: Boolean) = Unit
+
+        override fun observeAppConfig() =
+            kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
 
     private object NoopRankingRepository : RankingRepository {

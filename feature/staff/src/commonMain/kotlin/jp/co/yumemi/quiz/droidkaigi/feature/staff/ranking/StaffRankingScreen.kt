@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.staff.ranking
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,10 +48,10 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.time.formatCompletedAtLabel
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTokens
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.StaffConfirmDialog
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffContentPane
-import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffFilledButton
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffHorizontalDivider
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffOutlinedButton
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffSectionHeader
+import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffTextButton
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.staffDividerColor
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.truncateForDialog
 
@@ -73,7 +73,7 @@ fun StaffRankingScreen(
         loadError = state.loadError,
         mutationError = state.mutationError,
         reloadWarning = state.reloadWarning,
-        onRefresh = { viewModel.onIntent(StaffRankingIntent.Refresh) },
+        onRetryLoad = { viewModel.onIntent(StaffRankingIntent.Refresh) },
         onRequestDeleteEntry = {
             viewModel.onIntent(StaffRankingIntent.ClearMutationFeedback)
             deleteConfirmed = false
@@ -227,11 +227,11 @@ fun StaffRankingContent(
     entries: List<RankingEntry>,
     isLoading: Boolean,
     loadError: String?,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     isMutating: Boolean = false,
     mutationError: String? = null,
     reloadWarning: String? = null,
+    onRetryLoad: (() -> Unit)? = null,
     onRequestDeleteEntry: (RankingEntry) -> Unit = {},
     onRequestClearToday: () -> Unit = {},
 ) {
@@ -244,12 +244,6 @@ fun StaffRankingContent(
                 onClick = onRequestClearToday,
                 enabled = actionsEnabled && entries.isNotEmpty(),
                 destructive = true,
-            )
-            StaffFilledButton(
-                text = "更新",
-                icon = Icons.Default.Refresh,
-                onClick = onRefresh,
-                enabled = actionsEnabled,
             )
         }
         Spacer(modifier = Modifier.height(QuizTokens.spacingExtraLarge))
@@ -290,13 +284,14 @@ fun StaffRankingContent(
                     CircularProgressIndicator()
                 }
 
-                entries.isEmpty() && loadError != null -> StaffRankingNote(text = loadError, isError = true)
+                entries.isEmpty() && loadError != null ->
+                    StaffRankingLoadError(message = loadError, onRetry = onRetryLoad)
 
                 entries.isEmpty() -> StaffRankingNote(text = "本日のスコアはまだありません")
 
                 else -> {
                     if (loadError != null) {
-                        StaffRankingNote(text = loadError, isError = true)
+                        StaffRankingLoadError(message = loadError, onRetry = onRetryLoad)
                         StaffHorizontalDivider(alpha = 0.15f)
                     }
                     LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
@@ -428,6 +423,25 @@ private fun StaffRankingRow(rank: Int, entry: RankingEntry, deleteEnabled: Boole
                     modifier = Modifier.size(18.dp),
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun StaffRankingLoadError(message: String, onRetry: (() -> Unit)?) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        StaffRankingNote(text = message, isError = true)
+        if (onRetry != null) {
+            StaffTextButton(
+                text = "再試行",
+                icon = null,
+                onClick = onRetry,
+            )
+            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
         }
     }
 }
