@@ -1,6 +1,6 @@
 # Staff app overview
 
-Desktop console for venue staff to manage quiz sets and publish state.
+Console for venue staff. Use the Desktop app (`:staffDesktopApp`) on a venue PC, or sign in from the same Firebase Hosting site at the unlisted URL `/staff`. Security is Firebase Authentication, not URL obscurity. The layout is desktop-width first.
 
 ## Features
 

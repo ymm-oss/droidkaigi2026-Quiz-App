@@ -12,7 +12,7 @@
 |------|------|
 | Home | ニックネーム入力、公開中フォルダが複数なら種別選択、クイズ開始。`sitePublished == false` のときは受付前メッセージを表示し開始不可。公開フォルダが 0 件のときも開始不可 |
 | Quiz | 問題形式に応じた UI、進捗（1-based `n / N`）、回答。回答後は全画面フィードバック → タップで次へ／結果へ |
-| Result | スコア表示（アニメーション）、ランキングへ |
+| Result | 正解率（0〜100%）と完全正解数。ランキングへ |
 | Ranking | 当日 Top N、自分の行をハイライト、各エントリの回答完了日時（`MM/dd HH:mm`、欠落時は「不明」）を表示 |
 
 ## 問題形式 AC
@@ -23,19 +23,22 @@
 
 ## 採点
 
-- `score = correctCount * 100 + timeBonus`
-- `timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)`
-- 経過時間はクイズ開始〜**最終回答提出時点**（フィードバック閲覧中は含めない）
+- `score` は 0〜100 の正解率（各問の近さの平均。時間ボーナスなし）
+- 単一選択は一致で 100%、不一致で 0%
+- 複数選択は Jaccard（選んだ集合と正解集合の重なり）
+- 並び替えはペアの相対順が正しい割合（Kendall）。近い並びほど高い
+- 結果・ランキングの主表示は `score%`。完全一致した問数は補助表示
+- 同点は完了が早い順
 - 回答提出〜完了判定〜採点〜ランキング送信は `QuizPlayUseCase` に集約する。ViewModel は Intent → use case → UiState/Event の変換に限定する。
-- 共有プレイ状態は `QuizSessionStore`（実装: `QuizSessionHolder`）。`finishedAtEpochMillis` / `pendingResult` は ViewModel 再生成後も保持し、送信失敗時の再試行で timeBonus を変えない。
+- 共有プレイ状態は `QuizSessionStore`（実装: `QuizSessionHolder`）。`finishedAtEpochMillis` / `pendingResult` は ViewModel 再生成後も保持し、送信失敗時の再試行で採点結果を変えない。
 
 ## データ・ランキング
 
 ### 本番（`quiz.runtime=prod`）
 
 - **問題**: `QuizCatalogRepository` 経由でリモート（`listPublishedFolders` → 開始時に選んだフォルダの `getQuizSet`）。
-- **サイト公開**: `appConfig.sitePublished`（スタッフが ON/OFF）。参加者 Home は起動時に参照し、非公開なら開始不可。
-- **ランキング**: リモートから当日分を取得。クイズ完了時に `SubmitScoreUseCase` で送信。
+- **サイト公開**: `appConfig.sitePublished`（スタッフが ON/OFF）。参加者・スタッフは `appConfig/default` をリアルタイム購読する。Home は開きっぱなしでも受付 ON/OFF を追従し、非公開なら開始不可。プレイ中の問題セットは開始時のスナップショットのまま差し替えない。
+- **ランキング**: 当日分を `dateKey` クエリでリアルタイム購読（公開フォルダが複数なら種別切替）。クイズ完了時に `SubmitScoreUseCase` で送信。回答中は開始時フォルダのスナップショットを維持し、結果ランキングもそのフォルダ（`playbackFolderId`）を表示する。
 - **ネットワーク必須**。取得・送信失敗時はエラー表示（同梱 JSON やインメモリへのサイレントフォールバックなし）。
 
 ### 開発（`quiz.runtime=fake`、Gradle 既定）
@@ -59,10 +62,10 @@
 | `composeApp` | 共有 Compose UI・Nav3 |
 | `androidApp` | Android エントリ（`MainActivity`） |
 | `desktopApp` | Desktop エントリ（`main`） |
-| `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`） |
-| `staffComposeApp` / `staffDesktopApp` | スタッフ運営コンソール（Desktop） |
+| `wasmApp` | Web エントリ（`wasmJs` / `ComposeViewport`）。`/` は参加者、`/staff` はスタッフコンソール |
+| `staffComposeApp` / `staffDesktopApp` | スタッフ運営コンソール（Desktop JVM。Web は同じ Hosting の `/staff`） |
 
-## スタッフアプリ（`staffDesktopApp`）
+## スタッフアプリ（`staffDesktopApp` + Wasm `/staff`）
 
 | ランタイム | 認証 | データ |
 |------------|------|--------|
@@ -75,7 +78,7 @@
 - **サイト公開**の ON/OFF（`sitePublished`。参加者受付の可否）
 - 選択フォルダの **参加者プレビュー**（スマホ枠ダイアログで Quiz→Result。ランキング送信なし）
 - 当日ランキングの **個別削除・本日分一括削除**（いずれも確認ダイアログ必須。prod では `request.auth != null` のときのみ Firestore 上で削除可）
-- **アプリ更新通知**（prod）: ログイン後に `staffAppRelease/latest` を参照し、古い場合は Storage から DMG をダウンロードして手動インストール
+- **アプリ更新通知**（prod・Desktop のみ）: ログイン後に `staffAppRelease/latest` を参照し、古い場合は Storage から DMG をダウンロードして手動インストール。Wasm `/staff` では DMG 更新は出さない
 
 `quiz.runtime` は参加者アプリと共通。fake のローカル値は本番に持ち込まない。
 

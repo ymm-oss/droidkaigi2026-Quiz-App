@@ -6,14 +6,14 @@ DroidKaigi 2026 ships **two** quiz-related apps.
 
 | App | Audience | Platforms | What you can do |
 |-----|----------|-----------|-----------------|
-| **Participant** | Attendees | Android / Desktop (Web in progress) | Nickname → quiz → score → today's ranking |
-| **Staff** | Organizers | Desktop only | Edit questions/folders, publish, view rankings |
+| **Participant** | Attendees | Android / Desktop (Web in progress) | Nickname → quiz → correct count → today's ranking |
+| **Staff** | Organizers | Desktop, and participant Web `/staff` | Edit questions/folders, publish, view rankings |
 
 ## Participant flow (summary)
 
 1. **Home** — language + nickname, pick published quiz type, start quiz
 2. **Quiz** — single / multi / reorder, then correct/incorrect feedback
-3. **Result** — correct count and score
+3. **Result** — accuracy (0–100%)
 4. **Ranking** — today's Top N with your row highlighted
 
 See [Screen flow](/en/user/participant/flow).

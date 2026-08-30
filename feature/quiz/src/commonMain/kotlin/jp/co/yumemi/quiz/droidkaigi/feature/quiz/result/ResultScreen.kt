@@ -27,9 +27,10 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizPrimaryButton
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizScreenBackground
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSurfaceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_correct_count
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_go_ranking
-import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_percent
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_score_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_section
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_subtitle
@@ -69,7 +70,7 @@ fun ResultScreen(
         nickname = state.nickname,
         correctCount = state.correctCount,
         totalCount = state.totalCount,
-        targetScore = state.targetScore,
+        score = state.score,
         rankingVisible = rankingVisible,
         onGoToRankingClick = { viewModel.onIntent(ResultIntent.GoToRanking) },
         onGoHomeClick = onGoHome,
@@ -81,7 +82,7 @@ fun ResultContent(
     nickname: String,
     correctCount: Int,
     totalCount: Int,
-    targetScore: Int,
+    score: Int,
     onGoToRankingClick: () -> Unit,
     onGoHomeClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -90,9 +91,9 @@ fun ResultContent(
     rankingVisible: Boolean = true,
 ) {
     val displayedScore = if (animateScore) {
-        QuizMotion.animateScore(targetScore)
+        QuizMotion.animateScore(score)
     } else {
-        targetScore
+        score
     }
     val actionLabel = primaryActionLabel ?: stringResource(Res.string.result_go_ranking)
 
@@ -126,12 +127,6 @@ fun ResultContent(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                    Text(
-                        text = stringResource(Res.string.result_correct_count, correctCount, totalCount),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
                     Text(
                         text = stringResource(Res.string.result_score_label),
@@ -139,9 +134,15 @@ fun ResultContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "$displayedScore",
+                        text = stringResource(Res.string.result_percent, displayedScore),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
+                    Text(
+                        text = stringResource(Res.string.result_correct_count, correctCount, totalCount),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 if (rankingVisible) {

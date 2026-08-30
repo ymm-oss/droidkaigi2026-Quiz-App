@@ -1,6 +1,6 @@
 # Ranking
 
-Today's top scores.
+Today's ranking by accuracy.
 
 ## Screenshot
 
@@ -10,7 +10,7 @@ Today's top scores.
 
 | Item | Description |
 |------|-------------|
-| **Rank / nickname / score** | Today's Top N (**per published folder**) |
+| **Rank / nickname / accuracy** | Today's Top N (**per published folder**; `n%`; closer multi/reorder answers score higher) |
 | **Quiz type** | When multiple folders are published, switch to view that folder's ranking |
 | **Your row** | Highlighted when nickname matches Home input |
 | **Completed at** | `MM/dd HH:mm`, or “unknown” if missing |
@@ -19,4 +19,6 @@ Today's top scores.
 ## Notes
 
 - Only **today's** entries for the selected folder
-- Production needs network for fetch and score submit
+- New completions on the same quiz set appear in the list as they arrive
+- If staff switch the published set while you are still answering, ranking still shows the set you played
+- Production needs network for fetch and result submit

@@ -68,6 +68,7 @@ fun RankingScreen(onGoHome: () -> Unit, viewModel: RankingViewModel = viewModel 
 
     val errorMessage = when (val error = state.error) {
         null -> null
+
         is RankingError.LoadFailed -> error.detail?.takeIf { it.isNotBlank() }
             ?: stringResource(Res.string.ranking_error_load_failed)
     }

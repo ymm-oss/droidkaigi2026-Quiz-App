@@ -1,12 +1,16 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data
 
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import jp.co.yumemi.quiz.droidkaigi.core.data.di.AppScope
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.InstantProvider
-import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 
 @ContributesBinding(AppScope::class)
 @Inject
@@ -66,4 +70,9 @@ class InMemoryQuizCatalogRepository(
     }
 
     override suspend fun setSitePublished(published: Boolean) = catalog.withLock { setSitePublished(published) }
+
+    override fun observeAppConfig(): Flow<AppConfigStatus> = flow {
+        ensureSeeded()
+        emitAll(catalog.appConfig)
+    }
 }

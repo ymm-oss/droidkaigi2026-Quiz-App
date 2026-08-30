@@ -113,6 +113,7 @@ kotlin {
         // fake では @JsModule の import が存在しないため webpack バンドルには含まれない。
         wasmJsMain.dependencies {
             implementation(npm("firebase", libs.versions.firebase.js.sdk.get()))
+            implementation(npm("@js-joda/core", libs.versions.js.joda.core.get()))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

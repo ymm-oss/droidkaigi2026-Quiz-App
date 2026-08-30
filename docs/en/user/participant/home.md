@@ -17,5 +17,6 @@ Enter a nickname and start the quiz.
 
 ## Notes
 
+- If staff unpublish the site while Home is open, Start becomes unavailable (an in-progress quiz does not swap questions)
 - Nickname is how you find yourself on the ranking
 - Production needs network to load questions; failures show an error

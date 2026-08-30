@@ -11,10 +11,13 @@ import jp.co.yumemi.quiz.droidkaigi.core.data.firestore.toFirestoreDocument
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.PublishedFolderIds
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.InstantProvider
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Inject
 @ContributesBinding(AppScope::class)
@@ -138,6 +141,16 @@ class RemoteQuizCatalogRepository(
 
     override suspend fun getSitePublished(): Boolean =
         firestore.getAppConfig()?.sitePublished ?: false
+
+    override fun observeAppConfig(): Flow<AppConfigStatus> =
+        firestore.observeAppConfig().map { document ->
+            val published = document?.resolvedPublishedFolderIds().orEmpty()
+            AppConfigStatus(
+                sitePublished = document?.sitePublished ?: false,
+                activeFolderId = published.firstOrNull() ?: document?.activeFolderId.orEmpty(),
+                publishedFolderIds = published,
+            )
+        }
 
     override suspend fun setSitePublished(published: Boolean) {
         writeAppConfig { current ->

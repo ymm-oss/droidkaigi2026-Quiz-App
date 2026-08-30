@@ -20,7 +20,7 @@ staffAppRelease/latest    # スタッフ Desktop 最新版（認証必須）
   version, versionCode, storagePath, sha256, releaseNotes, publishedAtEpochMillis?
 
 folders/{folderId}/rankings/{entryId}
-  nickname, score, completedAtEpochMillis, dateKey
+  nickname, score, totalCount, completedAtEpochMillis, dateKey
 ```
 
 フォルダ ID とクイズセット ID は **1:1** です。
@@ -33,7 +33,8 @@ folders/{folderId}/rankings/{entryId}
 
 | パス | 読取 | 書込 |
 |------|------|------|
-| `folders` / `rankings` | 未認証は公開フォルダのみ。スタッフは認証済みで全件 | フォルダ書き込みは認証済みスタッフ。ランキング `create` は公開フォルダ。`delete` は認証済みスタッフ。`update` 不可 |
+| `folders` | 未認証は公開フォルダのみ。スタッフは認証済みで全件 | フォルダ書き込みは認証済みスタッフ |
+| `rankings` | 未認証は公開フォルダ、またはフォルダ文書が残っている場合（回答中の提出・結果表示）。スタッフは全件 | `create` は公開フォルダまたは既存フォルダ。`delete` は認証済みスタッフ。`update` 不可 |
 | `appConfig` | 全員 | 認証済みスタッフのみ |
 | `staffAppRelease` | 認証済みスタッフ | クライアント不可（CD / Admin SDK） |
 | Storage `releases/staff-desktop/**` | 認証済みスタッフ | クライアント不可（CD / Admin SDK） |
@@ -46,7 +47,7 @@ folders/{folderId}/rankings/{entryId}
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage DMG |
 
-参加者の問題取得は公開フォルダ一覧のあと、開始時に選んだフォルダの `getQuizSet` です。
+参加者は `appConfig/default` を listen し、開始時に選んだ公開フォルダの `getQuizSet` を読みます。プレイ中は問題を差し替えません。
 
 ## CD（ルール）
 

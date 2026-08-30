@@ -8,6 +8,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
@@ -67,6 +68,23 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
     init {
         refresh()
+        viewModelScope.launch {
+            combine(
+                deps.siteStatusHolder.sitePublished,
+                deps.siteStatusHolder.publishedFolderIds,
+            ) { published, ids ->
+                published to ids
+            }.collect { (published, ids) ->
+                if (published != null) {
+                    _uiState.update {
+                        it.copy(
+                            sitePublished = published,
+                            publishedFolderIds = ids,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun onIntent(intent: StaffShellIntent) {
@@ -180,11 +198,13 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     val folders = deps.listQuizFoldersUseCase()
                     val publishedIds = runCatching { deps.listPublishedQuizFoldersUseCase() }
                         .onFailure { staffLog("listPublishedQuizFolders failed: ${it.message}") }
-                        .getOrDefault(emptyList())
-                        .map { it.id }
-                    val sitePublished = runCatching { deps.getSitePublishedUseCase() }
-                        .onFailure { staffLog("getSitePublished failed: ${it.message}") }
-                        .getOrDefault(false)
+                        .getOrNull()
+                        ?.map { it.id }
+                        ?: deps.siteStatusHolder.publishedFolderIds.value
+                    val sitePublished = deps.siteStatusHolder.sitePublished.value
+                        ?: runCatching { deps.getSitePublishedUseCase() }
+                            .onFailure { staffLog("getSitePublished failed: ${it.message}") }
+                            .getOrDefault(false)
                     val selected = _uiState.value.selectedFolderId
                         ?.takeIf { id -> folders.any { it.id == id } }
                         ?: publishedIds.firstOrNull { id -> folders.any { it.id == id } }
@@ -197,12 +217,17 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     RefreshPayload(folders, publishedIds, selected, sitePublished)
                 }
             }.onSuccess { payload ->
+                val livePublished = deps.siteStatusHolder.sitePublished.value
                 _uiState.update {
                     it.copy(
                         folders = payload.folders,
-                        publishedFolderIds = payload.publishedIds,
+                        publishedFolderIds = if (livePublished != null) {
+                            deps.siteStatusHolder.publishedFolderIds.value
+                        } else {
+                            payload.publishedIds
+                        },
                         selectedFolderId = payload.selected,
-                        sitePublished = payload.sitePublished,
+                        sitePublished = livePublished ?: payload.sitePublished,
                         isLoading = false,
                     )
                 }

@@ -21,8 +21,13 @@ internal fun jsErrorCodeOrNull(value: JsAny?): String? =
 internal fun jsErrorMessageOrNull(value: JsAny?): String? =
     js("value && typeof value.message === 'string' ? value.message : null")
 
+/** Firestore `onSnapshot` が返す unsubscribe を呼ぶ。 */
+internal fun invokeJsFunction(fn: JsAny) {
+    js("fn()")
+}
+
 internal fun <T : JsAny> JsArray<T>.toKotlinList(): List<T> = buildList {
     for (index in 0 until length) {
-        add(get(index))
+        add(checkNotNull(this@toKotlinList[index]))
     }
 }

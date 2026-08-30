@@ -6,13 +6,13 @@ import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.domain.auth.StaffAuthException
 import jp.co.yumemi.quiz.droidkaigi.core.domain.auth.StaffAuthFailureReason
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.StaffSession
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.TimeoutCancellationException
 
 class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private companion object {
@@ -65,6 +65,7 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
             }
 
             StaffAuthIntent.SignIn -> signIn()
+
             StaffAuthIntent.QuickSignIn -> quickSignIn()
         }
     }
@@ -128,8 +129,10 @@ class StaffAuthViewModel(private val deps: AppDependencies = AppDependencies.sha
             .onFailure { error ->
                 val message = when (error) {
                     is StaffAuthException -> error.message ?: error.reason.userMessage()
+
                     is TimeoutCancellationException ->
                         "ログインがタイムアウトしました。ネットワーク接続を確認してください。"
+
                     else -> StaffAuthFailureReason.Unknown.userMessage()
                 }
                 _uiState.update {

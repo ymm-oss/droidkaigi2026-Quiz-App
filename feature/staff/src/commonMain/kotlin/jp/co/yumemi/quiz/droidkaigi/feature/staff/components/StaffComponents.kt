@@ -63,7 +63,7 @@ fun StaffHorizontalDivider(modifier: Modifier = Modifier, alpha: Float = 0.2f) {
     )
 }
 
-/** Filled accent action ("問題を追加", "更新"). */
+/** Filled accent action ("問題を追加"). */
 @Composable
 fun StaffFilledButton(
     text: String,

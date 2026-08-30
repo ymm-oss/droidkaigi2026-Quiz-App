@@ -142,7 +142,7 @@ private fun ResultScreenPreview() {
             nickname = "Kaigi太郎",
             correctCount = 4,
             totalCount = 5,
-            targetScore = 850,
+            score = 83,
             onGoToRankingClick = {},
             animateScore = false,
         )
@@ -157,7 +157,7 @@ private fun ResultScreenDarkPreview() {
             nickname = "Kaigi太郎",
             correctCount = 4,
             totalCount = 5,
-            targetScore = 850,
+            score = 83,
             onGoToRankingClick = {},
             animateScore = false,
         )

@@ -3,6 +3,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.home
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.data.QuizSessionHolder
 import jp.co.yumemi.quiz.droidkaigi.core.data.SiteStatusHolder
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
@@ -25,6 +26,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetActiveQuizFolderIdUse
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
@@ -38,12 +40,11 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SubmitScoreUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.UpdateQuizFolderUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
@@ -54,10 +55,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.fail
 
-/**
- * 受付状況（sitePublished）の取得失敗を「受付前」に丸めないことを検証する。
- * https://github.com/ymm-oss/droidkaigi2026-Quiz-App/issues/76
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
     private val dispatcher = StandardTestDispatcher()
@@ -73,140 +70,78 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun shown_fetchFails_marksStatusCheckFailed_insteadOfClosed() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.failure(IllegalStateException("network down"))
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
+    fun holderUnpublished_showsClosedWithoutShown() = runTest(dispatcher) {
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(holder = holder))
 
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertNull(state.sitePublished)
-        assertEquals(true, state.siteStatusCheckFailed)
-    }
-
-    @Test
-    fun retry_afterFailure_recoversToPublished() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.failure(IllegalStateException("network down"))
-        catalog.sitePublishedResults += Result.success(true)
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
-
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceUntilIdle()
-        assertEquals(true, viewModel.uiState.value.siteStatusCheckFailed)
-
-        viewModel.onIntent(HomeIntent.RetrySiteStatus)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertEquals(true, state.sitePublished)
-        assertEquals(false, state.siteStatusCheckFailed)
-    }
-
-    @Test
-    fun shown_fetchReturnsFalse_showsClosedAndUpdatesSiteStatusHolder() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(false)
-        val deps = testAppDependencies(catalog)
-        val viewModel = HomeViewModel(deps)
-
-        viewModel.onIntent(HomeIntent.Shown)
+        holder.applyStatus(AppConfigStatus(sitePublished = false, activeFolderId = "day1"))
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
         assertEquals(false, state.sitePublished)
         assertEquals(false, state.siteStatusCheckFailed)
-        assertEquals(false, deps.siteStatusHolder.sitePublished.value)
-        assertEquals(false, deps.siteStatusHolder.isRankingNavVisible)
+        assertEquals(false, state.isSiteOpen)
     }
 
     @Test
-    fun shown_fetchHangs_timesOutAsFailure() = runTest(dispatcher) {
-        val catalog = ControllableCatalog(hangSitePublished = true)
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
+    fun holderPublished_opensIntake() = runTest(dispatcher) {
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(holder = holder))
 
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceTimeBy(16_000L)
+        holder.applyStatus(AppConfigStatus(sitePublished = true, activeFolderId = "day1"))
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertNull(state.sitePublished)
-        assertEquals(true, state.siteStatusCheckFailed)
-    }
-
-    @Test
-    fun startQuiz_recheckFails_showsLoadFailedError() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(true)
-        catalog.sitePublishedResults += Result.failure(IllegalStateException("network down"))
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
-
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceUntilIdle()
-        viewModel.onIntent(HomeIntent.NicknameChanged("Alice"))
-        viewModel.onIntent(HomeIntent.StartQuiz)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertIs<HomeError.LoadFailed>(state.error)
-        assertEquals(false, state.isLoading)
-        // 障害を「受付前」に見せない
-        assertEquals(true, state.sitePublished)
-    }
-
-    @Test
-    fun shown_whilePublished_keepsOpenUiDuringRecheck() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(true)
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
-
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceUntilIdle()
         assertEquals(true, viewModel.uiState.value.sitePublished)
-
-        catalog.hangNextCalls = 1
-        viewModel.onIntent(HomeIntent.Shown)
-        runCurrent()
-        // 再チェック中も受付オープン UI を落とさない
-        assertEquals(true, viewModel.uiState.value.sitePublished)
-        assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
+        assertEquals(true, viewModel.uiState.value.isSiteOpen)
     }
 
     @Test
-    fun shown_cancelsInFlightRefresh_soStaleTimeoutDoesNotOverwrite() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.hangNextCalls = 1
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
+    fun liveUnpublish_closesIntake() = runTest(dispatcher) {
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(holder = holder))
+        holder.applyStatus(AppConfigStatus(sitePublished = true, activeFolderId = "day1"))
+        advanceUntilIdle()
 
-        viewModel.onIntent(HomeIntent.Shown)
-        // Job1 を開始して withTimeout + hang まで進める（仮想時刻は進めない）
-        runCurrent()
+        holder.applyStatus(AppConfigStatus(sitePublished = false, activeFolderId = "day1"))
+        advanceUntilIdle()
+
+        assertEquals(false, viewModel.uiState.value.sitePublished)
+        assertEquals(false, viewModel.uiState.value.isSiteOpen)
+    }
+
+    @Test
+    fun observeFailedBeforeFirstSnapshot_showsRetry() = runTest(dispatcher) {
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(holder = holder))
+        holder.markObserveFailed()
+        advanceUntilIdle()
+
         assertNull(viewModel.uiState.value.sitePublished)
-
-        catalog.sitePublishedResults += Result.success(true)
-        viewModel.onIntent(HomeIntent.Shown)
-        // 遅延タイムアウトを発火させず、今すぐ実行可能な Job2 だけ進める
-        runCurrent()
-        assertEquals(true, viewModel.uiState.value.sitePublished)
-        assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
-
-        // 旧 Job のタイムアウト相当の時間が経っても、世代ガードで成功状態を維持する
-        advanceTimeBy(16_000L)
-        runCurrent()
-        assertEquals(true, viewModel.uiState.value.sitePublished)
-        assertEquals(false, viewModel.uiState.value.siteStatusCheckFailed)
+        assertEquals(true, viewModel.uiState.value.siteStatusCheckFailed)
     }
 
     @Test
-    fun shown_whenPublished_loadsPublishedFoldersAndSelectsSingle() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(true)
-        catalog.publishedFolders = listOf(QuizFolder(id = "easy", name = "一般向け", sortOrder = 0))
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
+    fun retry_incrementsHolderRetryToken() = runTest(dispatcher) {
+        val holder = SiteStatusHolder()
+        holder.markObserveFailed()
+        val viewModel = HomeViewModel(testAppDependencies(holder = holder))
+        advanceUntilIdle()
 
-        viewModel.onIntent(HomeIntent.Shown)
+        viewModel.onIntent(HomeIntent.RetrySiteStatus)
+        advanceUntilIdle()
+
+        assertEquals(1, holder.retryToken.value)
+        assertEquals(false, holder.observeFailed.value)
+    }
+
+    @Test
+    fun published_loadsPublishedFoldersAndSelectsSingle() = runTest(dispatcher) {
+        val catalog = ControllableCatalog()
+        catalog.publishedFolders = listOf(QuizFolder(id = "easy", name = "一般向け", sortOrder = 0))
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, holder))
+
+        holder.applyStatus(AppConfigStatus(sitePublished = true, activeFolderId = "easy"))
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -217,16 +152,21 @@ class HomeViewModelTest {
     @Test
     fun startQuiz_twoFoldersWithoutSelection_showsSelectError() = runTest(dispatcher) {
         val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(true)
-        catalog.sitePublishedResults += Result.success(true)
         catalog.publishedFolders = listOf(
             QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
             QuizFolder(id = "hard", name = "高難易度", sortOrder = 1),
         )
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
-
-        viewModel.onIntent(HomeIntent.Shown)
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, holder))
+        holder.applyStatus(
+            AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "easy",
+                publishedFolderIds = listOf("easy", "hard"),
+            ),
+        )
         advanceUntilIdle()
+
         viewModel.onIntent(HomeIntent.NicknameChanged("Alice"))
         viewModel.onIntent(HomeIntent.StartQuiz)
         advanceUntilIdle()
@@ -238,17 +178,22 @@ class HomeViewModelTest {
     @Test
     fun startQuiz_twoFoldersWithSelection_startsSelectedFolder() = runTest(dispatcher) {
         val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(true)
-        catalog.sitePublishedResults += Result.success(true)
         catalog.publishedFolders = listOf(
             QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
             QuizFolder(id = "hard", name = "高難易度", description = "上級者向け", sortOrder = 1),
         )
         catalog.quizSets["hard"] = QuizSet(id = "hard", title = "高難易度", questions = emptyList())
-        val viewModel = HomeViewModel(testAppDependencies(catalog))
-
-        viewModel.onIntent(HomeIntent.Shown)
+        val holder = SiteStatusHolder()
+        val viewModel = HomeViewModel(testAppDependencies(catalog, holder))
+        holder.applyStatus(
+            AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "easy",
+                publishedFolderIds = listOf("easy", "hard"),
+            ),
+        )
         advanceUntilIdle()
+
         viewModel.onIntent(HomeIntent.SelectPublishedFolder("hard"))
         viewModel.onIntent(HomeIntent.NicknameChanged("Alice"))
         viewModel.onIntent(HomeIntent.StartQuiz)
@@ -258,22 +203,12 @@ class HomeViewModelTest {
         assertEquals("hard", catalog.lastQuizSetFolderId)
     }
 
-    private class ControllableCatalog(private val hangSitePublished: Boolean = false) : QuizCatalogRepository {
-        val sitePublishedResults = ArrayDeque<Result<Boolean>>()
-        /** 次の N 回の getSitePublished を awaitCancellation する（再入 cancel の検証用）。 */
-        var hangNextCalls: Int = 0
+    private class ControllableCatalog : QuizCatalogRepository {
         var publishedFolders: List<QuizFolder> = emptyList()
         val quizSets = mutableMapOf<String, QuizSet>()
         var lastQuizSetFolderId: String? = null
 
-        override suspend fun getSitePublished(): Boolean {
-            if (hangSitePublished || hangNextCalls > 0) {
-                if (hangNextCalls > 0) hangNextCalls -= 1
-                awaitCancellation()
-            }
-            return sitePublishedResults.removeFirst().getOrThrow()
-        }
-
+        override suspend fun getSitePublished(): Boolean = fail("unused")
         override suspend fun listFolders(): List<QuizFolder> = publishedFolders
         override suspend fun createFolder(name: String, description: String): QuizFolder = fail("unused")
         override suspend fun updateFolder(folder: QuizFolder) = fail("unused")
@@ -283,10 +218,26 @@ class HomeViewModelTest {
             return quizSets[folderId] ?: fail("unused")
         }
         override suspend fun saveQuizSet(quizSet: QuizSet) = fail("unused")
-        override suspend fun getActiveFolderId(): String = fail("unused")
+        override suspend fun getActiveFolderId(): String = publishedFolders.firstOrNull()?.id.orEmpty()
         override suspend fun setActiveFolderId(folderId: String) = fail("unused")
         override suspend fun getPublishedFolderIds(): List<String> = publishedFolders.map { it.id }
         override suspend fun setSitePublished(published: Boolean) = fail("unused")
+        override fun observeAppConfig(): Flow<AppConfigStatus> = emptyFlow()
+    }
+
+    private class UnusedCatalog : QuizCatalogRepository {
+        override suspend fun getSitePublished(): Boolean = fail("unused")
+        override suspend fun listFolders(): List<QuizFolder> = emptyList()
+        override suspend fun createFolder(name: String, description: String): QuizFolder = fail("unused")
+        override suspend fun updateFolder(folder: QuizFolder) = fail("unused")
+        override suspend fun deleteFolder(folderId: String) = fail("unused")
+        override suspend fun getQuizSet(folderId: String): QuizSet = fail("unused")
+        override suspend fun saveQuizSet(quizSet: QuizSet) = fail("unused")
+        override suspend fun getActiveFolderId(): String = fail("unused")
+        override suspend fun setActiveFolderId(folderId: String) = fail("unused")
+        override suspend fun getPublishedFolderIds(): List<String> = emptyList()
+        override suspend fun setSitePublished(published: Boolean) = fail("unused")
+        override fun observeAppConfig(): Flow<AppConfigStatus> = emptyFlow()
     }
 
     private class FixedInstantProvider(private val millis: Long) : InstantProvider {
@@ -314,37 +265,9 @@ class HomeViewModelTest {
         override var currentSession: StaffSession? = null
     }
 
-    @Test
-    fun shown_updatesSiteStatusHolder_whenUnpublished() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(false)
-        val siteStatusHolder = SiteStatusHolder()
-        val viewModel = HomeViewModel(testAppDependencies(catalog, siteStatusHolder))
-
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceUntilIdle()
-
-        assertEquals(false, siteStatusHolder.sitePublished.value)
-        assertEquals(false, siteStatusHolder.isRankingNavVisible)
-    }
-
-    @Test
-    fun shown_updatesSiteStatusHolder_whenPublished() = runTest(dispatcher) {
-        val catalog = ControllableCatalog()
-        catalog.sitePublishedResults += Result.success(true)
-        val siteStatusHolder = SiteStatusHolder()
-        val viewModel = HomeViewModel(testAppDependencies(catalog, siteStatusHolder))
-
-        viewModel.onIntent(HomeIntent.Shown)
-        advanceUntilIdle()
-
-        assertEquals(true, siteStatusHolder.sitePublished.value)
-        assertEquals(true, siteStatusHolder.isRankingNavVisible)
-    }
-
     private fun testAppDependencies(
-        catalog: QuizCatalogRepository,
-        siteStatusHolder: SiteStatusHolder = SiteStatusHolder(),
+        catalog: QuizCatalogRepository = UnusedCatalog(),
+        holder: SiteStatusHolder = SiteStatusHolder(),
     ): AppDependencies {
         val ranking = unusedRanking()
         val staffRepo = unusedStaffRepo()
@@ -358,7 +281,7 @@ class HomeViewModelTest {
             quizCatalogRepository = catalog,
             quizEngine = quizEngine,
             sessionHolder = sessionHolder,
-            siteStatusHolder = siteStatusHolder,
+            siteStatusHolder = holder,
             quizPlayUseCase = QuizPlayUseCase(
                 quizEngine = quizEngine,
                 sessionStore = sessionHolder,
@@ -366,6 +289,7 @@ class HomeViewModelTest {
                 instantProvider = instantProvider,
             ),
             getTodayRankingsUseCase = GetTodayRankingsUseCase(ranking),
+            observeTodayRankingsUseCase = ObserveTodayRankingsUseCase(ranking),
             deleteRankingEntryUseCase = DeleteRankingEntryUseCase(ranking),
             clearTodayRankingsUseCase = ClearTodayRankingsUseCase(ranking),
             listQuizFoldersUseCase = ListQuizFoldersUseCase(catalog),

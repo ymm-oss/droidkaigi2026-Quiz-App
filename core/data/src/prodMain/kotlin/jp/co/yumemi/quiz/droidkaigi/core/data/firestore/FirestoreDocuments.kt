@@ -91,6 +91,7 @@ data class RankingFirestoreDocument(
     val score: Int = 0,
     val completedAtEpochMillis: Long = 0L,
     val dateKey: String = "",
+    val totalCount: Int = 0,
 ) {
     /** ルール必須フィールドが揃っているランキング行だけを UI に出す */
     fun isComplete(): Boolean =

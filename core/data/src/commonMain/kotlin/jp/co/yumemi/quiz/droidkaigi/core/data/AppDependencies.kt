@@ -17,12 +17,14 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListPublishedQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetPublishedQuizFoldersUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveAppConfigUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SaveQuizSetUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetActiveQuizFolderUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetPublishedQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetSitePublishedUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignOutStaffUseCase
@@ -40,6 +42,7 @@ class AppDependencies(
     val siteStatusHolder: SiteStatusHolder,
     val quizPlayUseCase: QuizPlayUseCase,
     val getTodayRankingsUseCase: GetTodayRankingsUseCase,
+    val observeTodayRankingsUseCase: ObserveTodayRankingsUseCase,
     val deleteRankingEntryUseCase: DeleteRankingEntryUseCase,
     val clearTodayRankingsUseCase: ClearTodayRankingsUseCase,
     val listQuizFoldersUseCase: ListQuizFoldersUseCase,
@@ -60,6 +63,9 @@ class AppDependencies(
 ) {
     val getSitePublishedUseCase: GetSitePublishedUseCase
         get() = GetSitePublishedUseCase(quizCatalogRepository)
+
+    val observeAppConfigUseCase: ObserveAppConfigUseCase
+        get() = ObserveAppConfigUseCase(quizCatalogRepository)
 
     val setSitePublishedUseCase: SetSitePublishedUseCase
         get() = SetSitePublishedUseCase(quizCatalogRepository)
@@ -83,6 +89,7 @@ class AppDependencies(
                 siteStatusHolder = graph.siteStatusHolder,
                 quizPlayUseCase = graph.quizPlayUseCase,
                 getTodayRankingsUseCase = graph.getTodayRankingsUseCase,
+                observeTodayRankingsUseCase = graph.observeTodayRankingsUseCase,
                 deleteRankingEntryUseCase = graph.deleteRankingEntryUseCase,
                 clearTodayRankingsUseCase = graph.clearTodayRankingsUseCase,
                 listQuizFoldersUseCase = graph.listQuizFoldersUseCase,

@@ -1,6 +1,6 @@
 # 管理者アプリ概要
 
-運営スタッフ向けの Desktop アプリです。会場 PC から問題セットと公開状態を管理します。
+運営スタッフ向けのコンソールです。会場 PC の Desktop アプリ（`:staffDesktopApp`）に加え、参加者 Web と同じ Firebase Hosting の隠し URL `/staff` からもログインして使えます。セキュリティは URL 隠しではなく Firebase Authentication です。レイアウトはデスクトップ幅前提です。
 
 ## 主な機能
 

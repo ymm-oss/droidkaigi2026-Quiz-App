@@ -20,7 +20,7 @@ staffAppRelease/latest    # staff Desktop latest release (auth required)
   version, versionCode, storagePath, sha256, releaseNotes, publishedAtEpochMillis?
 
 folders/{folderId}/rankings/{entryId}
-  nickname, score, completedAtEpochMillis, dateKey
+  nickname, score, totalCount, completedAtEpochMillis, dateKey
 ```
 
 Folder id and quiz-set id are **1:1**.
@@ -33,7 +33,8 @@ Folder id and quiz-set id are **1:1**.
 
 | Path | Read | Write |
 |------|------|-------|
-| `folders` / `rankings` | Unauthenticated: published folders only. Staff: all | Folder writes: authenticated staff. Ranking `create` on published folders; `delete` authenticated staff; no `update` |
+| `folders` | Unauthenticated: published folders only. Staff: all | Folder writes: authenticated staff |
+| `rankings` | Unauthenticated: published folders, or any folder document that still exists (in-progress submit / result). Staff: all | `create` on published or existing folders; `delete` authenticated staff; no `update` |
 | `appConfig` | Everyone | Authenticated staff |
 | `staffAppRelease` | Authenticated staff | Clients denied (CD / Admin SDK) |
 | Storage `releases/staff-desktop/**` | Authenticated staff | Clients denied (CD / Admin SDK) |
@@ -46,7 +47,7 @@ Folder id and quiz-set id are **1:1**.
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage DMG |
 
-Participant load: published folder list, then `getQuizSet` for the folder they start.
+Participants listen to `appConfig/default` and read `getQuizSet` for the published folder they start. In-progress quizzes do not swap questions. Ranking screens listen to today's `rankings` for the played or selected folder (`dateKey` equality, sorted client-side).
 
 ## CD (rules)
 

@@ -25,9 +25,9 @@ private fun RankingListPreview() {
     QuizPreview {
         RankingContent(
             entries = listOf(
-                RankingEntry("QuizMaster", 980, 1_700_000_000_000),
-                RankingEntry("Kaigi太郎", 850, 1_700_000_100_000),
-                RankingEntry("ComposeFan", 720, 1_700_000_200_000),
+                RankingEntry("QuizMaster", 100, 1_700_000_000_000, totalCount = 5),
+                RankingEntry("Kaigi太郎", 83, 1_700_000_100_000, totalCount = 5),
+                RankingEntry("ComposeFan", 67, 1_700_000_200_000, totalCount = 5),
             ),
             highlightNickname = "Kaigi太郎",
             isLoading = false,
@@ -70,8 +70,8 @@ private fun RankingRefreshErrorPreview() {
     QuizPreview {
         RankingContent(
             entries = listOf(
-                RankingEntry("QuizMaster", 980, 1_700_000_000_000),
-                RankingEntry("Kaigi太郎", 850, 1_700_000_100_000),
+                RankingEntry("QuizMaster", 100, 1_700_000_000_000, totalCount = 5),
+                RankingEntry("Kaigi太郎", 83, 1_700_000_100_000, totalCount = 5),
             ),
             highlightNickname = "Kaigi太郎",
             isLoading = false,

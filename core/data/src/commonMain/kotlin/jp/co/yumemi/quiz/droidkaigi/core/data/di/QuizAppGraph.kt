@@ -6,8 +6,8 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.QuizCatalogRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.RankingRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.session.QuizEngine
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.InstantProvider
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ClearTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.CheckForStaffAppUpdateUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ClearTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.CreateQuizFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.DeleteQuizFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.DeleteRankingEntryUseCase
@@ -17,9 +17,10 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCa
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SaveQuizSetUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetActiveQuizFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignInStaffUseCase
@@ -38,6 +39,7 @@ interface QuizAppGraph {
     val submitScoreUseCase: SubmitScoreUseCase
     val quizPlayUseCase: QuizPlayUseCase
     val getTodayRankingsUseCase: GetTodayRankingsUseCase
+    val observeTodayRankingsUseCase: ObserveTodayRankingsUseCase
     val deleteRankingEntryUseCase: DeleteRankingEntryUseCase
     val clearTodayRankingsUseCase: ClearTodayRankingsUseCase
     val listQuizFoldersUseCase: ListQuizFoldersUseCase

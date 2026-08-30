@@ -34,7 +34,8 @@ staffAppRelease/latest         # ドキュメント ID 固定。スタッフ Des
 
 folders/{folderId}/rankings/{entryId}
   nickname: string
-  score: number
+  score: number               # 0〜100 の正解率（ランキングの並び）
+  totalCount: number          # 問題数（旧ドキュメントでは欠落しうる）
   completedAtEpochMillis: number
   dateKey: string               # 例 "2026-06-04"（InstantProvider の当日）
 ```
@@ -51,7 +52,7 @@ releases/staff-desktop/{version}.dmg
 
 | 観点 | 説明 |
 |------|------|
-| 読み取り回数 | 参加者起動時は `appConfig` + 公開フォルダのメタ。クイズ本体は開始時に選んだ 1 ドキュメント |
+| 読み取り回数 | 参加者は `appConfig/default` を listen。ホームは公開フォルダのメタ。クイズ本体は開始時に選んだ 1 ドキュメント。ランキング画面は当日 `dateKey` の `rankings` を listen（`orderBy` なし、クライアントで score 降順） |
 | シード | fake は同梱 `quiz_set.json`。Firestore 上の `questions` は同型（参考: [firestore-seed.json](firestore-seed.json)） |
 | ドキュメントサイズ | 会場想定の問題数なら 1 フォルダ 1 ドキュメントで 1 MiB 以内 |
 | ランキング | サブコレクションに分離し、提出増加でフォルダ本体が肥大化しない |
@@ -90,7 +91,8 @@ firebase deploy --only firestore:indexes
 
 要点:
 
-- `folders` / `rankings`: 未認証は `publishedFolderIds`（なければ `activeFolderId`）に含まれるフォルダのみ読取。書き込み `request.auth != null`（スタッフ）。ランキング `create` は公開フォルダのみ
+- `folders`: 未認証は `publishedFolderIds`（空なら `activeFolderId`）に含まれるフォルダのみ読取。書き込み `request.auth != null`（スタッフ）
+- `rankings`: 未認証の `read` / `create` は公開フォルダ、またはフォルダ文書が残っている場合（回答中の提出・結果表示のため）。`delete` はスタッフ。`update` 不可
 - `appConfig`: 読み取り全員、書き込み `request.auth != null`（スタッフ）
 - `staffAppRelease`: 読み取り `request.auth != null`、クライアント書き込み不可（CD / Admin SDK）
 - Storage `releases/staff-desktop/**`: 読み取り `request.auth != null`、クライアント書き込み不可
@@ -103,13 +105,14 @@ firebase deploy --only firestore:indexes
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage `releases/staff-desktop/{version}.dmg` |
 | 参加者クイズ取得 | `listPublishedFolders` → 選択フォルダの `getQuizSet` |
-| サイト公開 | `getSitePublishedUseCase` / `setSitePublishedUseCase`（`appConfig/default.sitePublished`） |
+| サイト公開 | `observeAppConfigUseCase` / `setSitePublishedUseCase`（`appConfig/default` を listen） |
+| 当日ランキング | `observeTodayRankingsUseCase`（`folders/{id}/rankings` を `dateKey` 等値で listen） |
 | スタッフ Desktop 更新 | `checkForStaffAppUpdateUseCase` / `downloadStaffAppUpdateUseCase` |
 
 **prod のデータ取得**
 
 - `QuizRepository` / `getDefaultQuizSet` は使わない。参加者・スタッフとも `QuizCatalogRepository` 経由。
-- `RemoteRankingRepository` は `folders/{folderId}/rankings` を `dateKey` + `score` でクエリし、`InstantProvider` の「当日」と揃える（インデックス不足時の挙動は [クエリとフォールバック](#クエリとフォールバックgitlivefirestoreservicelistrankingsfordate)）。
+- `RemoteRankingRepository` は当日一覧を `dateKey` 等値 listen で購読し、クライアントで `score` 降順に揃える（複合インデックス不要）。ワンショット取得は従来どおり `dateKey` + `score` クエリ（インデックス不足時の挙動は [クエリとフォールバック](#クエリとフォールバックgitlivefirestoreservicelistrankingsfordate)）。
 
 `firestore.rules` / `storage.rules` の本番反映は `master` マージ時の CD（[DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ](DEVELOPMENT.md#cdmaster-マージ時のルール自動デプロイ)）を使う。
 

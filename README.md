@@ -11,13 +11,13 @@ Android（`:androidApp`）と Desktop（`:desktopApp`）で配布・実行する
 | 機能 | 内容 |
 |------|------|
 | **三種のクイズ** | **単一選択**・**複数選択**・**並び替え**（ドラッグで順序変更） |
-| **ランキング** | 当日の Top N と自分の行のハイライト（採点は正解数 + 時間ボーナス） |
+| **ランキング** | 当日の Top N と自分の行のハイライト（採点は 0〜100% の正解率。近い複数選択・並び替えほど高い） |
 
 画面の流れ: Home → Quiz → Result → Ranking（詳細は [docs/SPEC.md](docs/SPEC.md)）。
 
 ### 管理者アプリ（スタッフ向け）
 
-Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開状態を管理する。
+Desktop（`:staffDesktopApp`）と、参加者 Web と同じ Hosting の `/staff`。会場運営が問題セットと公開状態を管理する。
 
 | 機能 | 内容 |
 |------|------|
@@ -29,7 +29,7 @@ Desktop のみ（`:staffDesktopApp`）。会場運営が問題セットと公開
 
 ### Web（Wasm）について
 
-`:wasmApp` は **参加者アプリが Web（Wasm）でも動作する対象**として整備済みで、CI で `:wasmApp:compileKotlinWasmJs`（fake）を継続検証している。ローカル実行は `./gradlew :wasmApp:wasmJsBrowserDevelopmentRun`（fake ランタイム）。prod（Firestore）は Firebase JS SDK で接続し、`master` マージ時に Firebase Hosting へ自動デプロイ、PR ではプレビューチャネルへデプロイする（[docs/DEVELOPMENT.md#cdwasm-firebase-hosting](docs/DEVELOPMENT.md#cdwasm-firebase-hosting)）。
+`:wasmApp` は **参加者 Web（`/`）とスタッフコンソール（`/staff`）** を同じバンドルでホストする。CI で `:wasmApp:compileKotlinWasmJs`（fake）を継続検証している。ローカル実行は `./gradlew :wasmApp:wasmJsBrowserDevelopmentRun`（fake ランタイム）。prod（Firestore）は Firebase JS SDK で接続し、`master` マージ時に Firebase Hosting へ自動デプロイ、PR ではプレビューチャネルへデプロイする（[docs/DEVELOPMENT.md#cdwasm-firebase-hosting](docs/DEVELOPMENT.md#cdwasm-firebase-hosting)）。
 
 ### データ（本番と開発）
 

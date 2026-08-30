@@ -48,17 +48,22 @@ internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
     waitUntilText("クイズを始める")
     onNode(hasSetTextAction()).performTextInput(nickname)
     waitForIdle()
+    clickStartAfterSelectingGeneralFolder()
+    waitUntilText("1 / 3")
+}
+
+internal fun QuizComposeRule.clickStartAfterSelectingGeneralFolder() {
+    waitUntilText("一般向け")
+    onNodeWithText("一般向け").performClick()
+    waitForIdle()
     val startButton = onNodeWithText("クイズを始める")
     try {
-        // 短い画面ではキーボード表示中にボタンがビューポート外になるためスクロールする
         startButton.performScrollTo()
     } catch (_: AssertionError) {
         // Already on-screen.
     }
     startButton.performClick()
     waitForIdle()
-    // Markdown プロンプトは分割されることがあるので進捗ラベルで開始を確認する
-    waitUntilText("1 / 3")
 }
 
 /** ChoiceCard の testTag で選択肢をタップする（プロンプト内の同文言と区別）。 */

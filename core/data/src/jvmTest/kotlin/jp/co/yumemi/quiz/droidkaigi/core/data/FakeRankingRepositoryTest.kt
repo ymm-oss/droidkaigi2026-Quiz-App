@@ -4,6 +4,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
 import jp.co.yumemi.quiz.droidkaigi.core.domain.ranking.RankingEntryId
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.InstantProvider
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,7 +31,7 @@ class FakeRankingRepositoryTest {
         val entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000)
 
         repo.submitScore(
-            result = QuizResult("Player1", 2, 3, 250, 30_000),
+            result = QuizResult("Player1", 2, 3, 72, 30_000),
             completedAtEpochMillis = clock.nowEpochMillis(),
             folderId = folderId,
             entryId = entryId,
@@ -38,7 +39,35 @@ class FakeRankingRepositoryTest {
 
         val rankings = repo.getTodayRankings(folderId)
         assertEquals(initial + 1, rankings.size)
-        assertTrue(rankings.any { it.nickname == "Player1" && it.score == 250 })
+        assertTrue(rankings.any { it.nickname == "Player1" && it.score == 72 && it.totalCount == 3 })
+    }
+
+    @Test
+    fun submitScore_emitsOnObserveTodayRankings() = runTest {
+        val clock = FixedInstantProvider(1_700_000_000_000)
+        val catalog = InMemoryQuizCatalog()
+        catalog.withLock { createFolder("Test", "") }
+        val folderId = catalog.withLock { getActiveFolderId() }
+        val repo = FakeRankingRepository(clock, catalog)
+        val emissions = mutableListOf<List<RankingEntry>>()
+        val job = launch {
+            repo.observeTodayRankings(folderId).collect { emissions += it }
+        }
+        testScheduler.runCurrent()
+        assertTrue(emissions.isNotEmpty())
+        val before = emissions.last().size
+
+        repo.submitScore(
+            result = QuizResult("Player1", 2, 3, 72, 30_000),
+            completedAtEpochMillis = clock.nowEpochMillis(),
+            folderId = folderId,
+            entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000),
+        )
+        testScheduler.runCurrent()
+        job.cancel()
+
+        assertEquals(before + 1, emissions.last().size)
+        assertTrue(emissions.last().any { it.nickname == "Player1" })
     }
 
     @Test
@@ -49,7 +78,7 @@ class FakeRankingRepositoryTest {
         val folderId = catalog.withLock { getActiveFolderId() }
         val repo = FakeRankingRepository(clock, catalog)
         val entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000)
-        val result = QuizResult("Player1", 2, 3, 250, 30_000)
+        val result = QuizResult("Player1", 2, 3, 72, 30_000)
 
         repo.submitScore(result, clock.nowEpochMillis(), folderId, entryId)
         clock.advance(60_000)
@@ -65,7 +94,7 @@ class FakeRankingRepositoryTest {
         catalog.withLock { createFolder("Test", "") }
         val folderId = catalog.withLock { getActiveFolderId() }
         val repo = FakeRankingRepository(clock, catalog)
-        val result = QuizResult("Player1", 2, 3, 250, 30_000)
+        val result = QuizResult("Player1", 2, 3, 72, 30_000)
 
         repo.submitScore(
             result,
@@ -92,7 +121,7 @@ class FakeRankingRepositoryTest {
         val repo = FakeRankingRepository(clock, catalog)
         val entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000)
         repo.submitScore(
-            result = QuizResult("Player1", 2, 3, 250, 30_000),
+            result = QuizResult("Player1", 2, 3, 72, 30_000),
             completedAtEpochMillis = clock.nowEpochMillis(),
             folderId = folderId,
             entryId = entryId,
@@ -113,7 +142,7 @@ class FakeRankingRepositoryTest {
         val todayId = RankingEntryId.forSession(folderId, "Today", 1_700_000_000_000)
         val yesterdayMillis = 1_700_000_000_000 - 86_400_000
         repo.submitScore(
-            result = QuizResult("Today", 2, 3, 250, 30_000),
+            result = QuizResult("Today", 2, 3, 72, 30_000),
             completedAtEpochMillis = clock.nowEpochMillis(),
             folderId = folderId,
             entryId = todayId,

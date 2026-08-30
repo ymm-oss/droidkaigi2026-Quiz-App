@@ -9,21 +9,33 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/appConfig/default);
     }
 
+    function appConfig() {
+      return get(/databases/$(database)/documents/appConfig/default).data;
+    }
+
+    // Same priority as PublishedFolderIds.resolve: non-empty publishedFolderIds wins;
+    // otherwise fall back to legacy activeFolderId.
+    function publishedFolderIds() {
+      let ids = appConfig().get('publishedFolderIds', []);
+      return ids.size() > 0 ? ids : [appConfig().get('activeFolderId', '')];
+    }
+
     function isPublishedFolder(folderId) {
-      return appConfigExists() &&
-        (
-          folderId in get(/databases/$(database)/documents/appConfig/default).data.get(
-            'publishedFolderIds', []) ||
-          get(/databases/$(database)/documents/appConfig/default).data.activeFolderId == folderId
-        );
+      return appConfigExists() && folderId in publishedFolderIds();
+    }
+
+    function folderExists(folderId) {
+      return exists(/databases/$(database)/documents/folders/$(folderId));
     }
 
     match /folders/{folderId} {
       allow read: if isStaff() || isPublishedFolder(folderId);
       allow write: if isStaff();
       match /rankings/{entryId} {
-        allow read: if isStaff() || isPublishedFolder(folderId);
-        allow create: if (isStaff() || isPublishedFolder(folderId))
+        // Questions stay published-only. Rankings remain readable/writable for an existing
+        // folder so in-progress players can submit and view the set they started after unpublish.
+        allow read: if isStaff() || isPublishedFolder(folderId) || folderExists(folderId);
+        allow create: if (isStaff() || isPublishedFolder(folderId) || folderExists(folderId))
           && request.resource.data.keys().hasAll(
             ['nickname', 'score', 'completedAtEpochMillis', 'dateKey'])
           && request.resource.data.nickname is string

@@ -223,7 +223,7 @@ private fun PreviewBody(
                     nickname = previewResult.nickname,
                     correctCount = previewResult.correctCount,
                     totalCount = previewResult.totalCount,
-                    targetScore = previewResult.score,
+                    score = previewResult.score,
                     onGoToRankingClick = onCloseResult,
                     animateScore = false,
                     primaryActionLabel = "閉じる",
