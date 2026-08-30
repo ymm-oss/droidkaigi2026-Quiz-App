@@ -45,7 +45,7 @@ folders/{folderId}/rankings/{entryId}
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage DMG |
 
-参加者の問題取得は `getActiveFolderId` → `getQuizSet` の **2 読み取り**で足ります。
+参加者は `appConfig/default` を listen し、開始時に公開中フォルダの `getQuizSet` を読みます。プレイ中は問題を差し替えません。
 
 ## CD（ルール）
 

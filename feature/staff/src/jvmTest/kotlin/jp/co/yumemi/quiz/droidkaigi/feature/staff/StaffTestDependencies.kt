@@ -22,6 +22,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetActiveQuizFolderIdUse
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
@@ -40,6 +41,7 @@ internal fun staffTestAppDependencies(
     instantProvider: InstantProvider = object : InstantProvider {
         override fun nowEpochMillis(): Long = 0L
     },
+    siteStatusHolder: SiteStatusHolder = SiteStatusHolder(),
 ): AppDependencies {
     val staffAuthRepository = object : StaffAuthRepository {
         override suspend fun signIn(email: String, password: String): Result<StaffSession> =
@@ -62,7 +64,7 @@ internal fun staffTestAppDependencies(
         quizCatalogRepository = catalogRepository,
         quizEngine = quizEngine,
         sessionHolder = sessionHolder,
-        siteStatusHolder = SiteStatusHolder(),
+        siteStatusHolder = siteStatusHolder,
         quizPlayUseCase = QuizPlayUseCase(
             quizEngine = quizEngine,
             sessionStore = sessionHolder,
@@ -70,6 +72,7 @@ internal fun staffTestAppDependencies(
             instantProvider = instantProvider,
         ),
         getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
+        observeTodayRankingsUseCase = ObserveTodayRankingsUseCase(rankingRepository),
         deleteRankingEntryUseCase = DeleteRankingEntryUseCase(rankingRepository),
         clearTodayRankingsUseCase = ClearTodayRankingsUseCase(rankingRepository),
         listQuizFoldersUseCase = ListQuizFoldersUseCase(catalogRepository),

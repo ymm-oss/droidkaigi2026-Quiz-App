@@ -2,9 +2,16 @@ package jp.co.yumemi.quiz.droidkaigi.core.domain.repository
 
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 interface RankingRepository {
     suspend fun getTodayRankings(folderId: String): List<RankingEntry>
+
+    /** Today's ranking rows for [folderId], emitting again when the set changes. */
+    fun observeTodayRankings(folderId: String): Flow<List<RankingEntry>> = flow {
+        emit(getTodayRankings(folderId))
+    }
 
     /**
      * @param entryId deterministic document id for this quiz completion (idempotent retries)

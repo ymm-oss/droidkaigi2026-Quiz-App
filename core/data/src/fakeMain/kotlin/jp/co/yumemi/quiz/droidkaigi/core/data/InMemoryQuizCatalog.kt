@@ -1,8 +1,12 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data
 
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -18,6 +22,9 @@ class InMemoryQuizCatalog {
 
     /** Fake default after seed is true for easier local play-through; unset catalog stays false. */
     private var sitePublished: Boolean = false
+
+    private val _appConfig = MutableStateFlow(AppConfigStatus(sitePublished = false, activeFolderId = ""))
+    val appConfig: StateFlow<AppConfigStatus> = _appConfig.asStateFlow()
 
     suspend fun <T> withLock(block: suspend InMemoryQuizCatalog.() -> T): T = mutex.withLock { block() }
 
@@ -35,6 +42,7 @@ class InMemoryQuizCatalog {
         quizSets[id] = QuizSet(id = id, title = name.trim(), questions = emptyList())
         rankingsByFolder[id] = mutableListOf()
         if (activeFolderId.isEmpty()) activeFolderId = id
+        emitAppConfig()
         return folder
     }
 
@@ -50,6 +58,7 @@ class InMemoryQuizCatalog {
         if (activeFolderId == folderId) {
             activeFolderId = folders.minByOrNull { it.sortOrder }?.id.orEmpty()
         }
+        emitAppConfig()
     }
 
     fun getQuizSet(folderId: String): QuizSet = quizSets[folderId] ?: error("Quiz set not found for folder: $folderId")
@@ -66,12 +75,14 @@ class InMemoryQuizCatalog {
     fun setActiveFolderId(folderId: String) {
         require(folders.any { it.id == folderId }) { "Unknown folder: $folderId" }
         activeFolderId = folderId
+        emitAppConfig()
     }
 
     fun getSitePublished(): Boolean = sitePublished
 
     fun setSitePublished(published: Boolean) {
         sitePublished = published
+        emitAppConfig()
     }
 
     fun seedFolder(folder: QuizFolder, quizSet: QuizSet, demoRankings: List<RankingEntry> = emptyList()) {
@@ -81,8 +92,16 @@ class InMemoryQuizCatalog {
             if (isEmpty() && demoRankings.isNotEmpty()) addAll(demoRankings)
         }
         if (activeFolderId.isEmpty()) activeFolderId = folder.id
+        emitAppConfig()
     }
 
     fun rankingsFor(folderId: String): MutableList<RankingEntry> =
         rankingsByFolder.getOrPut(folderId) { mutableListOf() }
+
+    private fun emitAppConfig() {
+        _appConfig.value = AppConfigStatus(
+            sitePublished = sitePublished,
+            activeFolderId = getActiveFolderId(),
+        )
+    }
 }

@@ -9,16 +9,21 @@ import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.deleteDoc
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.doc
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.getDoc
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.getDocs
+import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.invokeJsFunction
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.jsErrorCodeOrNull
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.jsErrorMessageOrNull
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.jsonParse
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.jsonStringify
+import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.onSnapshot
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.orderBy
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.query
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.setDoc
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.toKotlinList
 import jp.co.yumemi.quiz.droidkaigi.core.data.firebasejs.where
 import kotlinx.coroutines.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlin.js.JsException
@@ -75,6 +80,19 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
         ).await<JsAny?>()
     }
 
+    override fun observeAppConfig(): Flow<AppConfigFirestoreDocument?> = callbackFlow {
+        val unsubscribe = onSnapshot(
+            doc(db, APP_CONFIG_PATH),
+            onNext = { snapshot ->
+                trySend(decode(AppConfigFirestoreDocument.serializer(), snapshot))
+            },
+            onError = { error ->
+                close(IllegalStateException(jsErrorMessageOrNull(error) ?: "appConfig listen failed"))
+            },
+        )
+        awaitClose { invokeJsFunction(unsubscribe) }
+    }
+
     override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? = decode(
         StaffAppReleaseFirestoreDocument.serializer(),
         getDoc(doc(db, STAFF_APP_RELEASE_PATH)).await<DocumentSnapshotJs>(),
@@ -110,6 +128,29 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
                     .getOrNull()
                     ?.let { snapshot.id to it }
             }
+    }
+
+    override fun observeQueryRankings(
+        folderId: String,
+        dateKey: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>> = callbackFlow {
+        val rankings = collection(db, rankingsPath(folderId))
+        val rankingsQuery = query(rankings, where("dateKey", "==", dateKey.toJsString()))
+        val unsubscribe = onSnapshot(
+            rankingsQuery,
+            onNext = { querySnapshot ->
+                val entries = querySnapshot.docs.toKotlinList().mapNotNull { snapshot ->
+                    runCatching { decode(RankingFirestoreDocument.serializer(), snapshot) }
+                        .getOrNull()
+                        ?.let { snapshot.id to it }
+                }
+                trySend(entries)
+            },
+            onError = { error ->
+                close(IllegalStateException(jsErrorMessageOrNull(error) ?: "rankings listen failed"))
+            },
+        )
+        awaitClose { invokeJsFunction(unsubscribe) }
     }
 
     override fun isMissingCompositeIndexError(error: Throwable): Boolean {

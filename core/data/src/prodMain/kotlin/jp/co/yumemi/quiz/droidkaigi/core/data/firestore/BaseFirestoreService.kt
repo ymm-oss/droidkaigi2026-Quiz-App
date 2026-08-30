@@ -1,6 +1,8 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data.firestore
 
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * SDK 非依存の Firestore 共通ロジック。
@@ -31,6 +33,15 @@ internal abstract class BaseFirestoreService : FirestoreService {
 
     /** SDK 固有の例外から複合インデックス不足エラーかどうかを判定する。 */
     protected abstract fun isMissingCompositeIndexError(error: Throwable): Boolean
+
+    /**
+     * Live query of rankings for [dateKey] (no server orderBy — sort client-side so listen
+     * does not require the composite index).
+     */
+    protected abstract fun observeQueryRankings(
+        folderId: String,
+        dateKey: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>>
 
     // wasm の JsException は Exception ではなく Throwable 直下のため Throwable で捕捉する
     @Suppress("TooGenericExceptionCaught")
@@ -75,6 +86,16 @@ internal abstract class BaseFirestoreService : FirestoreService {
             .filter { (_, document) -> document.isComplete() && document.dateKey == dateKey }
             .sortedByDescending { it.second.score }
     }
+
+    final override fun observeRankingsForDate(
+        folderId: String,
+        dateKey: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>> =
+        observeQueryRankings(folderId, dateKey).map { entries ->
+            entries
+                .filter { (_, document) -> document.isComplete() && document.dateKey == dateKey }
+                .sortedByDescending { it.second.score }
+        }
 
     final override suspend fun deleteRankingsForDate(folderId: String, dateKey: String) {
         repeat(MAX_CLEAR_PASSES) {

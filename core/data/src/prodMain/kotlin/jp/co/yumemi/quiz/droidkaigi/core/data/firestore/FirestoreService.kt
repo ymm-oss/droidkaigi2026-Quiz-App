@@ -1,5 +1,7 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data.firestore
 
+import kotlinx.coroutines.flow.Flow
+
 interface FirestoreService {
     suspend fun listFolders(): List<Pair<String, FolderFirestoreDocument>>
     suspend fun getFolder(folderId: String): FolderFirestoreDocument?
@@ -7,6 +9,7 @@ interface FirestoreService {
     suspend fun deleteFolder(folderId: String)
     suspend fun getAppConfig(): AppConfigFirestoreDocument?
     suspend fun setAppConfig(document: AppConfigFirestoreDocument)
+    fun observeAppConfig(): Flow<AppConfigFirestoreDocument?>
     suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument?
     /**
      * Writes [document] at a fixed [entryId]. If the document already exists (e.g. a prior
@@ -14,6 +17,7 @@ interface FirestoreService {
      */
     suspend fun putRanking(folderId: String, entryId: String, document: RankingFirestoreDocument)
     suspend fun listRankingsForDate(folderId: String, dateKey: String): List<Pair<String, RankingFirestoreDocument>>
+    fun observeRankingsForDate(folderId: String, dateKey: String): Flow<List<Pair<String, RankingFirestoreDocument>>>
     suspend fun deleteRanking(folderId: String, entryId: String)
     suspend fun deleteRankingsForDate(folderId: String, dateKey: String)
 }

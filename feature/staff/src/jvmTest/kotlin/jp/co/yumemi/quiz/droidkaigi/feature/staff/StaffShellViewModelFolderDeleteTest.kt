@@ -55,9 +55,11 @@ class StaffShellViewModelFolderDeleteTest {
 
     @Test
     fun deleteFolder_lastFolder_isBlocked() = runTest {
-        val catalog = RecordingCatalogRepository(initialFolders = listOf(
+        val catalog = RecordingCatalogRepository(
+            initialFolders = listOf(
             QuizFolder(id = "only", name = "Only", description = "", sortOrder = 0),
-        ))
+        )
+        )
         val viewModel = StaffShellViewModel(staffTestAppDependencies(catalog, NoopRankingRepository))
 
         viewModel.onIntent(StaffShellIntent.RequestDeleteFolder("only"))
@@ -151,6 +153,9 @@ class StaffShellViewModelFolderDeleteTest {
         override suspend fun getSitePublished(): Boolean = false
 
         override suspend fun setSitePublished(published: Boolean) = Unit
+
+        override fun observeAppConfig() =
+            kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
 
     private object NoopRankingRepository : RankingRepository {

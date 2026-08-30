@@ -1,7 +1,9 @@
 package jp.co.yumemi.quiz.droidkaigi.core.domain.repository
 
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
+import kotlinx.coroutines.flow.Flow
 
 interface QuizCatalogRepository {
     suspend fun listFolders(): List<QuizFolder>
@@ -14,4 +16,7 @@ interface QuizCatalogRepository {
     suspend fun setActiveFolderId(folderId: String)
     suspend fun getSitePublished(): Boolean
     suspend fun setSitePublished(published: Boolean)
+
+    /** Real-time `appConfig/default`. Missing document → unpublished + empty folder id. */
+    fun observeAppConfig(): Flow<AppConfigStatus>
 }

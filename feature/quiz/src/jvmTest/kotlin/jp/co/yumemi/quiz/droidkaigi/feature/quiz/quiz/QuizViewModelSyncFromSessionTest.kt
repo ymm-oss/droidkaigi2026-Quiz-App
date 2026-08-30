@@ -28,9 +28,10 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCa
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SaveQuizSetUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetActiveQuizFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignInStaffUseCase
@@ -168,11 +169,12 @@ class QuizViewModelSyncFromSessionTest {
         override suspend fun setActiveFolderId(folderId: String) = fail("unused")
         override suspend fun getSitePublished(): Boolean = fail("unused")
         override suspend fun setSitePublished(published: Boolean) = fail("unused")
+        override fun observeAppConfig() =
+            kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
 
     private fun unusedStaffRepo(): StaffAuthRepository = object : StaffAuthRepository {
-        override suspend fun signIn(email: String, password: String): Result<StaffSession> =
-            fail("unused")
+        override suspend fun signIn(email: String, password: String): Result<StaffSession> = fail("unused")
     }
 
     private fun unusedSessionStore(): StaffAuthSessionStore = object : StaffAuthSessionStore {
@@ -200,6 +202,7 @@ class QuizViewModelSyncFromSessionTest {
                 instantProvider = instantProvider,
             ),
             getTodayRankingsUseCase = GetTodayRankingsUseCase(ranking),
+            observeTodayRankingsUseCase = ObserveTodayRankingsUseCase(ranking),
             deleteRankingEntryUseCase = DeleteRankingEntryUseCase(ranking),
             clearTodayRankingsUseCase = ClearTodayRankingsUseCase(ranking),
             listQuizFoldersUseCase = ListQuizFoldersUseCase(catalog),
