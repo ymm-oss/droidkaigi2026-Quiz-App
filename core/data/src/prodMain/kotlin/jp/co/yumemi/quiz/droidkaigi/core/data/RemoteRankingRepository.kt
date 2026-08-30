@@ -12,7 +12,12 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.time.localDateOfEpochMillis
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.todayLocalDate
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 @Inject
@@ -29,11 +34,20 @@ class RemoteRankingRepository(
     }
 
     override fun observeTodayRankings(folderId: String): Flow<List<RankingEntry>> {
-        val dateKey = instantProvider.todayLocalDate().toString()
-        return firestore.observeRankingsForDate(folderId, dateKey).map { entries ->
-            entries.map { (entryId, document) -> document.toDomain(entryId) }
+        @OptIn(ExperimentalCoroutinesApi::class)
+        return todayDateKeyFlow().flatMapLatest { dateKey ->
+            firestore.observeRankingsForDate(folderId, dateKey).map { entries ->
+                entries.map { (entryId, document) -> document.toDomain(entryId) }
+            }
         }
     }
+
+    private fun todayDateKeyFlow(): Flow<String> = flow {
+        while (true) {
+            emit(instantProvider.todayLocalDate().toString())
+            delay(DATE_KEY_POLL_MS)
+        }
+    }.distinctUntilChanged()
 
     override suspend fun submitScore(
         result: QuizResult,
@@ -61,5 +75,9 @@ class RemoteRankingRepository(
     override suspend fun clearTodayRankings(folderId: String) {
         val dateKey = instantProvider.todayLocalDate().toString()
         firestore.deleteRankingsForDate(folderId, dateKey)
+    }
+
+    private companion object {
+        private const val DATE_KEY_POLL_MS = 60_000L
     }
 }

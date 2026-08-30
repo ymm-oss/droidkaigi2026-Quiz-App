@@ -209,12 +209,14 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     RefreshPayload(folders, activeId, selected, sitePublished)
                 }
             }.onSuccess { payload ->
+                val liveActiveId = deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
+                val livePublished = deps.siteStatusHolder.sitePublished.value
                 _uiState.update {
                     it.copy(
                         folders = payload.folders,
-                        activeFolderId = payload.activeId,
+                        activeFolderId = liveActiveId ?: payload.activeId,
                         selectedFolderId = payload.selected,
-                        sitePublished = payload.sitePublished,
+                        sitePublished = livePublished ?: payload.sitePublished,
                         isLoading = false,
                     )
                 }

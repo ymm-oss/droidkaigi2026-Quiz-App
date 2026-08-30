@@ -75,11 +75,11 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                 deps.deleteRankingEntryUseCase(folderId, entryId)
                 listenJob?.cancel()
                 val generation = ++dataGeneration
-                val reloaded = reloadEntriesAfterMutation(
+                reloadEntriesAfterMutation(
                     generation = generation,
                     optimisticEntries = { current -> current.filterNot { it.id == entryId } },
                 )
-                if (generation == dataGeneration && reloaded) listen()
+                if (generation == dataGeneration) listen()
             } catch (e: CancellationException) {
                 throw e
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
@@ -99,11 +99,11 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                 deps.clearTodayRankingsUseCase(folderId)
                 listenJob?.cancel()
                 val generation = ++dataGeneration
-                val reloaded = reloadEntriesAfterMutation(
+                reloadEntriesAfterMutation(
                     generation = generation,
                     optimisticEntries = { emptyList() },
                 )
-                if (generation == dataGeneration && reloaded) listen()
+                if (generation == dataGeneration) listen()
             } catch (e: CancellationException) {
                 throw e
             } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
@@ -119,9 +119,9 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
     private suspend fun reloadEntriesAfterMutation(
         generation: Int,
         optimisticEntries: (List<RankingEntry>) -> List<RankingEntry>,
-    ): Boolean {
+    ) {
         val reloadResult = runCatching { deps.getTodayRankingsUseCase(folderId) }
-        if (generation != dataGeneration) return false
+        if (generation != dataGeneration) return
         reloadResult
             .onSuccess { entries ->
                 _uiState.update { it.copy(entries = entries, mutationError = null, reloadWarning = null) }
@@ -135,6 +135,5 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                     )
                 }
             }
-        return reloadResult.isSuccess
     }
 }
