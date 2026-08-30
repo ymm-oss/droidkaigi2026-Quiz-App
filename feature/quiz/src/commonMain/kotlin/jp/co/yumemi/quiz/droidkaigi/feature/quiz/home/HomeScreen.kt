@@ -188,73 +188,111 @@ fun HomeContent(
                         )
                     }
 
-                    else -> {
-                        QuizSurfaceCard {
-                            Text(
-                                text = stringResource(Res.string.home_player_info),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                            QuizTextField(
-                                value = nickname,
-                                onValueChange = onNicknameChange,
-                                label = stringResource(Res.string.home_nickname),
-                            )
-                            errorMessage?.let { msg ->
-                                Text(
-                                    text = msg,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(top = QuizTokens.spacingSmall),
-                                )
-                            }
-                        }
-                        if (publishedFolders != null && publishedFolders.size > 1) {
-                            QuizSurfaceCard {
-                                Text(
-                                    text = stringResource(Res.string.home_quiz_set_label),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                                Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
-                                    publishedFolders.forEach { folder ->
-                                        QuizSelectableOptionCard(
-                                            title = folder.displayName,
-                                            subtitle = folder.description.takeIf { it.isNotBlank() },
-                                            selected = folder.id == selectedFolderId,
-                                            onClick = { onSelectFolder(folder.id) },
-                                            modifier = Modifier.testTag("published-folder:${folder.id}"),
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        if (publishedFolders != null && publishedFolders.isEmpty()) {
-                            QuizSurfaceCard {
-                                Text(
-                                    text = stringResource(Res.string.home_error_no_published_folders),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        }
-                        val foldersLoadFailed = publishedFolders == null && errorMessage != null
-                        QuizPrimaryButton(
-                            text = if (foldersLoadFailed) {
-                                stringResource(Res.string.home_site_status_retry)
-                            } else {
-                                stringResource(Res.string.home_start)
-                            },
-                            onClick = if (foldersLoadFailed) onRetrySiteStatusClick else onStartClick,
-                            loading = isLoading,
-                            enabled = foldersLoadFailed ||
-                                (publishedFolders != null && publishedFolders.isNotEmpty()),
-                        )
-                    }
+                    else -> HomeOpenIntake(
+                        nickname = nickname,
+                        isLoading = isLoading,
+                        errorMessage = errorMessage,
+                        publishedFolders = publishedFolders,
+                        selectedFolderId = selectedFolderId,
+                        onNicknameChange = onNicknameChange,
+                        onSelectFolder = onSelectFolder,
+                        onStartClick = onStartClick,
+                        onRetrySiteStatusClick = onRetrySiteStatusClick,
+                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun HomeOpenIntake(
+    nickname: String,
+    isLoading: Boolean,
+    errorMessage: String?,
+    publishedFolders: List<QuizFolder>?,
+    selectedFolderId: String?,
+    onNicknameChange: (String) -> Unit,
+    onSelectFolder: (String) -> Unit,
+    onStartClick: () -> Unit,
+    onRetrySiteStatusClick: () -> Unit,
+) {
+    QuizSurfaceCard {
+        Text(
+            text = stringResource(Res.string.home_player_info),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+        QuizTextField(
+            value = nickname,
+            onValueChange = onNicknameChange,
+            label = stringResource(Res.string.home_nickname),
+        )
+        errorMessage?.let { msg ->
+            Text(
+                text = msg,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = QuizTokens.spacingSmall),
+            )
+        }
+    }
+    if (publishedFolders != null && publishedFolders.size > 1) {
+        QuizSurfaceCard {
+            Text(
+                text = stringResource(Res.string.home_quiz_set_label),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+            Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                publishedFolders.forEach { folder ->
+                    QuizSelectableOptionCard(
+                        title = folder.displayName,
+                        subtitle = folder.description.takeIf { it.isNotBlank() },
+                        selected = folder.id == selectedFolderId,
+                        onClick = { onSelectFolder(folder.id) },
+                        modifier = Modifier.testTag("published-folder:${folder.id}"),
+                    )
+                }
+            }
+        }
+    }
+    if (publishedFolders != null && publishedFolders.isEmpty()) {
+        QuizSurfaceCard {
+            Text(
+                text = stringResource(Res.string.home_error_no_published_folders),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+    HomeStartOrRetryButton(
+        foldersLoadFailed = publishedFolders == null && errorMessage != null,
+        publishedFolders = publishedFolders,
+        isLoading = isLoading,
+        onRetrySiteStatusClick = onRetrySiteStatusClick,
+        onStartClick = onStartClick,
+    )
+}
+
+@Composable
+private fun HomeStartOrRetryButton(
+    foldersLoadFailed: Boolean,
+    publishedFolders: List<QuizFolder>?,
+    isLoading: Boolean,
+    onRetrySiteStatusClick: () -> Unit,
+    onStartClick: () -> Unit,
+) {
+    QuizPrimaryButton(
+        text = if (foldersLoadFailed) {
+            stringResource(Res.string.home_site_status_retry)
+        } else {
+            stringResource(Res.string.home_start)
+        },
+        onClick = if (foldersLoadFailed) onRetrySiteStatusClick else onStartClick,
+        loading = isLoading,
+        enabled = foldersLoadFailed || (publishedFolders != null && publishedFolders.isNotEmpty()),
+    )
 }
