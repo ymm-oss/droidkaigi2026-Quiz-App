@@ -45,7 +45,7 @@ Folder id and quiz-set id are **1:1**.
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage DMG |
 
-Participant load is two reads: `getActiveFolderId` → `getQuizSet`.
+Participants listen to `appConfig/default` and read `getQuizSet` for the published folder at start. In-progress quizzes do not swap questions. Ranking screens listen to today's `rankings` for the played or selected folder (`dateKey` equality, sorted client-side).
 
 ## CD (rules)
 

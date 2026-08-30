@@ -26,6 +26,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetActiveQuizFolderIdUse
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
@@ -165,15 +166,37 @@ class StaffRankingViewModelTest {
         assertTrue(viewModel.uiState.value.entries.isEmpty())
         assertNull(viewModel.uiState.value.mutationError)
     }
+
+    @Test
+    fun liveSnapshot_appendsRowForSelectedFolder() = runTest {
+        val alice = RankingEntry("Alice", 100, 1_700_000_000_000, id = "entry-1")
+        val bob = RankingEntry("Bob", 90, 1_700_000_000_100, id = "entry-2")
+        val rows = kotlinx.coroutines.flow.MutableStateFlow(listOf(alice))
+        val viewModel = StaffRankingViewModel(
+            folderId = "folder-1",
+            deps = staffRankingTestDeps(
+                rankings = { rows.value },
+                observeRankings = { rows },
+            ),
+        )
+
+        assertEquals(listOf(alice), viewModel.uiState.value.entries)
+        rows.value = listOf(alice, bob)
+        assertEquals(listOf(alice, bob), viewModel.uiState.value.entries)
+    }
 }
 
 private fun staffRankingTestDeps(
     rankings: suspend (String) -> List<RankingEntry>,
+    observeRankings: ((String) -> kotlinx.coroutines.flow.Flow<List<RankingEntry>>)? = null,
     onDelete: suspend (String) -> Unit = {},
     onClear: suspend () -> Unit = {},
 ): AppDependencies {
     val rankingRepository = object : RankingRepository {
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = rankings(folderId)
+
+        override fun observeTodayRankings(folderId: String): kotlinx.coroutines.flow.Flow<List<RankingEntry>> =
+            observeRankings?.invoke(folderId) ?: super.observeTodayRankings(folderId)
 
         override suspend fun submitScore(
             result: QuizResult,
@@ -210,6 +233,8 @@ private fun staffRankingTestDeps(
         override suspend fun getSitePublished(): Boolean = true
 
         override suspend fun setSitePublished(published: Boolean) = Unit
+
+        override fun observeAppConfig() = kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
     val instantProvider = object : InstantProvider {
         override fun nowEpochMillis(): Long = 0L
@@ -236,6 +261,7 @@ private fun staffRankingTestDeps(
             instantProvider = instantProvider,
         ),
         getTodayRankingsUseCase = GetTodayRankingsUseCase(rankingRepository),
+        observeTodayRankingsUseCase = ObserveTodayRankingsUseCase(rankingRepository),
         deleteRankingEntryUseCase = DeleteRankingEntryUseCase(rankingRepository),
         clearTodayRankingsUseCase = ClearTodayRankingsUseCase(rankingRepository),
         listQuizFoldersUseCase = ListQuizFoldersUseCase(catalogRepository),

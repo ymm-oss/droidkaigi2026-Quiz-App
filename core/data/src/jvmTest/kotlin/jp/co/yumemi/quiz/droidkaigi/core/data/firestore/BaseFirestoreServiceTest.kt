@@ -154,6 +154,11 @@ class BaseFirestoreServiceTest {
 
         override fun isMissingCompositeIndexError(error: Throwable): Boolean = isMissingIndex(error)
 
+        override fun observeQueryRankings(
+            folderId: String,
+            dateKey: String,
+        ) = unused()
+
         override suspend fun deleteRanking(folderId: String, entryId: String) {
             deletedEntryIds += entryId
             onDeleteRanking(entryId)
@@ -170,6 +175,8 @@ class BaseFirestoreServiceTest {
         override suspend fun getAppConfig(): AppConfigFirestoreDocument? = unused()
 
         override suspend fun setAppConfig(document: AppConfigFirestoreDocument) = unused()
+
+        override fun observeAppConfig() = unused()
 
         override suspend fun getStaffAppRelease(): StaffAppReleaseFirestoreDocument? = unused()
 

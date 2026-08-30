@@ -27,6 +27,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetActiveQuizFolderIdUse
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
@@ -168,6 +169,7 @@ class QuizViewModelSyncFromSessionTest {
         override suspend fun setActiveFolderId(folderId: String) = fail("unused")
         override suspend fun getSitePublished(): Boolean = fail("unused")
         override suspend fun setSitePublished(published: Boolean) = fail("unused")
+        override fun observeAppConfig() = kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
 
     private fun unusedStaffRepo(): StaffAuthRepository = object : StaffAuthRepository {
@@ -200,6 +202,7 @@ class QuizViewModelSyncFromSessionTest {
                 instantProvider = instantProvider,
             ),
             getTodayRankingsUseCase = GetTodayRankingsUseCase(ranking),
+            observeTodayRankingsUseCase = ObserveTodayRankingsUseCase(ranking),
             deleteRankingEntryUseCase = DeleteRankingEntryUseCase(ranking),
             clearTodayRankingsUseCase = ClearTodayRankingsUseCase(ranking),
             listQuizFoldersUseCase = ListQuizFoldersUseCase(catalog),

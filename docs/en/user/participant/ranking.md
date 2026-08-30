@@ -18,4 +18,6 @@ Today's top scores.
 ## Notes
 
 - Only **today's** entries
+- New completions on the same quiz set appear in the list as they arrive
+- If staff switch the published set while you are still answering, ranking still shows the set you played
 - Production needs network for fetch and score submit

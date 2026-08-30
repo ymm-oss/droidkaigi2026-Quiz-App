@@ -16,6 +16,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetActiveQuizFolderIdUse
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
@@ -38,6 +39,7 @@ interface QuizAppGraph {
     val submitScoreUseCase: SubmitScoreUseCase
     val quizPlayUseCase: QuizPlayUseCase
     val getTodayRankingsUseCase: GetTodayRankingsUseCase
+    val observeTodayRankingsUseCase: ObserveTodayRankingsUseCase
     val deleteRankingEntryUseCase: DeleteRankingEntryUseCase
     val clearTodayRankingsUseCase: ClearTodayRankingsUseCase
     val listQuizFoldersUseCase: ListQuizFoldersUseCase

@@ -151,6 +151,8 @@ class StaffShellViewModelFolderDeleteTest {
         override suspend fun getSitePublished(): Boolean = false
 
         override suspend fun setSitePublished(published: Boolean) = Unit
+
+        override fun observeAppConfig() = kotlinx.coroutines.flow.emptyFlow<jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus>()
     }
 
     private object NoopRankingRepository : RankingRepository {

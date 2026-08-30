@@ -12,6 +12,8 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.time.localDateOfEpochMillis
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.todayLocalDate
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Inject
 @ContributesBinding(AppScope::class)
@@ -23,6 +25,13 @@ class RemoteRankingRepository(
         val dateKey = instantProvider.todayLocalDate().toString()
         return firestore.listRankingsForDate(folderId, dateKey).map { (entryId, document) ->
             document.toDomain(entryId)
+        }
+    }
+
+    override fun observeTodayRankings(folderId: String): Flow<List<RankingEntry>> {
+        val dateKey = instantProvider.todayLocalDate().toString()
+        return firestore.observeRankingsForDate(folderId, dateKey).map { entries ->
+            entries.map { (entryId, document) -> document.toDomain(entryId) }
         }
     }
 
