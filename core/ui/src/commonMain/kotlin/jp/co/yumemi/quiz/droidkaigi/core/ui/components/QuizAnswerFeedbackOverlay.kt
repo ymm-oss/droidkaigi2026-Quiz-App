@@ -6,17 +6,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,6 +39,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.feedback_correct
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.feedback_correct_answer
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.feedback_explanation
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.feedback_incorrect
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizMotion
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTokens
@@ -40,6 +50,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun QuizAnswerFeedbackOverlay(
     isCorrect: Boolean,
+    correctAnswer: String,
+    explanationMarkdown: String,
     continueLabel: String,
     onContinue: () -> Unit,
     modifier: Modifier = Modifier,
@@ -62,7 +74,7 @@ fun QuizAnswerFeedbackOverlay(
         label = "feedbackShake",
     )
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .testTag("answerFeedbackOverlay")
@@ -75,52 +87,90 @@ fun QuizAnswerFeedbackOverlay(
             .semantics { contentDescription = feedbackText },
         contentAlignment = Alignment.Center,
     ) {
-        Column(
+        Surface(
             modifier = Modifier
-                .widthIn(max = 360.dp)
-                .padding(horizontal = QuizTokens.spacingLarge)
+                .padding(QuizTokens.spacingMedium)
+                .fillMaxWidth()
+                .widthIn(max = 420.dp)
+                .heightIn(max = maxHeight - QuizTokens.spacingExtraLarge)
                 .scale(revealScale),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingLarge),
+            shape = RoundedCornerShape(QuizTokens.cornerLarge),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = QuizTokens.spacingSmall,
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.quizShake(shakeOffset),
+            Column(
+                modifier = Modifier.padding(QuizTokens.spacingLarge),
+                verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingMedium),
             ) {
-                if (isCorrect) {
+                Row(
+                    modifier = Modifier.quizShake(shakeOffset),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(QuizTokens.spacingMedium),
+                ) {
                     Box(
                         modifier = Modifier
-                            .size(156.dp)
+                            .size(48.dp)
                             .scale(1f + pulseAlpha * 0.2f)
-                            .background(accent.copy(alpha = pulseAlpha), CircleShape),
+                            .background(accent, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = if (isCorrect) Icons.Default.Check else Icons.Default.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp),
+                            tint = Color.White,
+                        )
+                    }
+                    Text(
+                        text = feedbackText,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = accent,
                     )
                 }
-                Box(
+
+                if (correctAnswer.isNotBlank()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                        Text(
+                            text = stringResource(Res.string.feedback_correct_answer),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = correctAnswer,
+                            modifier = Modifier.testTag("feedbackCorrectAnswer"),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+
+                if (explanationMarkdown.isNotBlank()) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState())
+                            .testTag("feedbackExplanation"),
+                        verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.feedback_explanation),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        QuizMarkdownText(explanationMarkdown)
+                    }
+                }
+
+                QuizPrimaryButton(
+                    text = continueLabel,
+                    onClick = onContinue,
                     modifier = Modifier
-                        .size(128.dp)
-                        .background(accent, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = if (isCorrect) Icons.Default.Check else Icons.Default.Close,
-                        contentDescription = null,
-                        modifier = Modifier.size(72.dp),
-                        tint = Color.White,
-                    )
-                }
+                        .fillMaxWidth()
+                        .testTag("feedbackContinue"),
+                    enabled = continueEnabled,
+                    loading = continueLoading,
+                )
             }
-            Text(
-                text = feedbackText,
-                style = MaterialTheme.typography.displaySmall,
-                color = Color.White,
-            )
-            QuizPrimaryButton(
-                text = continueLabel,
-                onClick = onContinue,
-                modifier = Modifier.testTag("feedbackContinue"),
-                enabled = continueEnabled,
-                loading = continueLoading,
-            )
         }
     }
 }

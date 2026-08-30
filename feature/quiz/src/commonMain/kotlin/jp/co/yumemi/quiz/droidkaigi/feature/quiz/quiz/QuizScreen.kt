@@ -225,9 +225,13 @@ fun QuizContent(
             val answerCorrect = state.lastAnswerCorrect
             val showFeedbackOverlay = state.showFeedback && answerCorrect != null
             var cachedFeedbackCorrect by remember { mutableStateOf(false) }
-            LaunchedEffect(answerCorrect) {
+            var cachedCorrectAnswer by remember { mutableStateOf("") }
+            var cachedExplanation by remember { mutableStateOf("") }
+            LaunchedEffect(answerCorrect, state.question) {
                 if (answerCorrect != null) {
                     cachedFeedbackCorrect = answerCorrect
+                    cachedCorrectAnswer = state.question?.correctAnswerText().orEmpty()
+                    cachedExplanation = state.question?.explanationMarkdown.orEmpty()
                 }
             }
             AnimatedVisibility(
@@ -237,6 +241,16 @@ fun QuizContent(
             ) {
                 QuizAnswerFeedbackOverlay(
                     isCorrect = answerCorrect ?: cachedFeedbackCorrect,
+                    correctAnswer = if (answerCorrect != null) {
+                        state.question?.correctAnswerText().orEmpty()
+                    } else {
+                        cachedCorrectAnswer
+                    },
+                    explanationMarkdown = if (answerCorrect != null) {
+                        state.question?.explanationMarkdown.orEmpty()
+                    } else {
+                        cachedExplanation
+                    },
                     continueLabel = stringResource(
                         if (state.isFinishing) {
                             Res.string.quiz_feedback_finish
@@ -270,6 +284,16 @@ fun QuizContent(
             },
         )
     }
+}
+
+private fun Question.correctAnswerText(): String = when (this) {
+    is SingleChoice -> options.firstOrNull { it.id == correctId }?.label.orEmpty()
+    is MultipleChoice -> options
+        .filter { it.id in correctIds }
+        .joinToString(separator = "\n") { "• ${it.label}" }
+    is Reorder -> correctOrder
+        .mapNotNull { id -> items.firstOrNull { it.id == id }?.label }
+        .joinToString(separator = " → ")
 }
 
 @Composable

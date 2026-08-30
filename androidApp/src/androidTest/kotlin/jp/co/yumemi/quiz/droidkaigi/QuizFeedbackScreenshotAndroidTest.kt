@@ -37,6 +37,12 @@ class QuizFeedbackScreenshotAndroidTest {
     private val question = SingleChoice(
         id = "screenshot-single",
         prompt = "UI を Android / Desktop / Web などで共通化できる Jetpack ライブラリはどれ？",
+        explanationMarkdown = """
+            **Compose Multiplatform** は、Compose の宣言的 UI を Android だけでなく
+            Desktop・iOS・Web でも共有できる仕組みです。
+
+            Jetpack XML は Android の View システム、Flutter は別の UI フレームワークです。
+        """.trimIndent(),
         options = listOf(
             ChoiceOption("a", "Jetpack XML"),
             ChoiceOption("b", "Compose Multiplatform"),
