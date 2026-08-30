@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,8 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.feedback_correct
@@ -79,14 +82,18 @@ fun QuizAnswerFeedbackOverlay(
             .fillMaxSize()
             .testTag("answerFeedbackOverlay")
             .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.72f))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = {},
-            )
-            .semantics { contentDescription = feedbackText },
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical)),
         contentAlignment = Alignment.Center,
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {},
+                ),
+        )
         Surface(
             modifier = Modifier
                 .padding(QuizTokens.spacingMedium)
