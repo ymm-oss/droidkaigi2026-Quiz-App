@@ -7,7 +7,7 @@ This section is for **implementation, ops, and contributing**. Day-to-day usage 
 | Page | Contents |
 |------|----------|
 | [Architecture](/en/developer/architecture) | Modules, dependency direction, MVI |
-| [Scoring](/en/developer/scoring) | Score formula and elapsed time |
+| [Scoring](/en/developer/scoring) | Accuracy, partial credit, ranking order |
 | [Runtime](/en/developer/runtime) | `quiz.runtime=fake` / `prod` |
 | [Firestore](/en/developer/firestore) | Production DB |
 | [Build & run](/en/developer/build) | Gradle, variants, staff Desktop |

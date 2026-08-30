@@ -12,7 +12,7 @@
 |------|------|
 | Home | ニックネーム入力、クイズ開始。`sitePublished == false` のときは受付前メッセージを表示し開始不可 |
 | Quiz | 問題形式に応じた UI、進捗（1-based `n / N`）、回答。回答後は全画面フィードバック → タップで次へ／結果へ |
-| Result | スコア表示（アニメーション）、ランキングへ |
+| Result | 正解率（0〜100%）と完全正解数。ランキングへ |
 | Ranking | 当日 Top N、自分の行をハイライト、各エントリの回答完了日時（`MM/dd HH:mm`、欠落時は「不明」）を表示 |
 
 ## 問題形式 AC
@@ -23,11 +23,14 @@
 
 ## 採点
 
-- `score = correctCount * 100 + timeBonus`
-- `timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)`
-- 経過時間はクイズ開始〜**最終回答提出時点**（フィードバック閲覧中は含めない）
+- `score` は 0〜100 の正解率（各問の近さの平均。時間ボーナスなし）
+- 単一選択は一致で 100%、不一致で 0%
+- 複数選択は Jaccard（選んだ集合と正解集合の重なり）
+- 並び替えはペアの相対順が正しい割合（Kendall）。近い並びほど高い
+- 結果・ランキングの主表示は `score%`。完全一致した問数は補助表示
+- 同点は完了が早い順
 - 回答提出〜完了判定〜採点〜ランキング送信は `QuizPlayUseCase` に集約する。ViewModel は Intent → use case → UiState/Event の変換に限定する。
-- 共有プレイ状態は `QuizSessionStore`（実装: `QuizSessionHolder`）。`finishedAtEpochMillis` / `pendingResult` は ViewModel 再生成後も保持し、送信失敗時の再試行で timeBonus を変えない。
+- 共有プレイ状態は `QuizSessionStore`（実装: `QuizSessionHolder`）。`finishedAtEpochMillis` / `pendingResult` は ViewModel 再生成後も保持し、送信失敗時の再試行で採点結果を変えない。
 
 ## データ・ランキング
 

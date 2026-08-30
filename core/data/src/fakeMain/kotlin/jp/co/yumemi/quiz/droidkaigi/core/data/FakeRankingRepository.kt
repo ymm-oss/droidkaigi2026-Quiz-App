@@ -45,6 +45,7 @@ class FakeRankingRepository(private val instantProvider: InstantProvider, privat
                 score = result.score,
                 completedAtEpochMillis = completedAtEpochMillis,
                 id = entryId,
+                totalCount = result.totalCount,
             )
             true
         }
@@ -78,7 +79,7 @@ class FakeRankingRepository(private val instantProvider: InstantProvider, privat
         val today = instantProvider.todayLocalDate()
         return rankingsFor(folderId)
             .filter { isSameDay(it.completedAtEpochMillis, today) }
-            .sortedByDescending { it.score }
+            .sortedWith(compareByDescending<RankingEntry> { it.score }.thenBy { it.completedAtEpochMillis })
     }
 
     private fun bumpRankings() {

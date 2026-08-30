@@ -42,17 +42,18 @@
     <string name="result_title">Quiz complete</string>
     <string name="result_subtitle">Nice work, %1$s!</string>
     <string name="result_section">Your result</string>
-    <string name="result_correct_count">%1$d / %2$d correct</string>
-    <string name="result_score_label">Score</string>
+    <string name="result_score_label">Accuracy</string>
+    <string name="result_percent">%1$d%%</string>
+    <string name="result_correct_count">Fully correct %1$d / %2$d</string>
     <string name="result_go_ranking">View ranking</string>
 
     <string name="ranking_title">Today’s ranking</string>
-    <string name="ranking_subtitle">Today’s best scores</string>
+    <string name="ranking_subtitle">Ranked by accuracy</string>
     <string name="ranking_empty">No entries yet</string>
     <string name="ranking_error_load_failed">Failed to load ranking</string>
     <string name="ranking_retry">Retry</string>
     <string name="ranking_go_home">Back to home</string>
-    <string name="ranking_score">Score %1$d</string>
+    <string name="ranking_score">%1$d%%</string>
 
     <string name="time_unknown">Unknown</string>
     <string name="cd_reorder">Reorder</string>

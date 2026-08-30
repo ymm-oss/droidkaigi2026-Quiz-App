@@ -1,6 +1,6 @@
 # Ranking
 
-Today's top scores.
+Today's ranking by accuracy.
 
 ## Screenshot
 
@@ -10,7 +10,7 @@ Today's top scores.
 
 | Item | Description |
 |------|-------------|
-| **Rank / nickname / score** | Today's Top N |
+| **Rank / nickname / accuracy** | Today's Top N (`n%`; closer multi/reorder answers score higher) |
 | **Your row** | Highlighted when nickname matches Home input |
 | **Completed at** | `MM/dd HH:mm`, or “unknown” if missing |
 | **Go home** | Back to Home |
@@ -20,4 +20,4 @@ Today's top scores.
 - Only **today's** entries
 - New completions on the same quiz set appear in the list as they arrive
 - If staff switch the published set while you are still answering, ranking still shows the set you played
-- Production needs network for fetch and score submit
+- Production needs network for fetch and result submit

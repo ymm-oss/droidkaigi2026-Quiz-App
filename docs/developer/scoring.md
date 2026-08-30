@@ -3,27 +3,32 @@
 ## 式
 
 ```
-score = correctCount * 100 + timeBonus
-timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)
+questionAccuracy ∈ [0, 1]
+score = round(average(questionAccuracy) × 100)   # 0〜100
 ```
+
+早期回答の時間ボーナスはない。結果・ランキングの主表示は `score%`。完全一致した問数は補助表示。
 
 | 記号 | 意味 |
 |------|------|
-| `correctCount` | 正解した問題数 |
-| `elapsedSeconds` | クイズ開始〜**最終回答の提出時点**までの秒数 |
-| `timeBonus` | 0〜50。速いほど高い |
+| `questionAccuracy` | 1 問の近さ（完全一致なら 1） |
+| `correctCount` | 完全一致した問題数（フィードバックの正誤と同じ） |
+| `totalCount` | そのクイズセットの問題数 |
+| `score` | ランキングの並び用。0〜100 の正解率 |
 
-## 時間の境界
+## 問題形式ごとの近さ
 
-- **含む**: 問題表示〜各回答の提出まで
-- **含めない**: 回答後フィードバックの閲覧時間
+| 形式 | 完全正解 | 部分点 |
+|------|----------|--------|
+| 単一選択 | 選択 ID が `correctId` と一致 → 1 | 不一致 → 0 |
+| 複数選択 | 選択集合が `correctIds` と完全一致 → 1 | Jaccard：`|選∩正| / |選∪正|` |
+| 並び替え | `orderedIds` が `correctOrder` と完全一致 → 1 | アイテム同士の相対順が正しいペアの割合（Kendall）。近い並びほど高い |
 
-## 問題形式ごとの正誤
+## ランキングの並び
 
-| 形式 | 正解条件 |
-|------|----------|
-| 単一選択 | 選択 ID が `correctId` と一致 |
-| 複数選択 | 選択集合が `correctIds` と完全一致 |
-| 並び替え | `orderedIds` が `correctOrder` と完全一致 |
+1. `score`（正解率）の降順
+2. 同点なら `completedAtEpochMillis` の昇順（先に完了した方が上位）
+
+完了日時はランキング行に表示する。フィードバック閲覧中の時間は完了時刻に含めない（最終回答の提出時点）。
 
 ドメイン層のユニットテスト（`commonTest` / `jvmTest`）で検証してください。

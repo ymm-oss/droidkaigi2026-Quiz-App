@@ -19,7 +19,7 @@ staffAppRelease/latest    # スタッフ Desktop 最新版（認証必須）
   version, versionCode, storagePath, sha256, releaseNotes, publishedAtEpochMillis?
 
 folders/{folderId}/rankings/{entryId}
-  nickname, score, completedAtEpochMillis, dateKey
+  nickname, score, totalCount, completedAtEpochMillis, dateKey
 ```
 
 フォルダ ID とクイズセット ID は **1:1** です。

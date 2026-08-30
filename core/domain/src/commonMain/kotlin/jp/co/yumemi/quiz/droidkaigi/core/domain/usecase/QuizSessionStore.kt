@@ -8,8 +8,8 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSession
  *
  * Sync policy:
  * - [currentSession] is the source of truth for in-progress answers / index.
- * - [finishedAtEpochMillis] / [pendingResult] survive ViewModel recreation so timeBonus and
- *   score submit retries stay stable after process-config changes.
+ * - [finishedAtEpochMillis] / [pendingResult] survive ViewModel recreation so completed-at
+ *   and score submit retries stay stable after process-config changes.
  * - [scoreSubmitInFlight] prevents duplicate remote submits under concurrent UI intents.
  * - Call [beginSession] when starting a quiz and [clearPlaySession] when abandoning mid-play.
  * - [lastResult], [highlightNickname], and [playbackFolderId] outlive the play session for
@@ -21,7 +21,7 @@ interface QuizSessionStore {
     var highlightNickname: String?
     var playbackFolderId: String?
 
-    /** Epoch millis when the final answer was accepted (feedback wait must not affect timeBonus). */
+    /** Epoch millis when the final answer was accepted (feedback wait is not part of elapsed time). */
     var finishedAtEpochMillis: Long?
 
     /** Scored once at finish; reused on submit retries. */

@@ -11,13 +11,32 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.Reorder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.ReorderAnswer
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoice
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoiceAnswer
+import kotlin.math.roundToInt
 
 object QuizScorer {
-    /** score = correctCount * 100 + timeBonus (max 50, decreases with elapsed seconds) */
-    fun calculateScore(correctCount: Int, totalCount: Int, elapsedMillis: Long): Int {
-        val base = correctCount * 100
-        val timeBonus = (50 - (elapsedMillis / 1000).toInt()).coerceIn(0, 50)
-        return base + timeBonus
+    /**
+     * Average per-question accuracy as 0–100.
+     * Multiple choice uses Jaccard overlap; reorder uses pairwise order (Kendall).
+     */
+    fun percentScore(accuracies: List<Double>): Int {
+        if (accuracies.isEmpty()) return 0
+        return (accuracies.average() * 100.0).roundToInt().coerceIn(0, 100)
+    }
+
+    fun questionAccuracy(question: Question, answer: Answer?): Double {
+        if (answer == null || answer.questionId != question.id) return 0.0
+        return when {
+            question is SingleChoice && answer is SingleChoiceAnswer ->
+                if (answer.selectedId == question.correctId) 1.0 else 0.0
+
+            question is MultipleChoice && answer is MultipleChoiceAnswer ->
+                jaccard(answer.selectedIds, question.correctIds)
+
+            question is Reorder && answer is ReorderAnswer ->
+                reorderAccuracy(question.correctOrder, answer.orderedIds)
+
+            else -> 0.0
+        }
     }
 
     fun isCorrect(question: Question, answer: Answer?): Boolean {
@@ -30,19 +49,53 @@ object QuizScorer {
     }
 
     fun scoreSession(session: QuizSession, finishedAtEpochMillis: Long): QuizResult {
-        val correct = session.quizSet.questions.count { q ->
-            isCorrect(q, session.answers[q.id])
-        }
+        val questions = session.quizSet.questions
+        val correct = questions.count { q -> isCorrect(q, session.answers[q.id]) }
+        val accuracies = questions.map { q -> questionAccuracy(q, session.answers[q.id]) }
         val elapsed = finishedAtEpochMillis - session.startedAtEpochMillis
         return QuizResult(
             nickname = session.nickname,
             correctCount = correct,
-            totalCount = session.quizSet.questions.size,
-            score = calculateScore(correct, session.quizSet.questions.size, elapsed),
+            totalCount = questions.size,
+            score = percentScore(accuracies),
             elapsedMillis = elapsed,
         )
     }
 
     fun countCorrect(quizSet: QuizSet, answers: Map<String, Answer>): Int =
         quizSet.questions.count { isCorrect(it, answers[it.id]) }
+
+    internal fun jaccard(selected: Set<String>, correct: Set<String>): Double {
+        if (selected.isEmpty() && correct.isEmpty()) return 1.0
+        val unionSize = (selected + correct).size
+        if (unionSize == 0) return 1.0
+        return selected.intersect(correct).size.toDouble() / unionSize.toDouble()
+    }
+
+    internal fun reorderAccuracy(correctOrder: List<String>, orderedIds: List<String>): Double = when {
+        correctOrder.isEmpty() -> 0.0
+        orderedIds == correctOrder -> 1.0
+        else -> pairwiseReorderAccuracy(correctOrder, orderedIds)
+    }
+
+    private fun pairwiseReorderAccuracy(correctOrder: List<String>, orderedIds: List<String>): Double {
+        val rank = correctOrder.withIndex().associate { it.value to it.index }
+        val sequence = orderedIds.filter { it in rank }
+        val coverage = sequence.size.toDouble() / correctOrder.size.toDouble()
+        if (sequence.size < 2) {
+            return if (correctOrder.size == 1 && sequence.size == 1) 1.0 else 0.0
+        }
+        var concordant = 0
+        var pairs = 0
+        for (i in sequence.indices) {
+            for (j in (i + 1) until sequence.size) {
+                pairs += 1
+                if (rank.getValue(sequence[i]) < rank.getValue(sequence[j])) {
+                    concordant += 1
+                }
+            }
+        }
+        val orderRatio = if (pairs == 0) 0.0 else concordant.toDouble() / pairs.toDouble()
+        return orderRatio * coverage
+    }
 }

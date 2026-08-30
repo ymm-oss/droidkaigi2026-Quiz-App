@@ -3,27 +3,32 @@
 ## Formula
 
 ```
-score = correctCount * 100 + timeBonus
-timeBonus = (50 - elapsedSeconds).coerceIn(0, 50)
+questionAccuracy ∈ [0, 1]
+score = round(average(questionAccuracy) × 100)   # 0–100
 ```
+
+There is no time bonus. Result and ranking show `score%`. Fully correct question count is secondary.
 
 | Symbol | Meaning |
 |--------|---------|
-| `correctCount` | Number of correct answers |
-| `elapsedSeconds` | From quiz start to **final answer submit** |
-| `timeBonus` | 0–50; faster is higher |
+| `questionAccuracy` | Closeness for one question (1 when exact) |
+| `correctCount` | Questions with an exact match (same as feedback) |
+| `totalCount` | Questions in the quiz set |
+| `score` | Ranking sort key: 0–100 accuracy |
 
-## Time boundaries
+## Closeness by type
 
-- **Included**: question view through each submit
-- **Excluded**: time spent on feedback overlays
+| Type | Fully correct | Partial credit |
+|------|---------------|----------------|
+| Single | Selected id equals `correctId` → 1 | Otherwise 0 |
+| Multiple | Selected set equals `correctIds` → 1 | Jaccard: `|sel ∩ correct| / |sel ∪ correct|` |
+| Reorder | `orderedIds` equals `correctOrder` → 1 | Fraction of item pairs in the right relative order (Kendall). Closer orders score higher |
 
-## Correctness by type
+## Ranking order
 
-| Type | Correct when |
-|------|--------------|
-| Single | Selected id equals `correctId` |
-| Multiple | Selected set equals `correctIds` |
-| Reorder | `orderedIds` equals `correctOrder` |
+1. `score` (accuracy) descending
+2. Ties: `completedAtEpochMillis` ascending (earlier finish ranks higher)
+
+Completion time is shown on ranking rows. Time spent on feedback overlays is not part of completion (final-answer submit).
 
 Covered by domain unit tests (`commonTest` / `jvmTest`).
