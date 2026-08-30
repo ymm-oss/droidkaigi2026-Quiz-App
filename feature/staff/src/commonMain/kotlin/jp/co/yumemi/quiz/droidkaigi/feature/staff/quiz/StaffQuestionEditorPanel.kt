@@ -30,6 +30,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,6 +53,11 @@ import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffHorizontalDivi
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffTextButton
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.staffDividerColor
 
+private enum class StaffContentLanguage(val label: String) {
+    Japanese("日本語"),
+    English("English"),
+}
+
 /**
  * Right-hand editor panel. A side panel (rather than a dialog) keeps the question list visible
  * while staff edit, which is the whole point of the console during a live session.
@@ -69,6 +77,7 @@ fun StaffQuestionEditorPanel(
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var showPromptPreview by remember { mutableStateOf(false) }
     var showExplanationPreview by remember { mutableStateOf(false) }
+    var contentLanguage by remember { mutableStateOf(StaffContentLanguage.Japanese) }
 
     val borderColor = staffDividerColor()
     Column(
@@ -157,6 +166,32 @@ fun StaffQuestionEditorPanel(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                StaffFieldLabel(text = "編集する言語")
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    StaffContentLanguage.entries.forEachIndexed { index, language ->
+                        SegmentedButton(
+                            selected = contentLanguage == language,
+                            onClick = {
+                                contentLanguage = language
+                                showPromptPreview = false
+                                showExplanationPreview = false
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(index, StaffContentLanguage.entries.size),
+                        ) {
+                            Text(language.label)
+                        }
+                    }
+                }
+                if (contentLanguage == StaffContentLanguage.English) {
+                    Text(
+                        text = "未入力の英語項目は、参加者画面で日本語を表示します。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -170,16 +205,25 @@ fun StaffQuestionEditorPanel(
                     )
                 }
                 OutlinedTextField(
-                    value = draft.prompt,
-                    onValueChange = { onDraftChange(draft.copy(prompt = it)) },
+                    value = if (contentLanguage == StaffContentLanguage.English) draft.promptEn else draft.prompt,
+                    onValueChange = {
+                        onDraftChange(
+                            if (contentLanguage == StaffContentLanguage.English) {
+                                draft.copy(promptEn = it)
+                            } else {
+                                draft.copy(prompt = it)
+                            },
+                        )
+                    },
                     shape = RoundedCornerShape(QuizTokens.cornerSmall),
                     colors = staffFieldColors(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(144.dp),
                 )
-                if (showPromptPreview && draft.prompt.isNotBlank()) {
-                    QuizMarkdownText(draft.prompt)
+                val promptPreview = if (contentLanguage == StaffContentLanguage.English) draft.promptEn else draft.prompt
+                if (showPromptPreview && promptPreview.isNotBlank()) {
+                    QuizMarkdownText(promptPreview)
                 }
             }
 
@@ -190,7 +234,11 @@ fun StaffQuestionEditorPanel(
                     .border(1.dp, staffDividerColor(0.1f), RoundedCornerShape(QuizTokens.cornerMedium))
                     .padding(QuizTokens.spacingMedium),
             ) {
-                StaffChoiceListEditor(draft = draft, onDraftChange = onDraftChange)
+                StaffChoiceListEditor(
+                    draft = draft,
+                    onDraftChange = onDraftChange,
+                    editingEnglish = contentLanguage == StaffContentLanguage.English,
+                )
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
@@ -207,16 +255,33 @@ fun StaffQuestionEditorPanel(
                     )
                 }
                 OutlinedTextField(
-                    value = draft.explanationMarkdown,
-                    onValueChange = { onDraftChange(draft.copy(explanationMarkdown = it)) },
+                    value = if (contentLanguage == StaffContentLanguage.English) {
+                        draft.explanationMarkdownEn
+                    } else {
+                        draft.explanationMarkdown
+                    },
+                    onValueChange = {
+                        onDraftChange(
+                            if (contentLanguage == StaffContentLanguage.English) {
+                                draft.copy(explanationMarkdownEn = it)
+                            } else {
+                                draft.copy(explanationMarkdown = it)
+                            },
+                        )
+                    },
                     shape = RoundedCornerShape(QuizTokens.cornerSmall),
                     colors = staffFieldColors(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
                 )
-                if (showExplanationPreview && draft.explanationMarkdown.isNotBlank()) {
-                    QuizMarkdownText(draft.explanationMarkdown)
+                val explanationPreview = if (contentLanguage == StaffContentLanguage.English) {
+                    draft.explanationMarkdownEn
+                } else {
+                    draft.explanationMarkdown
+                }
+                if (showExplanationPreview && explanationPreview.isNotBlank()) {
+                    QuizMarkdownText(explanationPreview)
                 }
             }
             saveError?.let { message ->

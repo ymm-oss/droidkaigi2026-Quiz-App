@@ -13,7 +13,11 @@ enum class StaffQuestionType(val label: String) {
     Reorder("並び替え"),
 }
 
-data class StaffListItem(val id: String, val label: String)
+data class StaffListItem(
+    val id: String,
+    val label: String,
+    val labelEn: String = "",
+)
 
 data class StaffQuestionDraft(
     val id: String = "",
@@ -23,6 +27,8 @@ data class StaffQuestionDraft(
     val items: List<StaffListItem> = defaultItems(),
     val correctSingleId: String = "",
     val correctMultipleIds: Set<String> = emptySet(),
+    val promptEn: String = "",
+    val explanationMarkdownEn: String = "",
 )
 
 fun defaultItems(): List<StaffListItem> {
@@ -57,8 +63,10 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         prompt = prompt,
         explanationMarkdown = explanationMarkdown,
         type = StaffQuestionType.SingleChoice,
-        items = options.map { StaffListItem(it.id, it.label) },
+        items = options.map { StaffListItem(it.id, it.label, it.labelEn) },
         correctSingleId = correctId,
+        promptEn = promptEn,
+        explanationMarkdownEn = explanationMarkdownEn,
     )
 
     is MultipleChoice -> StaffQuestionDraft(
@@ -66,8 +74,10 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         prompt = prompt,
         explanationMarkdown = explanationMarkdown,
         type = StaffQuestionType.MultipleChoice,
-        items = options.map { StaffListItem(it.id, it.label) },
+        items = options.map { StaffListItem(it.id, it.label, it.labelEn) },
         correctMultipleIds = correctIds,
+        promptEn = promptEn,
+        explanationMarkdownEn = explanationMarkdownEn,
     )
 
     is Reorder -> StaffQuestionDraft(
@@ -75,7 +85,9 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         prompt = prompt,
         explanationMarkdown = explanationMarkdown,
         type = StaffQuestionType.Reorder,
-        items = items.map { StaffListItem(it.id, it.label) },
+        items = items.map { StaffListItem(it.id, it.label, it.labelEn) },
+        promptEn = promptEn,
+        explanationMarkdownEn = explanationMarkdownEn,
     )
 }
 
@@ -91,8 +103,10 @@ fun StaffQuestionDraft.toQuestion(): Question {
                 id = id.trim(),
                 prompt = prompt.trim(),
                 explanationMarkdown = explanationMarkdown,
-                options = trimmedItems.map { ChoiceOption(it.id, it.label) },
+                options = trimmedItems.map { ChoiceOption(it.id, it.label, it.labelEn.trim()) },
                 correctIds = correctMultipleIds,
+                promptEn = promptEn.trim(),
+                explanationMarkdownEn = explanationMarkdownEn,
             )
         }
 
@@ -100,8 +114,10 @@ fun StaffQuestionDraft.toQuestion(): Question {
             id = id.trim(),
             prompt = prompt.trim(),
             explanationMarkdown = explanationMarkdown,
-            items = trimmedItems.map { ReorderItem(it.id, it.label) },
+            items = trimmedItems.map { ReorderItem(it.id, it.label, it.labelEn.trim()) },
             correctOrder = trimmedItems.map { it.id },
+            promptEn = promptEn.trim(),
+            explanationMarkdownEn = explanationMarkdownEn,
         )
 
         StaffQuestionType.SingleChoice -> {
@@ -112,8 +128,10 @@ fun StaffQuestionDraft.toQuestion(): Question {
                 id = id.trim(),
                 prompt = prompt.trim(),
                 explanationMarkdown = explanationMarkdown,
-                options = trimmedItems.map { ChoiceOption(it.id, it.label) },
+                options = trimmedItems.map { ChoiceOption(it.id, it.label, it.labelEn.trim()) },
                 correctId = correctId,
+                promptEn = promptEn.trim(),
+                explanationMarkdownEn = explanationMarkdownEn,
             )
         }
     }
@@ -154,6 +172,9 @@ fun StaffQuestionDraft.addItem(): StaffQuestionDraft {
 
 fun StaffQuestionDraft.updateItemLabel(itemId: String, label: String): StaffQuestionDraft =
     copy(items = items.map { if (it.id == itemId) it.copy(label = label) else it })
+
+fun StaffQuestionDraft.updateItemLabelEn(itemId: String, label: String): StaffQuestionDraft =
+    copy(items = items.map { if (it.id == itemId) it.copy(labelEn = label) else it })
 
 fun StaffQuestionDraft.removeItem(itemId: String): StaffQuestionDraft {
     val remaining = items.filter { it.id != itemId }
