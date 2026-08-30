@@ -4,6 +4,15 @@ html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    /* Matches QuizTokens.gradientStartLight so the page does not flash white before Compose paints. */
+    background-color: #E8F9EF;
+}
+
+@media (prefers-color-scheme: dark) {
+    html, body {
+        /* QuizTokens.gradientStartDark */
+        background-color: #0D1F14;
+    }
 }
 
 #webApp {
