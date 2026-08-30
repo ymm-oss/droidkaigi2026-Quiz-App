@@ -15,7 +15,10 @@ folders/{folderId}
   questions: array<map>         # 出題順。QuestionDto と同型
     type: "single_choice" | "multiple_choice" | "reorder"
     id, prompt, explanationMarkdown?
-    options? / correctId? / correctIds? / items? / correctOrder?
+    promptEn?, explanationMarkdownEn?
+    options? [{ id, label, labelEn? }]
+    items? [{ id, label, labelEn? }]
+    correctId? / correctIds? / correctOrder?
   updatedAtEpochMillis: number?  # 任意
 
 appConfig/default              # ドキュメント ID 固定
@@ -55,6 +58,7 @@ releases/staff-desktop/{version}.dmg
 | シード | fake は同梱 `quiz_set.json`。Firestore 上の `questions` は同型（参考: [firestore-seed.json](firestore-seed.json)） |
 | ドキュメントサイズ | 会場想定の問題数なら 1 フォルダ 1 ドキュメントで 1 MiB 以内 |
 | ランキング | サブコレクションに分離し、提出増加でフォルダ本体が肥大化しない |
+| 多言語 | `prompt` / `label` / `explanationMarkdown` を日本語兼既定値とし、任意の `*En` が未登録なら参加者画面で既定値へフォールバック |
 
 ## インデックス
 

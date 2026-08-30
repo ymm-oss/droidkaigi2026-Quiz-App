@@ -2,6 +2,8 @@
 
 Answer questions with progress (e.g. `1 / 3`) and a progress bar.
 
+The question, options, reorder items, correct-answer display, and explanation follow the System / Japanese / English setting selected on Home. System follows the device language. If English content is missing for an item, the Japanese content is shown as a fallback.
+
 ## UI by question type
 
 ### Single choice
