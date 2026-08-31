@@ -34,6 +34,10 @@ private const val FONT_LOAD_TIMEOUT_MILLIS = 10_000L
 // outside that composition so changing language never reopens the font gate.
 private var cachedFontFamily: FontFamily? = null
 
+// Keep the fail-open state for the lifetime of the Wasm app as well. Otherwise a locale remount
+// after a failed font request would hide the fallback-rendered UI for another full timeout.
+private var hasFontLoadTimedOut by mutableStateOf(false)
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 actual fun rememberQuizFonts(): QuizFonts {
@@ -47,10 +51,11 @@ actual fun rememberQuizFonts(): QuizFonts {
             variationSettings = FontVariation.Settings(weight, FontStyle.Normal),
         ).value
     }
-    var timedOut by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(FONT_LOAD_TIMEOUT_MILLIS)
-        timedOut = true
+        if (!hasFontLoadTimedOut) {
+            delay(FONT_LOAD_TIMEOUT_MILLIS)
+            hasFontLoadTimedOut = true
+        }
     }
     val loadedFontFamily = remember(fonts) {
         fonts.takeIf { loaded -> loaded.all { it != null } }
@@ -65,6 +70,6 @@ actual fun rememberQuizFonts(): QuizFonts {
     val fontFamily = loadedFontFamily ?: cachedFontFamily
     return QuizFonts(
         fontFamily = fontFamily,
-        isReady = fontFamily != null || timedOut,
+        isReady = fontFamily != null || hasFontLoadTimedOut,
     )
 }
