@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffTextButton
 fun StaffTopBar(
     sitePublished: Boolean,
     onToggleSitePublished: () -> Unit,
+    onOpenParticipantLinks: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -59,6 +61,12 @@ fun StaffTopBar(
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
+                StaffTextButton(
+                    text = "参加者アプリ",
+                    icon = Icons.AutoMirrored.Filled.OpenInNew,
+                    onClick = onOpenParticipantLinks,
+                )
+                Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
                 Text(
                     text = if (sitePublished) "サイト: 公開中" else "サイト: 非公開",
                     style = MaterialTheme.typography.bodyMedium,
