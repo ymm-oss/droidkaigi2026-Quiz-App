@@ -19,10 +19,7 @@ import androidx.compose.ui.unit.dp
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTokens
 
 @Composable
-fun StaffAppUpdateDialog(
-    state: StaffAppUpdateUiState,
-    onIntent: (StaffAppUpdateIntent) -> Unit,
-) {
+fun StaffAppUpdateDialog(state: StaffAppUpdateUiState, onIntent: (StaffAppUpdateIntent) -> Unit) {
     if (!state.showDialog) return
     val release = state.release ?: return
     val notes = release.releaseNotes.trim().ifBlank { null }

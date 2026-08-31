@@ -45,6 +45,7 @@ class SiteStatusHolderTest {
         holder.applyStatus(AppConfigStatus(sitePublished = true, activeFolderId = "day2"))
         assertEquals(true, holder.sitePublished.value)
         assertEquals("day2", holder.activeFolderId.value)
+        assertEquals(listOf("day2"), holder.publishedFolderIds.value)
         assertFalse(holder.observeFailed.value)
         assertTrue(holder.isRankingNavVisible)
     }

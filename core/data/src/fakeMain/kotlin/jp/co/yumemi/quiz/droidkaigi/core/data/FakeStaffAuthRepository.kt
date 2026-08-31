@@ -1,13 +1,13 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data
 
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import jp.co.yumemi.quiz.droidkaigi.core.data.di.AppScope
 import jp.co.yumemi.quiz.droidkaigi.core.domain.auth.StaffAuthException
 import jp.co.yumemi.quiz.droidkaigi.core.domain.auth.StaffAuthFailureReason
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.StaffQuickSignInCredentials
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.StaffSession
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.StaffAuthRepository
-import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 
 @Inject
 @ContributesBinding(AppScope::class)

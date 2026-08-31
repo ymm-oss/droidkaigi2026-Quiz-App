@@ -89,7 +89,11 @@ fun StaffFolderSidebar(
             )
             StaffHorizontalDivider(alpha = 0.1f)
             StaffOutlinedButton(
-                text = if (state.isPublishingFolder) "公開中…" else "参加者向けに公開",
+                text = when {
+                    state.isPublishingFolder -> "更新中…"
+                    selectedFolder != null && state.isFolderPublished(selectedFolder.id) -> "公開を外す"
+                    else -> "参加者向けに公開"
+                },
                 icon = Icons.Default.Publish,
                 onClick = { onIntent(StaffShellIntent.RequestPublishFolder) },
                 enabled = selectedFolder != null && !sidebarBusy,
@@ -184,7 +188,7 @@ private fun StaffFolderList(
                     StaffFolderRow(
                         folder = folder,
                         selected = folder.id == state.selectedFolderId,
-                        isActive = folder.id == state.activeFolderId,
+                        isPublished = state.isFolderPublished(folder.id),
                         onClick = { onIntent(StaffShellIntent.SelectFolder(folder.id)) },
                         onEdit = { onIntent(StaffShellIntent.ShowEditFolderDialog(folder.id)) },
                         onDelete = { onIntent(StaffShellIntent.RequestDeleteFolder(folder.id)) },
@@ -217,15 +221,15 @@ private fun StaffFolderDialogs(
 ) {
     if (state.showPublishFolderConfirm && selectedFolder != null) {
         val folder = selectedFolder
-        val alreadyActive = folder.id == state.activeFolderId
+        val alreadyPublished = state.isFolderPublished(folder.id)
         StaffConfirmDialog(
-            title = "参加者向けに公開",
-            message = if (alreadyActive) {
-                "「${folder.displayName}」はすでに公開中です。再度公開しますか？"
+            title = if (alreadyPublished) "公開を外す" else "参加者向けに公開",
+            message = if (alreadyPublished) {
+                "「${folder.displayName}」を参加者アプリの選択肢から外しますか？\n他の公開中フォルダはそのままです。"
             } else {
-                "「${folder.displayName}」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。"
+                "「${folder.displayName}」を参加者アプリで選べるようにしますか？"
             },
-            confirmLabel = "公開",
+            confirmLabel = if (alreadyPublished) "外す" else "公開",
             confirmLoading = state.isPublishingFolder,
             errorMessage = if (state.isPublishingFolder) null else state.errorMessage,
             onConfirm = { onIntent(StaffShellIntent.ConfirmPublishFolder) },
@@ -261,14 +265,14 @@ private fun StaffFolderDialogs(
 
     val deletingFolder = state.deletingFolder
     if (deletingFolder != null) {
-        val isActive = deletingFolder.id == state.activeFolderId
+        val isPublished = state.isFolderPublished(deletingFolder.id)
         StaffConfirmDialog(
             title = "フォルダを削除",
             message = buildString {
                 append("「${deletingFolder.displayName}」を削除しますか？\n")
                 append("問題とランキングも削除されます。この操作は取り消せません。")
-                if (isActive) {
-                    append("\n公開中のフォルダです。削除すると別のフォルダが公開対象になります。")
+                if (isPublished) {
+                    append("\n公開中のフォルダです。削除すると参加者の選択肢から外れます。")
                 }
             },
             confirmLabel = "削除",
@@ -424,7 +428,7 @@ private fun StaffFolderEditDialog(
 private fun StaffFolderRow(
     folder: QuizFolder,
     selected: Boolean,
-    isActive: Boolean,
+    isPublished: Boolean,
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -501,7 +505,7 @@ private fun StaffFolderRow(
                     )
                 }
             }
-            if (isActive) {
+            if (isPublished) {
                 Spacer(modifier = Modifier.width(QuizTokens.spacingSmall))
                 StaffActivePill(text = "公開中")
             }
