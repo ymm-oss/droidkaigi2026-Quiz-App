@@ -2,6 +2,7 @@ package jp.co.yumemi.quiz.droidkaigi.core.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,10 @@ private val themeWeights = listOf(
  */
 private const val FONT_LOAD_TIMEOUT_MILLIS = 10_000L
 
+// AppLocaleEnvironment remounts its content when the locale changes. Keep the decoded family
+// outside that composition so changing language never reopens the font gate.
+private var cachedFontFamily: FontFamily? = null
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 actual fun rememberQuizFonts(): QuizFonts {
@@ -47,11 +52,19 @@ actual fun rememberQuizFonts(): QuizFonts {
         delay(FONT_LOAD_TIMEOUT_MILLIS)
         timedOut = true
     }
-    return remember(fonts, timedOut) {
-        val loaded = fonts.filterNotNull()
-        QuizFonts(
-            fontFamily = if (loaded.isEmpty()) null else FontFamily(loaded),
-            isReady = loaded.size == themeWeights.size || timedOut,
-        )
+    val loadedFontFamily = remember(fonts) {
+        fonts.takeIf { loaded -> loaded.all { it != null } }
+            ?.filterNotNull()
+            ?.let(::FontFamily)
     }
+    SideEffect {
+        if (loadedFontFamily != null) {
+            cachedFontFamily = loadedFontFamily
+        }
+    }
+    val fontFamily = loadedFontFamily ?: cachedFontFamily
+    return QuizFonts(
+        fontFamily = fontFamily,
+        isReady = fontFamily != null || timedOut,
+    )
 }
