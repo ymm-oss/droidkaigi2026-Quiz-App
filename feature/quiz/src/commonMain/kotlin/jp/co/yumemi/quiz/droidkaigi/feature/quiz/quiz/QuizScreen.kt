@@ -36,6 +36,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.MultipleChoice
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.Question
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.Reorder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoice
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.localized
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.ChoiceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.MultipleChoiceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizAnswerFeedbackOverlay
@@ -60,6 +61,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.quiz_submit
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.quiz_submit_score_failed_message
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.quiz_submit_score_failed_title
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.quiz_submit_score_retry
+import jp.co.yumemi.quiz.droidkaigi.core.ui.locale.LocalAppLocale
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTokens
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.quizSafeHorizontalPadding
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.quizSafeVerticalPadding
@@ -160,6 +162,7 @@ fun QuizContent(
     onRetrySubmitScore: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val localizedQuestion = state.question?.localized(LocalAppLocale.current)
     QuizScreenBackground(modifier = modifier) {
         Box(
             modifier = Modifier
@@ -187,11 +190,11 @@ fun QuizContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingSmall))
-                    QuizMarkdownText(state.prompt)
+                    QuizMarkdownText(localizedQuestion?.prompt ?: state.prompt)
                 }
                 QuizSurfaceCard {
                     Text(
-                        text = when (state.question) {
+                        text = when (localizedQuestion) {
                             is Reorder -> stringResource(Res.string.quiz_instruction_reorder)
 
                             is MultipleChoice,
@@ -204,7 +207,7 @@ fun QuizContent(
                     )
                     Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
                     QuestionAnswerArea(
-                        question = state.question,
+                        question = localizedQuestion,
                         selectedSingleId = state.selectedSingleId,
                         selectedMultipleIds = state.selectedMultipleIds,
                         reorderIds = state.reorderIds,
@@ -227,11 +230,11 @@ fun QuizContent(
             var cachedFeedbackCorrect by remember { mutableStateOf(false) }
             var cachedCorrectAnswer by remember { mutableStateOf("") }
             var cachedExplanation by remember { mutableStateOf("") }
-            LaunchedEffect(answerCorrect, state.question) {
+            LaunchedEffect(answerCorrect, localizedQuestion) {
                 if (answerCorrect != null) {
                     cachedFeedbackCorrect = answerCorrect
-                    cachedCorrectAnswer = state.question?.correctAnswerText().orEmpty()
-                    cachedExplanation = state.question?.explanationMarkdown.orEmpty()
+                    cachedCorrectAnswer = localizedQuestion?.correctAnswerText().orEmpty()
+                    cachedExplanation = localizedQuestion?.explanationMarkdown.orEmpty()
                 }
             }
             AnimatedVisibility(
@@ -242,12 +245,12 @@ fun QuizContent(
                 QuizAnswerFeedbackOverlay(
                     isCorrect = answerCorrect ?: cachedFeedbackCorrect,
                     correctAnswer = if (answerCorrect != null) {
-                        state.question?.correctAnswerText().orEmpty()
+                        localizedQuestion?.correctAnswerText().orEmpty()
                     } else {
                         cachedCorrectAnswer
                     },
                     explanationMarkdown = if (answerCorrect != null) {
-                        state.question?.explanationMarkdown.orEmpty()
+                        localizedQuestion?.explanationMarkdown.orEmpty()
                     } else {
                         cachedExplanation
                     },

@@ -50,23 +50,47 @@ private fun Question.toQuestionDto(): jp.co.yumemi.quiz.droidkaigi.core.data.dto
         id = id,
         prompt = prompt,
         explanationMarkdown = explanationMarkdown.ifBlank { null },
-        options = options.map { jp.co.yumemi.quiz.droidkaigi.core.data.dto.ChoiceOptionDto(it.id, it.label) },
+        options = options.map {
+            jp.co.yumemi.quiz.droidkaigi.core.data.dto.ChoiceOptionDto(
+                id = it.id,
+                label = it.label,
+                labelEn = it.labelEn.ifBlank { null },
+            )
+        },
         correctId = correctId,
+        promptEn = promptEn.ifBlank { null },
+        explanationMarkdownEn = explanationMarkdownEn.ifBlank { null },
     )
     is jp.co.yumemi.quiz.droidkaigi.core.domain.model.MultipleChoice -> jp.co.yumemi.quiz.droidkaigi.core.data.dto.QuestionDto(
         type = "multiple_choice",
         id = id,
         prompt = prompt,
         explanationMarkdown = explanationMarkdown.ifBlank { null },
-        options = options.map { jp.co.yumemi.quiz.droidkaigi.core.data.dto.ChoiceOptionDto(it.id, it.label) },
+        options = options.map {
+            jp.co.yumemi.quiz.droidkaigi.core.data.dto.ChoiceOptionDto(
+                id = it.id,
+                label = it.label,
+                labelEn = it.labelEn.ifBlank { null },
+            )
+        },
         correctIds = correctIds.toList(),
+        promptEn = promptEn.ifBlank { null },
+        explanationMarkdownEn = explanationMarkdownEn.ifBlank { null },
     )
     is jp.co.yumemi.quiz.droidkaigi.core.domain.model.Reorder -> jp.co.yumemi.quiz.droidkaigi.core.data.dto.QuestionDto(
         type = "reorder",
         id = id,
         prompt = prompt,
         explanationMarkdown = explanationMarkdown.ifBlank { null },
-        items = items.map { jp.co.yumemi.quiz.droidkaigi.core.data.dto.ReorderItemDto(it.id, it.label) },
+        items = items.map {
+            jp.co.yumemi.quiz.droidkaigi.core.data.dto.ReorderItemDto(
+                id = it.id,
+                label = it.label,
+                labelEn = it.labelEn.ifBlank { null },
+            )
+        },
         correctOrder = correctOrder,
+        promptEn = promptEn.ifBlank { null },
+        explanationMarkdownEn = explanationMarkdownEn.ifBlank { null },
     )
 }

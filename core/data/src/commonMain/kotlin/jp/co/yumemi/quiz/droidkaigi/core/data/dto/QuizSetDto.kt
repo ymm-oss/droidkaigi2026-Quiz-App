@@ -23,13 +23,23 @@ data class QuestionDto(
     val correctIds: List<String>? = null,
     val items: List<ReorderItemDto>? = null,
     val correctOrder: List<String>? = null,
+    val promptEn: String? = null,
+    val explanationMarkdownEn: String? = null,
 )
 
 @Serializable
-data class ChoiceOptionDto(val id: String = "", val label: String = "")
+data class ChoiceOptionDto(
+    val id: String = "",
+    val label: String = "",
+    val labelEn: String? = null,
+)
 
 @Serializable
-data class ReorderItemDto(val id: String = "", val label: String = "")
+data class ReorderItemDto(
+    val id: String = "",
+    val label: String = "",
+    val labelEn: String? = null,
+)
 
 fun QuizSetDto.toDomain(): QuizSet = QuizSet(
     id = id,
@@ -42,24 +52,30 @@ fun QuestionDto.toDomain(): Question? = when (type) {
         id = id,
         prompt = prompt,
         explanationMarkdown = explanationMarkdown.orEmpty(),
-        options = options.orEmpty().map { ChoiceOption(it.id, it.label) },
+        options = options.orEmpty().map { ChoiceOption(it.id, it.label, it.labelEn.orEmpty()) },
         correctId = correctId.orEmpty(),
+        promptEn = promptEn.orEmpty(),
+        explanationMarkdownEn = explanationMarkdownEn.orEmpty(),
     )
 
     "multiple_choice" -> MultipleChoice(
         id = id,
         prompt = prompt,
         explanationMarkdown = explanationMarkdown.orEmpty(),
-        options = options.orEmpty().map { ChoiceOption(it.id, it.label) },
+        options = options.orEmpty().map { ChoiceOption(it.id, it.label, it.labelEn.orEmpty()) },
         correctIds = correctIds.orEmpty().toSet(),
+        promptEn = promptEn.orEmpty(),
+        explanationMarkdownEn = explanationMarkdownEn.orEmpty(),
     )
 
     "reorder" -> Reorder(
         id = id,
         prompt = prompt,
         explanationMarkdown = explanationMarkdown.orEmpty(),
-        items = items.orEmpty().map { ReorderItem(it.id, it.label) },
+        items = items.orEmpty().map { ReorderItem(it.id, it.label, it.labelEn.orEmpty()) },
         correctOrder = correctOrder.orEmpty(),
+        promptEn = promptEn.orEmpty(),
+        explanationMarkdownEn = explanationMarkdownEn.orEmpty(),
     )
 
     else -> null

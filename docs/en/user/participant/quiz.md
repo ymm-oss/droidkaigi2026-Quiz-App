@@ -2,6 +2,8 @@
 
 Answer questions with progress (e.g. `1 / 3`) and a progress bar.
 
+The question, options, reorder items, correct-answer display, and explanation follow the System / Japanese / English setting selected on Home. System follows the device language. If English content is missing for an item, the Japanese content is shown as a fallback.
+
 ## UI by question type
 
 ### Single choice
@@ -33,6 +35,7 @@ Drag the handle on the right to reorder, then submit.
 <img src="/screenshots/android/android-01-feedback-correct.png" alt="Correct feedback" width="280" />
 <img src="/screenshots/android/android-02-feedback-incorrect.png" alt="Incorrect feedback" width="280" />
 <img src="/screenshots/android/android-03-feedback-finish.png" alt="Finishing feedback" width="280" />
+<img src="/screenshots/android/android-04-feedback-english.png" alt="English question, answer, and explanation" width="280" />
 
 Explanations are rendered as Markdown. Long explanations can be scrolled, while the explanation section is omitted when none is registered.
 
