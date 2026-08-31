@@ -3,8 +3,9 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.home
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
@@ -55,8 +56,8 @@ class HomeContentJvmUiTest {
         onNodeWithText("クイズを始める").assertIsDisplayed()
         onNodeWithText("一般向け").assertIsDisplayed()
         onNodeWithText("会場向け初級").assertIsDisplayed()
-        onNodeWithText("Day 1（運営用）").assertDoesNotExist()
-        onNodeWithText("運営メモ").assertDoesNotExist()
+        onAllNodesWithText("Day 1（運営用）").assertCountEquals(0)
+        onAllNodesWithText("運営メモ").assertCountEquals(0)
     }
 
     @OptIn(ExperimentalTestApi::class)
