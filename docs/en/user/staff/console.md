@@ -32,7 +32,9 @@ The trash icon on the selected row deletes the folder after confirmation, includ
 
 ### Configure public information
 
-<img src="/screenshots/staff/06-publish-confirm.png" alt="Publish confirm" width="480" />
+| Separate public information | Use internal information as-is |
+|---|---|
+| <img src="/screenshots/staff/06-publish-confirm.png" alt="Enter public information" width="420" /> | <img src="/screenshots/staff/06b-publish-internal-info.png" alt="Publish internal information as-is" width="420" /> |
 
 When publishing, set the public name and description shown to participants separately from the internal information. Select **Use the internal name and description as-is** to mirror internal changes. Previously entered public information is retained and becomes available again when the option is cleared. Public information remains editable while published and is retained after unpublishing. Multiple folders can stay published together.
 
