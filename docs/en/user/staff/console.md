@@ -4,12 +4,23 @@ Main screen after sign-in: quiz editing and ranking.
 
 ## Quiz management
 
-Select a folder (quiz set), edit questions, and **publish folders independently**. Several folders can be published at once; participants pick them by name. The top bar toggles site-wide intake (`sitePublished`); **Preview** on the question list plays the participant UI. In preview you can switch **日本語 / English** to see the same question copy and chrome a participant would get from Home. Missing English fields fall back to Japanese.
+Select a folder (quiz set), edit questions, and **publish folders independently**. Several folders can be published at once; participants pick them by name. The top bar toggles site-wide intake (`sitePublished`) and **参加者アプリ** copies/opens distribution URLs. **Preview** on the question list plays the participant UI. In preview you can switch **日本語 / English** to see the same question copy and chrome a participant would get from Home. Missing English fields fall back to Japanese.
 
 <img src="/screenshots/staff/staff-participant-preview.png" alt="Participant preview (Japanese)" width="480" />
 <img src="/screenshots/staff/staff-participant-preview-english.png" alt="Participant preview (English)" width="480" />
 
 <img src="/screenshots/staff/02-console-quiz.png" alt="Quiz console" width="640" />
+
+### Participant app links
+
+Use **参加者アプリ** in the top bar to copy or open the URLs you share at the venue.
+
+| Link | Use |
+|------|-----|
+| Web (browser) | Firebase Hosting participant app (production `https://ymm-droidkaigi26.web.app/`; Wasm `/staff` uses the current origin) |
+| Android / Desktop | GitHub Releases (APK / DMG) |
+
+<img src="/screenshots/staff/12-participant-links.png" alt="Participant app links" width="480" />
 
 ### Question editor
 

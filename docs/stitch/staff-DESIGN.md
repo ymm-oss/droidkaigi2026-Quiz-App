@@ -45,7 +45,7 @@ Light tokens exist for participant app; staff stays dark.
 
 ## Layout shell (Desktop ~1440×900)
 
-1. **TopAppBar**: title `Droid26クイズ管理アプリ` · trailing `ログアウト`
+1. **TopAppBar**: title `Droid26クイズ管理アプリ` · trailing `参加者アプリ` · site publish · `ログアウト`
 2. **Folder sidebar ~260dp**: list folders · `+` add · bottom CTA `参加者向けに公開`
 3. **NavigationRail**: `クイズ` · `ランキング`
 4. **Main pane**: folder-scoped content

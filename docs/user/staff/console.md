@@ -4,12 +4,23 @@
 
 ## クイズ管理
 
-フォルダ（クイズセット）を選び、問題一覧の確認・編集・**フォルダごとの公開**を行います。複数フォルダを同時に公開でき、参加者アプリでは名称で選べます。トップバーではサイト全体の受付公開（`sitePublished`）を切り替え、問題一覧ヘッダの「プレビュー」で参加者画面を試遊できます。プレビューでは **日本語 / English** を切り替えて、参加者が Home で言語を選んだときと同じ問題文・UI を確認できます。未入力の英語項目は日本語が表示されます。
+フォルダ（クイズセット）を選び、問題一覧の確認・編集・**フォルダごとの公開**を行います。複数フォルダを同時に公開でき、参加者アプリでは名称で選べます。トップバーではサイト全体の受付公開（`sitePublished`）を切り替え、**参加者アプリ**から配布 URL をコピー／ブラウザで開けます。問題一覧ヘッダの「プレビュー」で参加者画面を試遊できます。プレビューでは **日本語 / English** を切り替えて、参加者が Home で言語を選んだときと同じ問題文・UI を確認できます。未入力の英語項目は日本語が表示されます。
 
 <img src="/screenshots/staff/staff-participant-preview.png" alt="参加者プレビュー（日本語）" width="480" />
 <img src="/screenshots/staff/staff-participant-preview-english.png" alt="参加者プレビュー（English）" width="480" />
 
 <img src="/screenshots/staff/02-console-quiz.png" alt="クイズ管理コンソール" width="640" />
+
+### 参加者アプリのリンク
+
+トップバーの「参加者アプリ」から、会場で配布する URL をコピーしたりブラウザで開いたりできます。
+
+| リンク | 用途 |
+|--------|------|
+| Web（ブラウザ） | Firebase Hosting の参加者アプリ（本番は `https://ymm-droidkaigi26.web.app/`。Wasm `/staff` では今開いている origin） |
+| Android / Desktop | GitHub Releases（APK / DMG） |
+
+<img src="/screenshots/staff/12-participant-links.png" alt="参加者アプリのリンク" width="480" />
 
 ### 問題エディタ
 
