@@ -36,6 +36,8 @@
 
     <string name="feedback_correct">Correct!</string>
     <string name="feedback_incorrect">Incorrect</string>
+    <string name="feedback_correct_answer">Correct answer</string>
+    <string name="feedback_explanation">Explanation</string>
     <string name="quiz_feedback_next">Next question</string>
     <string name="quiz_feedback_finish">See results</string>
     <string name="quiz_submit_score_failed_title">Couldn’t submit your score</string>

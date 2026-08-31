@@ -26,12 +26,14 @@ Drag the handle on the right to reorder, then submit.
 
 | State | What you see |
 |-------|----------------|
-| Correct | “Correct!” and continue |
-| Incorrect | Incorrect feedback and continue |
-| Last question (correct) | Continue to Result |
+| Correct | “Correct!”, the correct answer, an explanation, and continue |
+| Incorrect | “Incorrect”, the correct answer, an explanation, and continue |
+| Last question | Feedback, the correct answer, an explanation, and continue to Result |
 
 <img src="/screenshots/android/android-01-feedback-correct.png" alt="Correct feedback" width="280" />
 <img src="/screenshots/android/android-02-feedback-incorrect.png" alt="Incorrect feedback" width="280" />
 <img src="/screenshots/android/android-03-feedback-finish.png" alt="Finishing feedback" width="280" />
+
+Explanations are rendered as Markdown. Long explanations can be scrolled, while the explanation section is omitted when none is registered.
 
 Time spent on the feedback overlay is **not** included in scoring elapsed time.
