@@ -32,14 +32,14 @@ class StaffQuizPreviewScreenshotJvmUiTest {
         onNodeWithText("プレビュー言語").assertIsDisplayed()
         onNodeWithText("393 dp").assertIsDisplayed()
         waitUntil(timeoutMillis = 10_000) {
-            onNodeWithText("回答する").isDisplayed()
+            onNodeWithText("問題").isDisplayed()
         }
 
         captureSurfacePng("staff-participant-preview.png")
 
         onNodeWithText("English").performClick()
         waitUntil(timeoutMillis = 10_000) {
-            onNodeWithText("Submit").isDisplayed()
+            onNodeWithText("Question").isDisplayed()
         }
         captureSurfacePng("staff-participant-preview-english.png")
     }
