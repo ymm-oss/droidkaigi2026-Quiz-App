@@ -63,4 +63,21 @@ class StaffQuestionDraftLocalizationTest {
         val error = assertFailsWith<IllegalArgumentException> { draft.toQuestion() }
         assertEquals("日本語の選択肢を入力してください", error.message)
     }
+
+    @Test
+    fun blankCorrectChoiceDoesNotReassignOnSave() {
+        val draft = StaffQuestionDraft(
+            id = "q1",
+            prompt = "問題",
+            items = listOf(
+                StaffListItem("a", "回答A", "Answer A"),
+                StaffListItem("b", "回答B", "Answer B"),
+                StaffListItem("c", "", ""),
+            ),
+            correctSingleId = "c",
+        )
+
+        val error = assertFailsWith<IllegalArgumentException> { draft.toQuestion() }
+        assertEquals("正解を選んでください", error.message)
+    }
 }

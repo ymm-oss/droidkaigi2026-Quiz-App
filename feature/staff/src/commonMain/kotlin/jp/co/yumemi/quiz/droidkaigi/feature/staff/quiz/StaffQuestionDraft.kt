@@ -122,15 +122,13 @@ fun StaffQuestionDraft.toQuestion(): Question {
         )
 
         StaffQuestionType.SingleChoice -> {
-            val correctId = correctSingleId.takeIf { it in keptIds }
-                ?: trimmedItems.first().id
-            require(trimmedItems.any { it.id == correctId }) { "正解を選んでください" }
+            require(correctSingleId in keptIds) { "正解を選んでください" }
             SingleChoice(
                 id = id.trim(),
                 prompt = prompt.trim(),
                 explanationMarkdown = explanationMarkdown,
                 options = trimmedItems.map { ChoiceOption(it.id, it.label, it.labelEn.trim()) },
-                correctId = correctId,
+                correctId = correctSingleId,
                 promptEn = promptEn.trim(),
                 explanationMarkdownEn = explanationMarkdownEn,
             )
