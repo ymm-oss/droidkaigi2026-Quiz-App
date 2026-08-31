@@ -337,12 +337,12 @@ private fun StaffFolderCreateDialog(
                 QuizTextField(
                     value = name,
                     onValueChange = onNameChange,
-                    label = "名前（日・難易度など）",
+                    label = "管理用の名前（日・難易度など）",
                 )
                 QuizTextField(
                     value = description,
                     onValueChange = onDescriptionChange,
-                    label = "説明",
+                    label = "管理用の説明",
                 )
                 if (confirmLoading) {
                     Row(
@@ -497,12 +497,12 @@ private fun StaffFolderEditDialog(
                 QuizTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = "名前（日・難易度など）",
+                    label = "管理用の名前（日・難易度など）",
                 )
                 QuizTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = "説明",
+                    label = "管理用の説明",
                 )
                 if (confirmLoading) {
                     Row(
