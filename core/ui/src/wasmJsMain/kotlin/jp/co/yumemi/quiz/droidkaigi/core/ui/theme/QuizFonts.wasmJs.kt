@@ -16,6 +16,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.noto_sans_jp
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
+import kotlin.time.Clock
 
 private val themeWeights = listOf(
     FontWeight.Normal,
@@ -31,12 +32,10 @@ private val themeWeights = listOf(
 private const val FONT_LOAD_TIMEOUT_MILLIS = 10_000L
 
 // AppLocaleEnvironment remounts its content when the locale changes. Keep the decoded family
-// outside that composition so changing language never reopens the font gate.
+// and the 10s fallback outside that composition so changing language never reopens the font gate.
 private var cachedFontFamily: FontFamily? = null
-
-// Keep the fail-open state for the lifetime of the Wasm app as well. Otherwise a locale remount
-// after a failed font request would hide the fallback-rendered UI for another full timeout.
-private var hasFontLoadTimedOut by mutableStateOf(false)
+private var fontLoadTimedOut: Boolean = false
+private var fontLoadStartedAtMillis: Long? = null
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -51,11 +50,16 @@ actual fun rememberQuizFonts(): QuizFonts {
             variationSettings = FontVariation.Settings(weight, FontStyle.Normal),
         ).value
     }
+    var timedOut by remember { mutableStateOf(fontLoadTimedOut) }
     LaunchedEffect(Unit) {
-        if (!hasFontLoadTimedOut) {
-            delay(FONT_LOAD_TIMEOUT_MILLIS)
-            hasFontLoadTimedOut = true
-        }
+        if (fontLoadTimedOut) return@LaunchedEffect
+        val startedAt = fontLoadStartedAtMillis
+            ?: Clock.System.now().toEpochMilliseconds().also { fontLoadStartedAtMillis = it }
+        val remainingMillis = FONT_LOAD_TIMEOUT_MILLIS -
+            (Clock.System.now().toEpochMilliseconds() - startedAt)
+        if (remainingMillis > 0L) delay(remainingMillis)
+        fontLoadTimedOut = true
+        timedOut = true
     }
     val loadedFontFamily = remember(fonts) {
         fonts.takeIf { loaded -> loaded.all { it != null } }
@@ -70,6 +74,6 @@ actual fun rememberQuizFonts(): QuizFonts {
     val fontFamily = loadedFontFamily ?: cachedFontFamily
     return QuizFonts(
         fontFamily = fontFamily,
-        isReady = fontFamily != null || hasFontLoadTimedOut,
+        isReady = fontFamily != null || timedOut,
     )
 }
