@@ -7,6 +7,7 @@
 ```
 folders/{folderId}
   name, description, sortOrder, title
+  publicName, publicDescription, useInternalAsPublic
   questions: array<map>   # single_choice | multiple_choice | reorder
   updatedAtEpochMillis?
 
@@ -24,6 +25,7 @@ folders/{folderId}/rankings/{entryId}
 ```
 
 フォルダ ID とクイズセット ID は **1:1** です。
+`name` / `description` は管理用、`publicName` / `publicDescription` は参加者向けです。`useInternalAsPublic` が true の間も公開情報の値は保持されます。公開名が未設定の旧データは管理名へフォールバックします。
 
 ### Storage（スタッフ DMG）
 

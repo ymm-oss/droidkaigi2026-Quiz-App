@@ -387,7 +387,7 @@ private fun StaffFolderCreateDialog(
 }
 
 @Composable
-private fun StaffFolderPublicInfoDialog(
+internal fun StaffFolderPublicInfoDialog(
     folder: QuizFolder,
     alreadyPublished: Boolean,
     onConfirm: (publicName: String, publicDescription: String, useInternalAsPublic: Boolean) -> Unit,
