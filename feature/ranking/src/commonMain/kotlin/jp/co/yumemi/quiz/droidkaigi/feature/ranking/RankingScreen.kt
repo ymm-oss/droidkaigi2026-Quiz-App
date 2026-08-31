@@ -134,7 +134,7 @@ fun RankingContent(
                     Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
                         publishedFolders.forEach { folder ->
                             QuizSelectableOptionCard(
-                                title = folder.displayName,
+                                title = folder.listingName,
                                 subtitle = folder.description.takeIf { it.isNotBlank() },
                                 selected = folder.id == selectedFolderId,
                                 onClick = { onSelectFolder(folder.id) },

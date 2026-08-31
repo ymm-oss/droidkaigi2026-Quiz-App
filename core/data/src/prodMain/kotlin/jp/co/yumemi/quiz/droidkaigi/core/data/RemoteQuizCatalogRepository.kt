@@ -71,6 +71,9 @@ class RemoteQuizCatalogRepository(
                 name = folder.name,
                 description = folder.description,
                 sortOrder = folder.sortOrder,
+                publicName = folder.publicName,
+                publicDescription = folder.publicDescription,
+                useInternalAsPublic = folder.useInternalAsPublic,
                 updatedAtEpochMillis = now,
             ),
         )

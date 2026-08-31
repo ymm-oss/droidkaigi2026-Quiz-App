@@ -43,9 +43,11 @@ internal object FakeQuizCatalogSeeder {
         seedFolder(
             folder = QuizFolder(
                 id = quizSet.id,
-                name = "一般向け",
-                description = "会場向け（初級）",
+                name = "Day 1 初級（運営用）",
+                description = "初日・通常レーン",
                 sortOrder = 0,
+                publicName = "一般向け",
+                publicDescription = "会場向け（初級）",
             ),
             quizSet = quizSet.copy(
                 questions = quizSet.questions.map { question ->
@@ -76,6 +78,7 @@ internal object FakeQuizCatalogSeeder {
                 name = "高難易度",
                 description = "上級者向け",
                 sortOrder = 1,
+                useInternalAsPublic = true,
             ),
             quizSet = quizSet.copy(id = "day1-hard", title = "高難易度"),
         )

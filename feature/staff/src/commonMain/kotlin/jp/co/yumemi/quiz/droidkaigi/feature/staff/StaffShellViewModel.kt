@@ -29,6 +29,7 @@ data class StaffShellUiState(
     val deletingFolderId: String? = null,
     val isDeletingFolder: Boolean = false,
     val showPublishFolderConfirm: Boolean = false,
+    val showUnpublishFolderConfirm: Boolean = false,
     val isPublishingFolder: Boolean = false,
     val showSitePublishConfirm: Boolean = false,
     val isTogglingSitePublished: Boolean = false,
@@ -56,7 +57,14 @@ sealed interface StaffShellIntent {
     data object ConfirmDeleteFolder : StaffShellIntent
     data object RequestPublishFolder : StaffShellIntent
     data object DismissPublishFolderConfirm : StaffShellIntent
-    data object ConfirmPublishFolder : StaffShellIntent
+    data class ConfirmPublishFolder(
+        val publicName: String,
+        val publicDescription: String,
+        val useInternalAsPublic: Boolean,
+    ) : StaffShellIntent
+    data object RequestUnpublishFolder : StaffShellIntent
+    data object DismissUnpublishFolderConfirm : StaffShellIntent
+    data object ConfirmUnpublishFolder : StaffShellIntent
     data object RequestToggleSitePublished : StaffShellIntent
     data object DismissSitePublishConfirm : StaffShellIntent
     data object ConfirmToggleSitePublished : StaffShellIntent
@@ -101,7 +109,17 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                     _uiState.update { it.copy(showPublishFolderConfirm = false) }
                 }
 
-            StaffShellIntent.ConfirmPublishFolder -> publishSelected()
+            is StaffShellIntent.ConfirmPublishFolder -> publishSelected(intent)
+
+            StaffShellIntent.RequestUnpublishFolder ->
+                _uiState.update { it.copy(showUnpublishFolderConfirm = true, errorMessage = null) }
+
+            StaffShellIntent.DismissUnpublishFolderConfirm ->
+                if (!_uiState.value.isPublishingFolder) {
+                    _uiState.update { it.copy(showUnpublishFolderConfirm = false) }
+                }
+
+            StaffShellIntent.ConfirmUnpublishFolder -> unpublishSelected()
 
             StaffShellIntent.RequestToggleSitePublished ->
                 _uiState.update { it.copy(showSitePublishConfirm = true, errorMessage = null) }
@@ -382,26 +400,56 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
         }
     }
 
-    private fun publishSelected() {
+    private fun publishSelected(intent: StaffShellIntent.ConfirmPublishFolder) {
         if (_uiState.value.isPublishingFolder) return
         val folderId = _uiState.value.selectedFolderId ?: return
+        val folder = _uiState.value.folders.find { it.id == folderId } ?: return
+        val publicName = intent.publicName.trim()
+        if (!intent.useInternalAsPublic && publicName.isBlank()) return
+        val updated = folder.copy(
+            publicName = publicName,
+            publicDescription = intent.publicDescription.trim(),
+            useInternalAsPublic = intent.useInternalAsPublic,
+        )
         val current = _uiState.value.publishedFolderIds
-        val next = if (folderId in current) {
-            current.filter { it != folderId }
-        } else {
-            current + folderId
-        }
+        val next = if (folderId in current) current else current + folderId
         viewModelScope.launch {
             staffLog("publishFolder start id=$folderId next=$next")
             _uiState.update { it.copy(isPublishingFolder = true, errorMessage = null) }
             try {
-                runCatching { deps.setPublishedQuizFoldersUseCase(next) }
+                runCatching {
+                    deps.updateQuizFolderUseCase(updated)
+                    if (next != current) deps.setPublishedQuizFoldersUseCase(next)
+                }
                     .onSuccess {
                         _uiState.update { state -> state.copy(showPublishFolderConfirm = false) }
                         refresh()
                     }
                     .onFailure { error ->
                         staffLog("setPublishedFolderIds failed: ${error.message}")
+                        _uiState.update {
+                            it.copy(errorMessage = firestoreErrorMessage(error, "公開フォルダの更新に失敗しました"))
+                        }
+                    }
+            } finally {
+                _uiState.update { it.copy(isPublishingFolder = false) }
+            }
+        }
+    }
+
+    private fun unpublishSelected() {
+        if (_uiState.value.isPublishingFolder) return
+        val folderId = _uiState.value.selectedFolderId ?: return
+        val next = _uiState.value.publishedFolderIds.filter { it != folderId }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isPublishingFolder = true, errorMessage = null) }
+            try {
+                runCatching { deps.setPublishedQuizFoldersUseCase(next) }
+                    .onSuccess {
+                        _uiState.update { state -> state.copy(showUnpublishFolderConfirm = false) }
+                        refresh()
+                    }
+                    .onFailure { error ->
                         _uiState.update {
                             it.copy(errorMessage = firestoreErrorMessage(error, "公開フォルダの更新に失敗しました"))
                         }
