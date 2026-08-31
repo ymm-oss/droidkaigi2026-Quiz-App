@@ -9,11 +9,13 @@ import androidx.compose.ui.graphics.luminance
 @Composable
 fun QuizTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colors = if (darkTheme) QuizColors.dark() else QuizColors.light()
+    val fonts = rememberQuizFonts()
     MaterialTheme(
         colorScheme = colors,
-        typography = QuizTypography.material(quizFontFamily()),
-        content = content,
-    )
+        typography = QuizTypography.material(fonts.fontFamily),
+    ) {
+        QuizFontGate(fonts.isReady, content)
+    }
 }
 
 /**

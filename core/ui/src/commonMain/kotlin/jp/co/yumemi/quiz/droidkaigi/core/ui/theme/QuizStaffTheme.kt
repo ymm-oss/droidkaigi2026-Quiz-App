@@ -16,10 +16,12 @@ private val staffShapes = Shapes(
 
 @Composable
 fun QuizStaffTheme(content: @Composable () -> Unit) {
+    val fonts = rememberQuizFonts()
     MaterialTheme(
         colorScheme = QuizColors.staffDark(),
-        typography = QuizTypography.material(quizFontFamily()),
+        typography = QuizTypography.material(fonts.fontFamily),
         shapes = staffShapes,
-        content = content,
-    )
+    ) {
+        QuizFontGate(fonts.isReady, content)
+    }
 }

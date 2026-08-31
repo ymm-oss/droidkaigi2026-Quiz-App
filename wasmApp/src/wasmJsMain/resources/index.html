@@ -6,6 +6,21 @@
     <meta name="robots" content="noindex, nofollow">
     <title>DroidKaigi 2026 Quiz</title>
     <link type="text/css" rel="stylesheet" href="/styles.css">
+    <!--
+      Compose fetches the bundled Noto Sans JP only after the Wasm module starts, and until it
+      arrives Skia draws Japanese text with a fallback that has no CJK glyphs. Warming the file
+      here downloads it alongside the Wasm bundle instead of after it.
+      The path follows `packageOfResClass` in core/ui/build.gradle.kts.
+    -->
+    <!-- `crossorigin` keeps the preload matching Compose's `fetch(url, { credentials: "same-origin" })`. -->
+    <link rel="preload" as="fetch" type="font/ttf" crossorigin
+          href="/composeResources/jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources/font/noto_sans_jp.ttf">
+    <script type="text/javascript">
+        // The staff console is dark-only, so mark it before the first paint (see styles.css).
+        if (/\/staff\/?$/.test(window.location.pathname)) {
+            document.documentElement.classList.add("staff");
+        }
+    </script>
     <script type="text/javascript">
         var currentLanguagesImplementation = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
         var newLanguagesImplementation = Object.assign({}, currentLanguagesImplementation, {

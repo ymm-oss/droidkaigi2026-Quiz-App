@@ -323,6 +323,18 @@ Chrome 119+ など Wasm GC 対応ブラウザが必要。fake ランタイムで
 ./gradlew :wasmApp:wasmJsBrowserDistribution -Pquiz.runtime=prod     # Hosting 用 production バンドル
 ```
 
+#### 日本語フォント
+
+Skia の Wasm ビルドには CJK フォールバックがないため、`core/ui/src/wasmJsMain/composeResources/font/noto_sans_jp.ttf`
+を同梱している。読み込みが終わるまで日本語が豆腐（□）になるので、次の 3 点で対処している。
+
+- `rememberQuizFonts()`（`core:ui` の wasmJs 実装）が `preloadFont` で読み込み状態を持ち、
+  `QuizTheme` / `QuizStaffTheme` は準備できるまでテーマ背景＋スピナーを表示する
+- [index.html](../wasmApp/src/wasmJsMain/resources/index.html) の `<link rel="preload">` で
+  Wasm バンドルと並行してダウンロードする（パスは `compose.resources` の `packageOfResClass` に依存）
+- フォントは JIS X 0208 + CP932 拡張にサブセット済み（9.15 MB → 4.68 MB）。差し替えるときは
+  [scripts/subset-noto-sans-jp.py](../scripts/subset-noto-sans-jp.py) で作り直す
+
 ## テスト
 
 ```bash
