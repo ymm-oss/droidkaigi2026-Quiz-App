@@ -19,6 +19,7 @@ fun QuizTextField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     singleLine: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions(
         capitalization = KeyboardCapitalization.Words,
@@ -29,6 +30,7 @@ fun QuizTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
+        enabled = enabled,
         label = { Text(label) },
         singleLine = singleLine,
         shape = RoundedCornerShape(QuizTokens.cornerMedium),

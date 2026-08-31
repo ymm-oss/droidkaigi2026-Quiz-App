@@ -95,10 +95,61 @@ class StaffShellViewModelFolderEditTest {
         assertEquals("day1", state.editingFolderId)
     }
 
-    private class RecordingCatalogRepository(private val updateError: Throwable? = null) : QuizCatalogRepository {
+    @Test
+    fun publishInformation_persistsSeparateParticipantLabels() = runTest {
+        val catalog = RecordingCatalogRepository()
+        val viewModel = StaffShellViewModel(staffTestAppDependencies(catalog, NoopRankingRepository))
+
+        viewModel.onIntent(StaffShellIntent.RequestPublishFolder)
+        viewModel.onIntent(
+            StaffShellIntent.ConfirmPublishFolder(
+                publicName = "  一般向け  ",
+                publicDescription = "  初級クイズ  ",
+                useInternalAsPublic = false,
+            ),
+        )
+
+        val updated = catalog.updates.single()
+        assertEquals("一般向け", updated.publicName)
+        assertEquals("初級クイズ", updated.publicDescription)
+        assertEquals(false, updated.useInternalAsPublic)
+        assertEquals(false, viewModel.uiState.value.showPublishFolderConfirm)
+    }
+
+    @Test
+    fun internalAsPublic_keepsPreviouslySavedPublicInformation() = runTest {
+        val catalog = RecordingCatalogRepository(
+            initialFirstFolder = QuizFolder(
+                id = "day1",
+                name = "Day 1",
+                publicName = "一般向け",
+                publicDescription = "初級クイズ",
+            ),
+        )
+        val viewModel = StaffShellViewModel(staffTestAppDependencies(catalog, NoopRankingRepository))
+
+        viewModel.onIntent(StaffShellIntent.RequestPublishFolder)
+        viewModel.onIntent(
+            StaffShellIntent.ConfirmPublishFolder(
+                publicName = "一般向け",
+                publicDescription = "初級クイズ",
+                useInternalAsPublic = true,
+            ),
+        )
+
+        val updated = catalog.updates.single()
+        assertEquals(true, updated.useInternalAsPublic)
+        assertEquals("一般向け", updated.publicName)
+        assertEquals("初級クイズ", updated.publicDescription)
+    }
+
+    private class RecordingCatalogRepository(
+        private val updateError: Throwable? = null,
+        initialFirstFolder: QuizFolder = QuizFolder(id = "day1", name = "Day 1", description = "", sortOrder = 0),
+    ) : QuizCatalogRepository {
         val updates = mutableListOf<QuizFolder>()
         private val folders = mutableListOf(
-            QuizFolder(id = "day1", name = "Day 1", description = "", sortOrder = 0),
+            initialFirstFolder,
             QuizFolder(id = "day2", name = "Day 2", description = "", sortOrder = 1),
         )
 

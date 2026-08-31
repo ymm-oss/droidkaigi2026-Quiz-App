@@ -7,6 +7,7 @@ Backend for `quiz.runtime=prod`. Setup: `docs/DEVELOPMENT.md`. Schema: `docs/FIR
 ```
 folders/{folderId}
   name, description, sortOrder, title
+  publicName, publicDescription, useInternalAsPublic
   questions: array<map>   # single_choice | multiple_choice | reorder
   updatedAtEpochMillis?
 
@@ -24,6 +25,7 @@ folders/{folderId}/rankings/{entryId}
 ```
 
 Folder id and quiz-set id are **1:1**.
+`name` / `description` are internal management fields; `publicName` / `publicDescription` are participant-facing. Public field values remain stored while `useInternalAsPublic` is true. Legacy folders without a public name fall back to the internal name.
 
 ### Storage (staff DMG)
 

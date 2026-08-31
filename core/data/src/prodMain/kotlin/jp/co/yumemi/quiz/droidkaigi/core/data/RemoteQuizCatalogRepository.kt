@@ -53,11 +53,6 @@ class RemoteQuizCatalogRepository(
         FirestoreDiagnostics.log("QuizCatalog", "createFolder writing folderId=$folderId name=$trimmedName")
         firestore.setFolder(folderId, document)
         FirestoreDiagnostics.log("QuizCatalog", "createFolder wrote folderId=$folderId")
-        if (existing.isEmpty()) {
-            writeAppConfig { current ->
-                current.withPublishedFolderIds(listOf(folderId), now)
-            }
-        }
         return document.toQuizFolder(folderId)
     }
 
@@ -71,6 +66,9 @@ class RemoteQuizCatalogRepository(
                 name = folder.name,
                 description = folder.description,
                 sortOrder = folder.sortOrder,
+                publicName = folder.publicName,
+                publicDescription = folder.publicDescription,
+                useInternalAsPublic = folder.useInternalAsPublic,
                 updatedAtEpochMillis = now,
             ),
         )

@@ -44,7 +44,6 @@ class InMemoryQuizCatalog {
         folders += folder
         quizSets[id] = QuizSet(id = id, title = name.trim(), questions = emptyList())
         rankingsByFolder[id] = mutableListOf()
-        if (publishedFolderIds.isEmpty()) publishedFolderIds += id
         emitAppConfig()
         return folder
     }

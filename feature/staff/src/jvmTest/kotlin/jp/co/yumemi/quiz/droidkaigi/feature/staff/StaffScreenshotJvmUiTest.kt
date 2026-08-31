@@ -30,6 +30,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.SingleChoice
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizStaffTheme
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.auth.StaffAuthContent
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.folders.StaffFolderSidebar
+import jp.co.yumemi.quiz.droidkaigi.feature.staff.folders.StaffFolderPublicInfoDialog
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.quiz.StaffListItem
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.quiz.StaffQuestionDraft
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.quiz.StaffQuestionEditorPanel
@@ -392,17 +393,27 @@ class StaffScreenshotJvmUiTest {
                         onReorderQuestions = { _, _ -> },
                     )
                 }
-                StaffConfirmDialog(
-                    title = "参加者向けに公開",
-                    message = "「Day 1 · Easy」を参加者アプリで選べるようにしますか？",
-                    confirmLabel = "公開",
-                    onConfirm = {},
+                StaffFolderPublicInfoDialog(
+                    folder = QuizFolder(
+                        id = "day1",
+                        name = "Day 1 · Easy（運営用）",
+                        description = "初日・通常レーン",
+                        publicName = "一般向け",
+                        publicDescription = "会場向け初級",
+                    ),
+                    alreadyPublished = false,
+                    onConfirm = { _, _, _ -> },
                     onDismiss = {},
+                    confirmLoading = false,
+                    errorMessage = null,
                 )
             }
         }
         onNodeWithText("公開").assertIsDisplayed()
         captureSurfacePng("06-publish-confirm.png")
+        onNodeWithText("内部の名称・説明をそのまま公開する").performClick()
+        onNodeWithText("チェックを外すと保存済みの公開情報に戻ります。", substring = true).assertIsDisplayed()
+        captureSurfacePng("06b-publish-internal-info.png")
     }
 
     @OptIn(ExperimentalTestApi::class)

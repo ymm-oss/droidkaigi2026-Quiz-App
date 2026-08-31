@@ -17,15 +17,18 @@ private class FixedInstantProvider(private var millis: Long) : InstantProvider {
     }
 }
 
+private suspend fun InMemoryQuizCatalog.createPublishedTestFolder(): String = withLock {
+    val folder = createFolder("Test", "")
+    setPublishedFolderIds(listOf(folder.id))
+    folder.id
+}
+
 class FakeRankingRepositoryTest {
     @Test
     fun submitScore_appearsInTodayRankings_forFolder() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()
-        catalog.withLock {
-            createFolder("Test", "")
-        }
-        val folderId = catalog.withLock { getActiveFolderId() }
+        val folderId = catalog.createPublishedTestFolder()
         val repo = FakeRankingRepository(clock, catalog)
         val initial = repo.getTodayRankings(folderId).size
         val entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000)
@@ -46,8 +49,7 @@ class FakeRankingRepositoryTest {
     fun submitScore_emitsOnObserveTodayRankings() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()
-        catalog.withLock { createFolder("Test", "") }
-        val folderId = catalog.withLock { getActiveFolderId() }
+        val folderId = catalog.createPublishedTestFolder()
         val repo = FakeRankingRepository(clock, catalog)
         val emissions = mutableListOf<List<RankingEntry>>()
         val job = launch {
@@ -74,8 +76,7 @@ class FakeRankingRepositoryTest {
     fun submitScore_sameEntryId_isIdempotent() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()
-        catalog.withLock { createFolder("Test", "") }
-        val folderId = catalog.withLock { getActiveFolderId() }
+        val folderId = catalog.createPublishedTestFolder()
         val repo = FakeRankingRepository(clock, catalog)
         val entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000)
         val result = QuizResult("Player1", 2, 3, 72, 30_000)
@@ -91,8 +92,7 @@ class FakeRankingRepositoryTest {
     fun submitScore_differentSessions_createSeparateEntries() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()
-        catalog.withLock { createFolder("Test", "") }
-        val folderId = catalog.withLock { getActiveFolderId() }
+        val folderId = catalog.createPublishedTestFolder()
         val repo = FakeRankingRepository(clock, catalog)
         val result = QuizResult("Player1", 2, 3, 72, 30_000)
 
@@ -116,8 +116,7 @@ class FakeRankingRepositoryTest {
     fun deleteEntry_removesFromTodayRankings() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()
-        catalog.withLock { createFolder("Test", "") }
-        val folderId = catalog.withLock { getActiveFolderId() }
+        val folderId = catalog.createPublishedTestFolder()
         val repo = FakeRankingRepository(clock, catalog)
         val entryId = RankingEntryId.forSession(folderId, "Player1", 1_700_000_000_000)
         repo.submitScore(
@@ -136,8 +135,7 @@ class FakeRankingRepositoryTest {
     fun clearTodayRankings_removesOnlyTodayEntries() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()
-        catalog.withLock { createFolder("Test", "") }
-        val folderId = catalog.withLock { getActiveFolderId() }
+        val folderId = catalog.createPublishedTestFolder()
         val repo = FakeRankingRepository(clock, catalog)
         val todayId = RankingEntryId.forSession(folderId, "Today", 1_700_000_000_000)
         val yesterdayMillis = 1_700_000_000_000 - 86_400_000

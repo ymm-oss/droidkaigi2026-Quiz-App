@@ -43,27 +43,13 @@ internal object FakeQuizCatalogSeeder {
         seedFolder(
             folder = QuizFolder(
                 id = quizSet.id,
-                name = "一般向け",
-                description = "会場向け（初級）",
+                name = "Day 1 初級（運営用）",
+                description = "初日・通常レーン",
                 sortOrder = 0,
+                publicName = "一般向け",
+                publicDescription = "会場向け（初級）",
             ),
-            quizSet = quizSet.copy(
-                questions = quizSet.questions.map { question ->
-                    when (question) {
-                        is SingleChoice ->
-                            if (question.explanationMarkdown.isBlank()) {
-                                question.copy(
-                                    explanationMarkdown =
-                                    "**Compose Multiplatform** で UI を共有できます。\n- Android / Desktop / iOS など",
-                                )
-                            } else {
-                                question
-                            }
-
-                        else -> question
-                    }
-                },
-            ),
+            quizSet = quizSet.withSeedExplanation(),
             demoRankings = listOf(
                 RankingEntry("KotlinFan", 100, now - 3_600_000, id = "seed-kotlinfan", totalCount = 3),
                 RankingEntry("ComposePro", 72, now - 7_200_000, id = "seed-composepro", totalCount = 3),
@@ -76,6 +62,7 @@ internal object FakeQuizCatalogSeeder {
                 name = "高難易度",
                 description = "上級者向け",
                 sortOrder = 1,
+                useInternalAsPublic = true,
             ),
             quizSet = quizSet.copy(id = "day1-hard", title = "高難易度"),
         )
@@ -96,4 +83,22 @@ internal object FakeQuizCatalogSeeder {
         // Fake harness: open the site so participant Home Start works without staff toggle.
         setSitePublished(true)
     }
+
+    private fun QuizSet.withSeedExplanation(): QuizSet = copy(
+        questions = questions.map { question ->
+            when (question) {
+                is SingleChoice ->
+                    if (question.explanationMarkdown.isBlank()) {
+                        question.copy(
+                            explanationMarkdown =
+                            "**Compose Multiplatform** で UI を共有できます。\n- Android / Desktop / iOS など",
+                        )
+                    } else {
+                        question
+                    }
+
+                else -> question
+            }
+        },
+    )
 }

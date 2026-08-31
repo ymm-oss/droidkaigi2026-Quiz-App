@@ -11,6 +11,9 @@ data class FolderListFirestoreDocument(
     val description: String = "",
     val sortOrder: Int = 0,
     val title: String = "",
+    val publicName: String = "",
+    val publicDescription: String = "",
+    val useInternalAsPublic: Boolean = false,
 ) {
     fun withResolvedLabels(): FolderListFirestoreDocument {
         val resolvedTitle = title.ifBlank { name }
@@ -23,6 +26,9 @@ data class FolderListFirestoreDocument(
         description = description,
         sortOrder = sortOrder,
         title = title,
+        publicName = publicName,
+        publicDescription = publicDescription,
+        useInternalAsPublic = useInternalAsPublic,
         questions = emptyList(),
     )
 }
@@ -33,6 +39,9 @@ data class FolderFirestoreDocument(
     val description: String = "",
     val sortOrder: Int = 0,
     val title: String = "",
+    val publicName: String = "",
+    val publicDescription: String = "",
+    val useInternalAsPublic: Boolean = false,
     val questions: List<QuestionDto> = emptyList(),
     val updatedAtEpochMillis: Long? = null,
 ) {

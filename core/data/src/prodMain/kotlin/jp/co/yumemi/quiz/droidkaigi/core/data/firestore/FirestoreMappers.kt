@@ -14,6 +14,9 @@ internal fun FolderFirestoreDocument.toQuizFolder(folderId: String): QuizFolder 
         name = doc.name,
         description = doc.description,
         sortOrder = doc.sortOrder,
+        publicName = doc.publicName,
+        publicDescription = doc.publicDescription,
+        useInternalAsPublic = doc.useInternalAsPublic,
     )
 }
 
@@ -32,6 +35,9 @@ internal fun QuizFolder.toFirestoreDocument(quizSet: QuizSet, updatedAtEpochMill
         description = description,
         sortOrder = sortOrder,
         title = quizSet.title,
+        publicName = publicName,
+        publicDescription = publicDescription,
+        useInternalAsPublic = useInternalAsPublic,
         questions = quizSet.questions.map { it.toQuestionDto() },
         updatedAtEpochMillis = updatedAtEpochMillis,
     )

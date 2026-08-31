@@ -37,6 +37,7 @@
 ### 本番（`quiz.runtime=prod`）
 
 - **問題**: `QuizCatalogRepository` 経由でリモート（`listPublishedFolders` → 開始時に選んだフォルダの `getQuizSet`）。
+- **公開情報**: フォルダの管理用 `name` / `description` と、参加者向け `publicName` / `publicDescription` を分離する。`useInternalAsPublic` が true のときは管理用情報を表示するが、保存済み公開情報は削除せず、false に戻すと再利用できる。旧データで公開名が空の場合は管理名へフォールバックする。
 - **サイト公開**: `appConfig.sitePublished`（スタッフが ON/OFF）。参加者・スタッフは `appConfig/default` をリアルタイム購読する。Home は開きっぱなしでも受付 ON/OFF を追従し、非公開なら開始不可。プレイ中の問題セットは開始時のスナップショットのまま差し替えない。
 - **ランキング**: 当日分を `dateKey` クエリでリアルタイム購読（公開フォルダが複数なら種別切替）。クイズ完了時に `SubmitScoreUseCase` で送信。回答中は開始時フォルダのスナップショットを維持し、結果ランキングもそのフォルダ（`playbackFolderId`）を表示する。
 - **ネットワーク必須**。取得・送信失敗時はエラー表示（同梱 JSON やインメモリへのサイレントフォールバックなし）。

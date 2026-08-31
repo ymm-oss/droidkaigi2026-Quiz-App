@@ -131,6 +131,19 @@ class ParticipantScreensScreenshotAndroidTest {
 }
 
 private val sampleHomeFolders = listOf(
-    QuizFolder(id = "easy", name = "一般向け", description = "会場向け初級", sortOrder = 0),
-    QuizFolder(id = "hard", name = "高難易度", description = "上級者向け", sortOrder = 1),
+    QuizFolder(
+        id = "easy",
+        name = "Day 1 初級（運営用）",
+        description = "初日・通常レーン",
+        sortOrder = 0,
+        publicName = "一般向け",
+        publicDescription = "会場向け初級",
+    ),
+    QuizFolder(
+        id = "hard",
+        name = "高難易度",
+        description = "上級者向け",
+        sortOrder = 1,
+        useInternalAsPublic = true,
+    ),
 )

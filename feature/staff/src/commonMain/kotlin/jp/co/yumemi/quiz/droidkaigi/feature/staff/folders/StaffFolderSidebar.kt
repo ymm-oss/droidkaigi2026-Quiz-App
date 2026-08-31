@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Publish
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,19 +89,34 @@ fun StaffFolderSidebar(
                 modifier = Modifier.weight(1f),
             )
             StaffHorizontalDivider(alpha = 0.1f)
-            StaffOutlinedButton(
-                text = when {
-                    state.isPublishingFolder -> "更新中…"
-                    selectedFolder != null && state.isFolderPublished(selectedFolder.id) -> "公開を外す"
-                    else -> "参加者向けに公開"
-                },
-                icon = Icons.Default.Publish,
-                onClick = { onIntent(StaffShellIntent.RequestPublishFolder) },
-                enabled = selectedFolder != null && !sidebarBusy,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(QuizTokens.spacingMedium),
-            )
+                verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
+            ) {
+                val isPublished = selectedFolder != null && state.isFolderPublished(selectedFolder.id)
+                StaffOutlinedButton(
+                    text = when {
+                        state.isPublishingFolder -> "更新中…"
+                        isPublished -> "公開情報を編集"
+                        else -> "参加者向けに公開"
+                    },
+                    icon = Icons.Default.Publish,
+                    onClick = { onIntent(StaffShellIntent.RequestPublishFolder) },
+                    enabled = selectedFolder != null && !sidebarBusy,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (isPublished) {
+                    TextButton(
+                        onClick = { onIntent(StaffShellIntent.RequestUnpublishFolder) },
+                        enabled = !sidebarBusy,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("公開を外す")
+                    }
+                }
+            }
         }
         StaffVerticalDivider(alpha = 0.15f)
     }
@@ -222,18 +238,33 @@ private fun StaffFolderDialogs(
     if (state.showPublishFolderConfirm && selectedFolder != null) {
         val folder = selectedFolder
         val alreadyPublished = state.isFolderPublished(folder.id)
-        StaffConfirmDialog(
-            title = if (alreadyPublished) "公開を外す" else "参加者向けに公開",
-            message = if (alreadyPublished) {
-                "「${folder.displayName}」を参加者アプリの選択肢から外しますか？\n他の公開中フォルダはそのままです。"
-            } else {
-                "「${folder.displayName}」を参加者アプリで選べるようにしますか？"
-            },
-            confirmLabel = if (alreadyPublished) "外す" else "公開",
+        StaffFolderPublicInfoDialog(
+            folder = folder,
+            alreadyPublished = alreadyPublished,
             confirmLoading = state.isPublishingFolder,
             errorMessage = if (state.isPublishingFolder) null else state.errorMessage,
-            onConfirm = { onIntent(StaffShellIntent.ConfirmPublishFolder) },
+            onConfirm = { publicName, publicDescription, useInternalAsPublic ->
+                onIntent(
+                    StaffShellIntent.ConfirmPublishFolder(
+                        publicName = publicName,
+                        publicDescription = publicDescription,
+                        useInternalAsPublic = useInternalAsPublic,
+                    ),
+                )
+            },
             onDismiss = { onIntent(StaffShellIntent.DismissPublishFolderConfirm) },
+        )
+    }
+
+    if (state.showUnpublishFolderConfirm && selectedFolder != null) {
+        StaffConfirmDialog(
+            title = "公開を外す",
+            message = "「${selectedFolder.listingName}」を参加者アプリの選択肢から外しますか？\n公開情報は保存されます。",
+            confirmLabel = "外す",
+            confirmLoading = state.isPublishingFolder,
+            errorMessage = if (state.isPublishingFolder) null else state.errorMessage,
+            onConfirm = { onIntent(StaffShellIntent.ConfirmUnpublishFolder) },
+            onDismiss = { onIntent(StaffShellIntent.DismissUnpublishFolderConfirm) },
         )
     }
 
@@ -306,12 +337,12 @@ private fun StaffFolderCreateDialog(
                 QuizTextField(
                     value = name,
                     onValueChange = onNameChange,
-                    label = "名前（日・難易度など）",
+                    label = "管理用の名前（日・難易度など）",
                 )
                 QuizTextField(
                     value = description,
                     onValueChange = onDescriptionChange,
-                    label = "説明",
+                    label = "管理用の説明",
                 )
                 if (confirmLoading) {
                     Row(
@@ -356,6 +387,97 @@ private fun StaffFolderCreateDialog(
 }
 
 @Composable
+internal fun StaffFolderPublicInfoDialog(
+    folder: QuizFolder,
+    alreadyPublished: Boolean,
+    onConfirm: (publicName: String, publicDescription: String, useInternalAsPublic: Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    confirmLoading: Boolean,
+    errorMessage: String?,
+) {
+    var publicName by remember(folder.id) { mutableStateOf(folder.publicName) }
+    var publicDescription by remember(folder.id) { mutableStateOf(folder.publicDescription) }
+    var useInternalAsPublic by remember(folder.id) { mutableStateOf(folder.useInternalAsPublic) }
+    AlertDialog(
+        onDismissRequest = { if (!confirmLoading) onDismiss() },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = RoundedCornerShape(QuizTokens.cornerMedium),
+        title = {
+            Text(
+                text = if (alreadyPublished) "公開情報を編集" else "参加者向けに公開",
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingMedium)) {
+                Text(
+                    text = "管理用: ${folder.displayName}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = !confirmLoading) {
+                            useInternalAsPublic = !useInternalAsPublic
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = useInternalAsPublic,
+                        onCheckedChange = { useInternalAsPublic = it },
+                        enabled = !confirmLoading,
+                    )
+                    Text(
+                        text = "内部の名称・説明をそのまま公開する",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (useInternalAsPublic) {
+                    Text(
+                        text = "参加者には「${folder.displayName}」と管理用の説明が表示されます。チェックを外すと保存済みの公開情報に戻ります。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                QuizTextField(
+                    value = publicName,
+                    onValueChange = { publicName = it },
+                    label = "公開名",
+                    enabled = !useInternalAsPublic && !confirmLoading,
+                )
+                QuizTextField(
+                    value = publicDescription,
+                    onValueChange = { publicDescription = it },
+                    label = "公開説明",
+                    enabled = !useInternalAsPublic && !confirmLoading,
+                )
+                errorMessage?.let { message ->
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(publicName, publicDescription, useInternalAsPublic) },
+                enabled = !confirmLoading && (useInternalAsPublic || publicName.isNotBlank()),
+            ) {
+                Text(if (alreadyPublished) "保存" else "公開")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !confirmLoading) {
+                Text("キャンセル")
+            }
+        },
+    )
+}
+
+@Composable
 private fun StaffFolderEditDialog(
     folder: QuizFolder,
     onConfirm: (name: String, description: String) -> Unit,
@@ -375,12 +497,12 @@ private fun StaffFolderEditDialog(
                 QuizTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = "名前（日・難易度など）",
+                    label = "管理用の名前（日・難易度など）",
                 )
                 QuizTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = "説明",
+                    label = "管理用の説明",
                 )
                 if (confirmLoading) {
                     Row(

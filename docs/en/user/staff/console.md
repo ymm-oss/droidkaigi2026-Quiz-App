@@ -29,9 +29,9 @@ Configure single / multi / reorder questions and preview explanations.
 
 <img src="/screenshots/staff/05-create-folder.png" alt="Create folder" width="480" />
 
-### Edit folder name / description
+### Edit internal folder name / description
 
-The pencil icon on the selected sidebar row renames a folder and updates its description after creation. Questions are untouched.
+The pencil icon on the selected sidebar row updates the internal management name and description after creation. Questions are untouched.
 
 <img src="/screenshots/staff/05b-edit-folder.png" alt="Edit folder" width="480" />
 
@@ -41,11 +41,13 @@ The trash icon on the selected row deletes the folder after confirmation, includ
 
 <img src="/screenshots/staff/05c-delete-folder.png" alt="Delete folder" width="480" />
 
-### Publish confirmation
+### Configure public information
 
-<img src="/screenshots/staff/06-publish-confirm.png" alt="Publish confirm" width="480" />
+| Separate public information | Use internal information as-is |
+|---|---|
+| <img src="/screenshots/staff/06-publish-confirm.png" alt="Enter public information" width="420" /> | <img src="/screenshots/staff/06b-publish-internal-info.png" alt="Publish internal information as-is" width="420" /> |
 
-Adding or removing a folder from the participant picker is confirmed in a dialog. Multiple folders can stay published together.
+When publishing, set the public name and description shown to participants separately from the internal information. Select **Use the internal name and description as-is** to mirror internal changes. Previously entered public information is retained and becomes available again when the option is cleared. Public information remains editable while published and is retained after unpublishing. Multiple folders can stay published together.
 
 Participants already answering stay on the folder they started, and their score is recorded in that folder's ranking. Publish changes only apply to participants who start afterwards.
 
