@@ -101,6 +101,30 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
             is StaffShellIntent.SelectFolder -> _uiState.update { it.copy(selectedFolderId = intent.folderId) }
 
+            StaffShellIntent.RequestPublishFolder,
+            StaffShellIntent.DismissPublishFolderConfirm,
+            is StaffShellIntent.ConfirmPublishFolder,
+            StaffShellIntent.RequestUnpublishFolder,
+            StaffShellIntent.DismissUnpublishFolderConfirm,
+            StaffShellIntent.ConfirmUnpublishFolder,
+            -> handlePublishFolderIntent(intent)
+
+            StaffShellIntent.RequestToggleSitePublished ->
+                _uiState.update { it.copy(showSitePublishConfirm = true, errorMessage = null) }
+
+            StaffShellIntent.DismissSitePublishConfirm ->
+                if (!_uiState.value.isTogglingSitePublished) {
+                    _uiState.update { it.copy(showSitePublishConfirm = false) }
+                }
+
+            StaffShellIntent.ConfirmToggleSitePublished -> toggleSitePublished()
+
+            else -> handleFolderIntent(intent)
+        }
+    }
+
+    private fun handlePublishFolderIntent(intent: StaffShellIntent) {
+        when (intent) {
             StaffShellIntent.RequestPublishFolder ->
                 _uiState.update { it.copy(showPublishFolderConfirm = true, errorMessage = null) }
 
@@ -121,17 +145,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
             StaffShellIntent.ConfirmUnpublishFolder -> unpublishSelected()
 
-            StaffShellIntent.RequestToggleSitePublished ->
-                _uiState.update { it.copy(showSitePublishConfirm = true, errorMessage = null) }
-
-            StaffShellIntent.DismissSitePublishConfirm ->
-                if (!_uiState.value.isTogglingSitePublished) {
-                    _uiState.update { it.copy(showSitePublishConfirm = false) }
-                }
-
-            StaffShellIntent.ConfirmToggleSitePublished -> toggleSitePublished()
-
-            else -> handleFolderIntent(intent)
+            else -> error("Unhandled publish-folder intent: $intent")
         }
     }
 
@@ -401,9 +415,10 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     }
 
     private fun publishSelected(intent: StaffShellIntent.ConfirmPublishFolder) {
-        if (_uiState.value.isPublishingFolder) return
-        val folderId = _uiState.value.selectedFolderId ?: return
-        val folder = _uiState.value.folders.find { it.id == folderId } ?: return
+        val state = _uiState.value
+        val folderId = state.selectedFolderId
+        val folder = state.folders.find { it.id == folderId }
+        if (state.isPublishingFolder || folderId == null || folder == null) return
         val publicName = intent.publicName.trim()
         if (!intent.useInternalAsPublic && publicName.isBlank()) return
         val updated = folder.copy(
@@ -411,7 +426,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             publicDescription = intent.publicDescription.trim(),
             useInternalAsPublic = intent.useInternalAsPublic,
         )
-        val current = _uiState.value.publishedFolderIds
+        val current = state.publishedFolderIds
         val next = if (folderId in current) current else current + folderId
         viewModelScope.launch {
             staffLog("publishFolder start id=$folderId next=$next")
