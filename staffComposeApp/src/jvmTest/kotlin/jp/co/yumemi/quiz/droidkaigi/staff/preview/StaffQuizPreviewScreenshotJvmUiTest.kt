@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizStaffTheme
 import jp.co.yumemi.quiz.droidkaigi.di.initStaffQuizAppGraph
@@ -28,12 +29,19 @@ class StaffQuizPreviewScreenshotJvmUiTest {
         }
 
         onNodeWithText("参加者プレビュー").assertIsDisplayed()
+        onNodeWithText("プレビュー言語").assertIsDisplayed()
         onNodeWithText("393 dp").assertIsDisplayed()
         waitUntil(timeoutMillis = 10_000) {
-            onNodeWithText("Compose Multiplatform").isDisplayed()
+            onNodeWithText("問題").isDisplayed()
         }
 
         captureSurfacePng("staff-participant-preview.png")
+
+        onNodeWithText("English").performClick()
+        waitUntil(timeoutMillis = 10_000) {
+            onNodeWithText("Question").isDisplayed()
+        }
+        captureSurfacePng("staff-participant-preview-english.png")
     }
 }
 

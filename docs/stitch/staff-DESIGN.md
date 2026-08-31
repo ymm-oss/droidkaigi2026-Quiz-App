@@ -67,6 +67,7 @@ Page title (folder/set name) · Reload · Add question · drag-reorder list of q
 - Question editor: type dropdown · Markdown prompt+preview · choices (radio/checkbox/reorder) · explanation · Save/Cancel
 - Create folder: name · description · Create/Cancel
 - Confirm publish / delete: destructive or primary confirm
+- Participant preview: phone frame · viewport width ± · **プレビュー言語** 日本語 / English segmented control (staff chrome stays Japanese; only the in-frame participant UI localizes)
 
 ## Improvement goals (vs current)
 

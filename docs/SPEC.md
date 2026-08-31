@@ -78,7 +78,7 @@
 
 - **公開中フォルダ**の複数指定（`publishedFolderIds`。参加者 Home で選択）
 - **サイト公開**の ON/OFF（`sitePublished`。参加者受付の可否）
-- 選択フォルダの **参加者プレビュー**（スマホ枠ダイアログで Quiz→Result。ランキング送信なし）
+- 選択フォルダの **参加者プレビュー**（スマホ枠ダイアログで Quiz→Result。日本語 / 英語を指定可。ランキング送信なし）
 - **参加者アプリの配布リンク**（トップバーから Web URL と GitHub Releases（Android APK / Desktop DMG）をコピー・ブラウザで開く。Wasm `/staff` の Web URL は現在の Hosting origin）
 - 当日ランキングの **個別削除・本日分一括削除**（いずれも確認ダイアログ必須。prod では `request.auth != null` のときのみ Firestore 上で削除可）
 - **アプリ更新通知**（prod・Desktop のみ）: ログイン後に `staffAppRelease/latest` を参照し、古い場合は Storage から DMG をダウンロードして手動インストール。Wasm `/staff` では DMG 更新は出さない

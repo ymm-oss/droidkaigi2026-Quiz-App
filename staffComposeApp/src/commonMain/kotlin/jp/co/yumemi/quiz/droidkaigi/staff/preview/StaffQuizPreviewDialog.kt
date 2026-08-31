@@ -16,15 +16,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,12 +43,19 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
+import jp.co.yumemi.quiz.droidkaigi.core.ui.locale.AppLocalePreference
+import jp.co.yumemi.quiz.droidkaigi.core.ui.locale.LocalAppLocale
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTokens
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.quiz.QuizScreen
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.result.ResultContent
 import kotlinx.coroutines.flow.emptyFlow
 
 private enum class PreviewPhase { Loading, Quiz, Result, Error }
+
+private val PreviewContentLocales = listOf(
+    AppLocalePreference.Japanese,
+    AppLocalePreference.English,
+)
 
 private val DefaultPreviewViewportWidth = 393.dp
 private val MinPreviewViewportWidth = 320.dp
@@ -64,6 +77,7 @@ fun StaffQuizPreviewDialog(
     var errorMessage by remember(folderId) { mutableStateOf<String?>(null) }
     var previewResult by remember(folderId) { mutableStateOf<QuizResult?>(null) }
     var viewportWidth by remember { mutableStateOf(DefaultPreviewViewportWidth) }
+    var previewLocale by remember { mutableStateOf(AppLocalePreference.Japanese) }
     val viewportHeight = previewViewportHeight(viewportWidth)
     val deps = AppDependencies.shared
 
@@ -125,6 +139,10 @@ fun StaffQuizPreviewDialog(
                         Text("閉じる")
                     }
                 }
+                PreviewLocaleSelector(
+                    selected = previewLocale,
+                    onSelect = { previewLocale = it },
+                )
                 PreviewViewportWidthControls(
                     viewportWidth = viewportWidth,
                     onViewportWidthChange = { viewportWidth = it },
@@ -142,17 +160,23 @@ fun StaffQuizPreviewDialog(
                         width = viewportWidth,
                         height = viewportHeight,
                     ) {
-                        PreviewBody(
-                            phase = phase,
-                            errorMessage = errorMessage,
-                            previewResult = previewResult,
-                            onFinished = {
-                                previewResult = deps.sessionHolder.lastResult
-                                phase = PreviewPhase.Result
-                            },
-                            onAbandoned = onDismiss,
-                            onCloseResult = onDismiss,
-                        )
+                        CompositionLocalProvider(
+                            LocalAppLocale provides previewLocale.localeTag,
+                        ) {
+                            key(previewLocale.localeTag) {
+                                PreviewBody(
+                                    phase = phase,
+                                    errorMessage = errorMessage,
+                                    previewResult = previewResult,
+                                    onFinished = {
+                                        previewResult = deps.sessionHolder.lastResult
+                                        phase = PreviewPhase.Result
+                                    },
+                                    onAbandoned = onDismiss,
+                                    onCloseResult = onDismiss,
+                                )
+                            }
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
@@ -231,6 +255,45 @@ private fun PreviewBody(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PreviewLocaleSelector(
+    selected: AppLocalePreference,
+    onSelect: (AppLocalePreference) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = QuizTokens.spacingMedium),
+        verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall),
+    ) {
+        Text(
+            text = "プレビュー言語",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            PreviewContentLocales.forEachIndexed { index, preference ->
+                SegmentedButton(
+                    selected = selected == preference,
+                    onClick = { onSelect(preference) },
+                    shape = SegmentedButtonDefaults.itemShape(index, PreviewContentLocales.size),
+                ) {
+                    Text(
+                        text = preference.previewLabel(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun AppLocalePreference.previewLabel(): String = when (this) {
+    AppLocalePreference.Japanese -> "日本語"
+    AppLocalePreference.English -> "English"
+    AppLocalePreference.System -> error("System is not a participant preview locale")
 }
 
 @Composable
