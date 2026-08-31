@@ -13,16 +13,18 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.DownloadStaffAppUpdateUs
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetActiveQuizFolderIdUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetQuizSetForFolderUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetSitePublishedUseCase
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveAppConfigUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetStaffAuthStateUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.GetTodayRankingsUseCase
-import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListPublishedQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ListQuizFoldersUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveAppConfigUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.ObserveTodayRankingsUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuickSignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.QuizPlayUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.RestoreStaffAuthSessionUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SaveQuizSetUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetActiveQuizFolderUseCase
+import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetPublishedQuizFoldersUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SetSitePublishedUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignInStaffUseCase
 import jp.co.yumemi.quiz.droidkaigi.core.domain.usecase.SignOutStaffUseCase
@@ -67,6 +69,12 @@ class AppDependencies(
 
     val setSitePublishedUseCase: SetSitePublishedUseCase
         get() = SetSitePublishedUseCase(quizCatalogRepository)
+
+    val listPublishedQuizFoldersUseCase: ListPublishedQuizFoldersUseCase
+        get() = ListPublishedQuizFoldersUseCase(quizCatalogRepository)
+
+    val setPublishedQuizFoldersUseCase: SetPublishedQuizFoldersUseCase
+        get() = SetPublishedQuizFoldersUseCase(quizCatalogRepository)
 
     companion object {
         lateinit var shared: AppDependencies

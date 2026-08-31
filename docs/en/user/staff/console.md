@@ -4,7 +4,7 @@ Main screen after sign-in: quiz editing and ranking.
 
 ## Quiz management
 
-Select a folder (quiz set), edit questions, and switch folder publish state. The top bar toggles site-wide intake (`sitePublished`); **Preview** on the question list plays the participant UI.
+Select a folder (quiz set), edit questions, and **publish folders independently**. Several folders can be published at once; participants pick them by name. The top bar toggles site-wide intake (`sitePublished`); **Preview** on the question list plays the participant UI.
 
 <img src="/screenshots/staff/02-console-quiz.png" alt="Quiz console" width="640" />
 
@@ -26,7 +26,7 @@ The pencil icon on the selected sidebar row renames a folder and updates its des
 
 ### Delete folder
 
-The trash icon on the selected row deletes the folder after confirmation, including its questions and rankings. The last remaining folder cannot be deleted. Deleting the published folder promotes another folder as active.
+The trash icon on the selected row deletes the folder after confirmation, including its questions and rankings. The last remaining folder cannot be deleted. Deleting a published folder removes it from the participant picker; other published folders stay published.
 
 <img src="/screenshots/staff/05c-delete-folder.png" alt="Delete folder" width="480" />
 
@@ -34,7 +34,9 @@ The trash icon on the selected row deletes the folder after confirmation, includ
 
 <img src="/screenshots/staff/06-publish-confirm.png" alt="Publish confirm" width="480" />
 
-Participants already answering stay on the folder they started, and their score is recorded in that folder's ranking. The switch only applies to participants who start after it.
+Adding or removing a folder from the participant picker is confirmed in a dialog. Multiple folders can stay published together.
+
+Participants already answering stay on the folder they started, and their score is recorded in that folder's ranking. Publish changes only apply to participants who start afterwards.
 
 ### Other states
 

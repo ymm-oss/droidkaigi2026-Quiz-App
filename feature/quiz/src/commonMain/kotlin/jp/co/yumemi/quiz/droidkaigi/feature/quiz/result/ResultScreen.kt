@@ -27,9 +27,9 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizPrimaryButton
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizScreenBackground
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSurfaceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_correct_count
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_go_ranking
-import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.ranking_go_home
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_percent
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_score_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.result_section

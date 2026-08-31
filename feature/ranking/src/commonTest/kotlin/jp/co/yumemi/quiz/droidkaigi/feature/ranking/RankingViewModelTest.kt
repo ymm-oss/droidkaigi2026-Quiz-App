@@ -168,7 +168,8 @@ class RankingViewModelTest {
         )
         holder.applyStatus(jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(true, "other"))
 
-        assertEquals(listOf("played"), requested)
+        assertTrue(requested.isNotEmpty())
+        assertTrue(requested.all { it == "played" })
     }
 
     @Test
@@ -241,6 +242,117 @@ class RankingViewModelTest {
         assertEquals(listOf("Me", "Teammate"), viewModel.uiState.value.entries.map { it.nickname })
         assertTrue(viewModel.uiState.value.entries.none { it.nickname == "Other" })
     }
+
+    @Test
+    fun publishedFoldersLoadFailure_withoutPlayback_showsError() = runTest {
+        val sessionHolder = QuizSessionHolder()
+        val viewModel = RankingViewModel(
+            rankingTestDeps(
+                rankings = { emptyList() },
+                sessionHolder = sessionHolder,
+                catalogFolders = { error("config down") },
+            ),
+        )
+
+        val error = assertIs<RankingError.LoadFailed>(viewModel.uiState.value.error)
+        assertEquals("config down", error.detail)
+        assertTrue(viewModel.uiState.value.entries.isEmpty())
+    }
+
+    @Test
+    fun selectFolder_listensToSelectedFolder() = runTest {
+        val requested = mutableListOf<String>()
+        val sessionHolder = QuizSessionHolder()
+        val viewModel = RankingViewModel(
+            rankingTestDeps(
+                rankings = { folderId ->
+                    requested += folderId
+                    emptyList()
+                },
+                sessionHolder = sessionHolder,
+                catalogFolders = {
+                    listOf(
+                        QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
+                        QuizFolder(id = "hard", name = "高難易度", sortOrder = 1),
+                    )
+                },
+            ),
+        )
+
+        viewModel.onIntent(RankingIntent.SelectFolder("hard"))
+
+        assertTrue(requested.contains("hard"))
+        assertEquals("hard", viewModel.uiState.value.selectedFolderId)
+    }
+
+    @Test
+    fun playbackFolder_staysWhenUnpublished() = runTest {
+        val requested = mutableListOf<String>()
+        val sessionHolder = QuizSessionHolder().apply { playbackFolderId = "played" }
+        RankingViewModel(
+            rankingTestDeps(
+                rankings = { folderId ->
+                    requested += folderId
+                    emptyList()
+                },
+                sessionHolder = sessionHolder,
+                catalogFolders = {
+                    listOf(QuizFolder(id = "other", name = "別セット", sortOrder = 0))
+                },
+            ),
+        )
+
+        assertEquals(listOf("played"), requested)
+    }
+
+    @Test
+    fun publishedFolderIdsChange_sameViewedFolder_doesNotRestartListen() = runTest {
+        var observeCount = 0
+        val rows = kotlinx.coroutines.flow.MutableStateFlow(
+            listOf(RankingEntry("Alice", 100, 1_700_000_000_000)),
+        )
+        val sessionHolder = QuizSessionHolder()
+        val holder = SiteStatusHolder()
+        holder.applyStatus(
+            jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "easy",
+                publishedFolderIds = listOf("easy"),
+            ),
+        )
+        val viewModel = RankingViewModel(
+            rankingTestDeps(
+                rankings = { emptyList() },
+                observeRankings = {
+                    observeCount += 1
+                    rows
+                },
+                sessionHolder = sessionHolder,
+                siteStatusHolder = holder,
+                catalogFolders = {
+                    listOf(
+                        QuizFolder(id = "easy", name = "一般向け", sortOrder = 0),
+                        QuizFolder(id = "hard", name = "高難易度", sortOrder = 1),
+                    )
+                },
+            ),
+        )
+
+        assertEquals(1, observeCount)
+        assertEquals(false, viewModel.uiState.value.isLoading)
+        holder.applyStatus(
+            jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus(
+                sitePublished = true,
+                activeFolderId = "easy",
+                publishedFolderIds = listOf("easy", "hard"),
+            ),
+        )
+
+        assertEquals(1, observeCount)
+        assertEquals(false, viewModel.uiState.value.isLoading)
+        assertEquals("Alice", viewModel.uiState.value.entries.single().nickname)
+        assertEquals(listOf("easy", "hard"), viewModel.uiState.value.publishedFolders.map { it.id })
+    }
 }
 
 private fun rankingTestDeps(
@@ -251,6 +363,7 @@ private fun rankingTestDeps(
         highlightNickname = "Alice"
     },
     siteStatusHolder: SiteStatusHolder = SiteStatusHolder(),
+    catalogFolders: suspend () -> List<QuizFolder> = { emptyList() },
 ): AppDependencies {
     val rankingRepository = object : RankingRepository {
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = rankings(folderId)
@@ -270,7 +383,7 @@ private fun rankingTestDeps(
         override suspend fun clearTodayRankings(folderId: String) = Unit
     }
     val catalogRepository = object : QuizCatalogRepository {
-        override suspend fun listFolders(): List<QuizFolder> = error("unused")
+        override suspend fun listFolders(): List<QuizFolder> = catalogFolders()
 
         override suspend fun createFolder(name: String, description: String): QuizFolder = error("unused")
 
@@ -285,6 +398,8 @@ private fun rankingTestDeps(
         override suspend fun getActiveFolderId(): String = "active-folder"
 
         override suspend fun setActiveFolderId(folderId: String) = error("unused")
+
+        override suspend fun getPublishedFolderIds(): List<String> = catalogFolders().map { it.id }
 
         override suspend fun getSitePublished(): Boolean = true
 

@@ -47,6 +47,7 @@
   "appConfig": {
     "default": {
       "activeFolderId": "droidkaigi2026-demo",
+      "publishedFolderIds": ["droidkaigi2026-demo"],
       "sitePublished": false
     }
   }

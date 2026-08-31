@@ -11,7 +11,8 @@ folders/{folderId}
   updatedAtEpochMillis?
 
 appConfig/default
-  activeFolderId          # 参加者向け公開中フォルダ
+  publishedFolderIds      # 参加者向け公開フォルダ（複数）
+  activeFolderId          # 互換用（公開リストの先頭）
   sitePublished           # サイト／受付の公開可否（既定 false）
   updatedAtEpochMillis?
 
@@ -32,8 +33,9 @@ folders/{folderId}/rankings/{entryId}
 
 | パス | 読取 | 書込 |
 |------|------|------|
-| `folders` / `appConfig` | 全員 | 認証済みスタッフのみ |
-| `rankings` | 全員 | `create`（参加者スコア）。`delete` は認証済みスタッフのみ。`update` 不可 |
+| `folders` | 未認証は公開フォルダのみ。スタッフは認証済みで全件 | フォルダ書き込みは認証済みスタッフ |
+| `rankings` | 未認証は公開フォルダ、またはフォルダ文書が残っている場合（回答中の提出・結果表示）。スタッフは全件 | `create` は公開フォルダまたは既存フォルダ。`delete` は認証済みスタッフ。`update` 不可 |
+| `appConfig` | 全員 | 認証済みスタッフのみ |
 | `staffAppRelease` | 認証済みスタッフ | クライアント不可（CD / Admin SDK） |
 | Storage `releases/staff-desktop/**` | 認証済みスタッフ | クライアント不可（CD / Admin SDK） |
 
@@ -41,11 +43,11 @@ folders/{folderId}/rankings/{entryId}
 
 | Repository | Firestore / Storage |
 |------------|---------------------|
-| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`activeFolderId` / `sitePublished`） |
+| `RemoteQuizCatalogRepository` | `folders`, `appConfig/default`（`publishedFolderIds` / `activeFolderId` / `sitePublished`） |
 | `RemoteRankingRepository` | `folders/{id}/rankings` |
 | `RemoteStaffAppReleaseRepository` | `staffAppRelease/latest` + Storage DMG |
 
-参加者は `appConfig/default` を listen し、開始時に公開中フォルダの `getQuizSet` を読みます。プレイ中は問題を差し替えません。
+参加者は `appConfig/default` を listen し、開始時に選んだ公開フォルダの `getQuizSet` を読みます。プレイ中は問題を差し替えません。
 
 ## CD（ルール）
 

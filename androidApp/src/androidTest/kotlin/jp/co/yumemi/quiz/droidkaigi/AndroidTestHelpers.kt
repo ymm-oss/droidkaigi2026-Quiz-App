@@ -45,20 +45,32 @@ internal fun QuizComposeRule.waitUntilTag(tag: String, timeoutMillis: Long = UI_
 }
 
 internal fun QuizComposeRule.startQuizWithNickname(nickname: String) {
-    waitUntilText("クイズを始める")
+    waitUntilTag("published-folder:droidkaigi2026-demo")
     onNode(hasSetTextAction()).performTextInput(nickname)
+    waitForIdle()
+    clickStartAfterSelectingGeneralFolder()
+    waitUntilText("1 / 3")
+}
+
+internal fun QuizComposeRule.clickStartAfterSelectingGeneralFolder() {
+    val folderTag = "published-folder:droidkaigi2026-demo"
+    waitUntilTag(folderTag)
+    val folderNode = onNodeWithTag(folderTag, useUnmergedTree = true)
+    try {
+        folderNode.performScrollTo()
+    } catch (_: AssertionError) {
+        // Already on-screen.
+    }
+    onNodeWithTag(folderTag, useUnmergedTree = true).performClick()
     waitForIdle()
     val startButton = onNodeWithText("クイズを始める")
     try {
-        // 短い画面ではキーボード表示中にボタンがビューポート外になるためスクロールする
         startButton.performScrollTo()
     } catch (_: AssertionError) {
         // Already on-screen.
     }
     startButton.performClick()
     waitForIdle()
-    // Markdown プロンプトは分割されることがあるので進捗ラベルで開始を確認する
-    waitUntilText("1 / 3")
 }
 
 /** ChoiceCard の testTag で選択肢をタップする（プロンプト内の同文言と区別）。 */

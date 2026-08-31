@@ -1,10 +1,10 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data
 
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import jp.co.yumemi.quiz.droidkaigi.core.data.di.AppScope
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.LocalStaffAppVersion
 import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.LocalStaffAppVersionProvider
-import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 
 @Inject
 @ContributesBinding(AppScope::class)
