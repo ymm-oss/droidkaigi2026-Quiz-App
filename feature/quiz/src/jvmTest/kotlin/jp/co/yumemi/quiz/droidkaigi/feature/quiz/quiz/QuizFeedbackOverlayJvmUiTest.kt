@@ -25,6 +25,35 @@ import kotlin.test.assertTrue
 class QuizFeedbackOverlayJvmUiTest {
     @OptIn(ExperimentalTestApi::class)
     @Test
+    fun englishLocaleShowsEnglishQuestionAnswerAndExplanation() = runComposeUiTest {
+        setContent {
+            CompositionLocalProvider(LocalAppLocale provides "en-US") {
+                key("en-US") {
+                    QuizTheme {
+                        QuizContent(
+                            state = QuizPreviewFixtures.singleChoiceState(
+                                showFeedback = true,
+                                lastAnswerCorrect = true,
+                            ),
+                            onSelectSingle = {},
+                            onToggleMultiple = {},
+                            onMoveReorder = { _, _ -> },
+                            onSubmitAnswer = {},
+                            onContinueAfterFeedback = {},
+                        )
+                    }
+                }
+            }
+        }
+
+        onNodeWithText("Correct!").assertIsDisplayed()
+        onNodeWithText("Which Jetpack library lets you share UI across platforms?").assertIsDisplayed()
+        onNodeWithTag("feedbackCorrectAnswer", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("Explanation").assertIsDisplayed()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
     fun correctFeedback_showsOverlayAndNextButton() = runComposeUiTest {
         setContent {
             CompositionLocalProvider(LocalAppLocale provides "ja") {
@@ -48,6 +77,41 @@ class QuizFeedbackOverlayJvmUiTest {
 
         onNodeWithTag("answerFeedbackOverlay", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithText("正解！").assertIsDisplayed()
+        onNodeWithTag("feedbackCorrectAnswer", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("解説").assertIsDisplayed()
+        onNodeWithTag("feedbackExplanation", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("次の問題へ").assertIsDisplayed()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun feedbackWithoutExplanation_omitsExplanationSection() = runComposeUiTest {
+        val state = QuizPreviewFixtures.singleChoiceState(
+            showFeedback = true,
+            lastAnswerCorrect = true,
+        )
+        setContent {
+            CompositionLocalProvider(LocalAppLocale provides "ja") {
+                key("ja") {
+                    QuizTheme {
+                        QuizContent(
+                            state = state.copy(
+                                question = QuizPreviewFixtures.singleChoiceQuestion.copy(
+                                    explanationMarkdown = "",
+                                ),
+                            ),
+                            onSelectSingle = {},
+                            onToggleMultiple = {},
+                            onMoveReorder = { _, _ -> },
+                            onSubmitAnswer = {},
+                            onContinueAfterFeedback = {},
+                        )
+                    }
+                }
+            }
+        }
+
+        onAllNodesWithText("解説").assertCountEquals(0)
         onNodeWithText("次の問題へ").assertIsDisplayed()
     }
 

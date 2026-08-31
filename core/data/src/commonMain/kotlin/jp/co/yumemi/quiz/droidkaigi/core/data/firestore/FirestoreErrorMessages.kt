@@ -11,8 +11,10 @@ object FirestoreErrorMessages {
             combined.contains("Cloud Firestore API has not been used", ignoreCase = true) ||
                 combined.contains("Cloud Firestore API is disabled", ignoreCase = true) ->
                 "Firestore API が GCP プロジェクトで有効になっていません。Google Cloud Console で Cloud Firestore API を有効にしてください。"
+
             combined.contains("Missing or insufficient permissions", ignoreCase = true) ->
                 "Firestore の権限がありません。ログイン状態とセキュリティルールを確認してください。"
+
             else -> error.message?.takeIf { it.isNotBlank() } ?: fallback
         }
     }

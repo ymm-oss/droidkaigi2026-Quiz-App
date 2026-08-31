@@ -37,12 +37,25 @@ class QuizFeedbackScreenshotAndroidTest {
     private val question = SingleChoice(
         id = "screenshot-single",
         prompt = "UI を Android / Desktop / Web などで共通化できる Jetpack ライブラリはどれ？",
+        explanationMarkdown = """
+            **Compose Multiplatform** は、Compose の宣言的 UI を Android だけでなく
+            Desktop・iOS・Web でも共有できる仕組みです。
+
+            Jetpack XML は Android の View システム、Flutter は別の UI フレームワークです。
+        """.trimIndent(),
         options = listOf(
-            ChoiceOption("a", "Jetpack XML"),
-            ChoiceOption("b", "Compose Multiplatform"),
-            ChoiceOption("c", "Flutter"),
+            ChoiceOption("a", "Jetpack XML", "Jetpack XML"),
+            ChoiceOption("b", "Compose Multiplatform", "Compose Multiplatform"),
+            ChoiceOption("c", "Flutter", "Flutter"),
         ),
         correctId = "b",
+        promptEn = "Which Jetpack library lets you share UI across Android, Desktop, and Web?",
+        explanationMarkdownEn = """
+            **Compose Multiplatform** shares declarative Compose UI across Android,
+            Desktop, iOS, and Web.
+
+            Jetpack XML belongs to Android's View system, while Flutter is a separate UI framework.
+        """.trimIndent(),
     )
 
     private fun state(correct: Boolean, finishing: Boolean = false) = QuizUiState(
@@ -81,10 +94,10 @@ class QuizFeedbackScreenshotAndroidTest {
         }
     }
 
-    private fun render(state: QuizUiState) {
+    private fun render(state: QuizUiState, localeTag: String = "ja") {
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppLocale provides "ja") {
-                key("ja") {
+            CompositionLocalProvider(LocalAppLocale provides localeTag) {
+                key(localeTag) {
                     QuizTheme {
                         QuizContent(
                             state = state,
@@ -117,5 +130,11 @@ class QuizFeedbackScreenshotAndroidTest {
     fun captureFinishingFeedbackOverlay() {
         render(state(correct = true, finishing = true))
         capture("android-03-feedback-finish.png")
+    }
+
+    @Test
+    fun captureEnglishFeedbackOverlay() {
+        render(state(correct = true), localeTag = "en")
+        capture("android-04-feedback-english.png")
     }
 }

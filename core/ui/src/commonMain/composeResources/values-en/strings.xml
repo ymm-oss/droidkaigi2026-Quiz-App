@@ -11,7 +11,10 @@
     <string name="home_player_info">Player info</string>
     <string name="home_nickname">Nickname</string>
     <string name="home_start">Start quiz</string>
+    <string name="home_quiz_set_label">Quiz type</string>
     <string name="home_error_empty_nickname">Please enter a nickname</string>
+    <string name="home_error_no_published_folders">No quizzes are published yet. Please wait until staff publishes one.</string>
+    <string name="home_error_select_quiz_set">Please choose a quiz type</string>
     <string name="home_error_load_failed">Failed to load</string>
     <string name="home_site_closed_message">The quiz is not open yet. Please wait until it is published.</string>
     <string name="home_site_closed_button">Not open yet</string>
@@ -33,6 +36,8 @@
 
     <string name="feedback_correct">Correct!</string>
     <string name="feedback_incorrect">Incorrect</string>
+    <string name="feedback_correct_answer">Correct answer</string>
+    <string name="feedback_explanation">Explanation</string>
     <string name="quiz_feedback_next">Next question</string>
     <string name="quiz_feedback_finish">See results</string>
     <string name="quiz_submit_score_failed_title">Couldn’t submit your score</string>
@@ -49,6 +54,7 @@
 
     <string name="ranking_title">Today’s ranking</string>
     <string name="ranking_subtitle">Ranked by accuracy</string>
+    <string name="ranking_quiz_set_label">Quiz type</string>
     <string name="ranking_empty">No entries yet</string>
     <string name="ranking_error_load_failed">Failed to load ranking</string>
     <string name="ranking_retry">Retry</string>

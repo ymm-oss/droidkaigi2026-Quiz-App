@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.ChoiceOption
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.MultipleChoice
@@ -153,6 +154,9 @@ class StaffScreenshotJvmUiTest {
         }
         onNodeWithText("問題を編集").assertIsDisplayed()
         captureSurfacePng("04-question-editor.png")
+        onNodeWithText("English").performClick()
+        onNodeWithText("Where is **DroidKaigi** held?").assertIsDisplayed()
+        captureSurfacePng("04-question-editor-english.png")
     }
 
     @OptIn(ExperimentalTestApi::class)
@@ -390,7 +394,7 @@ class StaffScreenshotJvmUiTest {
                 }
                 StaffConfirmDialog(
                     title = "参加者向けに公開",
-                    message = "「Day 1 · Easy」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。",
+                    message = "「Day 1 · Easy」を参加者アプリで選べるようにしますか？",
                     confirmLabel = "公開",
                     onConfirm = {},
                     onDismiss = {},
@@ -580,7 +584,7 @@ private val sampleShellState = StaffShellUiState(
         QuizFolder(id = "day2", name = "Day 2", description = "", sortOrder = 2),
     ),
     selectedFolderId = "day1-easy",
-    activeFolderId = "day1-easy",
+    publishedFolderIds = listOf("day1-easy", "day1-hard"),
     sitePublished = false,
     isLoading = false,
 )
@@ -669,11 +673,13 @@ private val sampleEditorDraft = StaffQuestionDraft(
     id = "q1",
     prompt = "**DroidKaigi** の開催都市は？",
     explanationMarkdown = "東京で開催されます。`venue` は会場側の設定です。",
+    promptEn = "Where is **DroidKaigi** held?",
+    explanationMarkdownEn = "It is held in Tokyo. `venue` is configured by the event.",
     type = StaffQuestionType.SingleChoice,
     items = listOf(
-        StaffListItem("opt1", "東京"),
-        StaffListItem("opt2", "大阪"),
-        StaffListItem("opt3", "福岡"),
+        StaffListItem("opt1", "東京", "Tokyo"),
+        StaffListItem("opt2", "大阪", "Osaka"),
+        StaffListItem("opt3", "福岡", "Fukuoka"),
     ),
     correctSingleId = "opt1",
 )

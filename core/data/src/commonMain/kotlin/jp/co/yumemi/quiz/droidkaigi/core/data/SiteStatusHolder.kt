@@ -24,6 +24,9 @@ class SiteStatusHolder {
     private val _activeFolderId = MutableStateFlow<String?>(null)
     val activeFolderId: StateFlow<String?> = _activeFolderId.asStateFlow()
 
+    private val _publishedFolderIds = MutableStateFlow<List<String>>(emptyList())
+    val publishedFolderIds: StateFlow<List<String>> = _publishedFolderIds.asStateFlow()
+
     private val _observeFailed = MutableStateFlow(false)
     val observeFailed: StateFlow<Boolean> = _observeFailed.asStateFlow()
 
@@ -35,8 +38,10 @@ class SiteStatusHolder {
     }
 
     fun applyStatus(status: AppConfigStatus) {
+        val resolved = status.resolvedPublishedFolderIds
         _sitePublished.value = status.sitePublished
-        _activeFolderId.value = status.activeFolderId
+        _publishedFolderIds.value = resolved
+        _activeFolderId.value = resolved.firstOrNull() ?: status.activeFolderId
         _observeFailed.value = false
     }
 

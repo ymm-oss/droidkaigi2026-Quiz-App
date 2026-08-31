@@ -30,6 +30,7 @@ fun StaffChoiceListEditor(
     draft: StaffQuestionDraft,
     onDraftChange: (StaffQuestionDraft) -> Unit,
     modifier: Modifier = Modifier,
+    editingEnglish: Boolean = false,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
         StaffFieldLabel(
@@ -61,7 +62,16 @@ fun StaffChoiceListEditor(
                 canMoveUp = index > 0,
                 canMoveDown = index < draft.items.lastIndex,
                 canDelete = draft.items.size > 2,
-                onLabelChange = { onDraftChange(draft.updateItemLabel(item.id, it)) },
+                editingEnglish = editingEnglish,
+                onLabelChange = {
+                    onDraftChange(
+                        if (editingEnglish) {
+                            draft.updateItemLabelEn(item.id, it)
+                        } else {
+                            draft.updateItemLabel(item.id, it)
+                        },
+                    )
+                },
                 onSelectSingle = { onDraftChange(draft.copy(correctSingleId = item.id)) },
                 onToggleMultiple = { checked ->
                     val updated = if (checked) {
@@ -90,6 +100,7 @@ private fun StaffChoiceRow(
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     canDelete: Boolean,
+    editingEnglish: Boolean,
     onLabelChange: (String) -> Unit,
     onSelectSingle: () -> Unit,
     onToggleMultiple: (Boolean) -> Unit,
@@ -122,12 +133,12 @@ private fun StaffChoiceRow(
             )
         }
         OutlinedTextField(
-            value = item.label,
+            value = if (editingEnglish) item.labelEn else item.label,
             onValueChange = onLabelChange,
             singleLine = true,
             placeholder = {
                 Text(
-                    text = "選択肢 ${index + 1}",
+                    text = if (editingEnglish) "Option ${index + 1}" else "選択肢 ${index + 1}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

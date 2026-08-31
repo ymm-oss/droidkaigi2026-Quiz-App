@@ -57,7 +57,7 @@ class QuizExitAndroidTest {
         composeRule.onNode(hasText("中断する") and hasAnyAncestor(isDialog())).performClick()
         composeRule.waitUntilText("クイズを始める")
 
-        composeRule.onNodeWithText("クイズを始める").performClick()
+        composeRule.clickStartAfterSelectingGeneralFolder()
         waitForProgress("1 / 3")
 
         assertExitDialogGone()

@@ -13,7 +13,7 @@ enum class StaffQuestionType(val label: String) {
     Reorder("並び替え"),
 }
 
-data class StaffListItem(val id: String, val label: String)
+data class StaffListItem(val id: String, val label: String, val labelEn: String = "")
 
 data class StaffQuestionDraft(
     val id: String = "",
@@ -23,6 +23,8 @@ data class StaffQuestionDraft(
     val items: List<StaffListItem> = defaultItems(),
     val correctSingleId: String = "",
     val correctMultipleIds: Set<String> = emptySet(),
+    val promptEn: String = "",
+    val explanationMarkdownEn: String = "",
 )
 
 fun defaultItems(): List<StaffListItem> {
@@ -57,8 +59,10 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         prompt = prompt,
         explanationMarkdown = explanationMarkdown,
         type = StaffQuestionType.SingleChoice,
-        items = options.map { StaffListItem(it.id, it.label) },
+        items = options.map { StaffListItem(it.id, it.label, it.labelEn) },
         correctSingleId = correctId,
+        promptEn = promptEn,
+        explanationMarkdownEn = explanationMarkdownEn,
     )
 
     is MultipleChoice -> StaffQuestionDraft(
@@ -66,8 +70,10 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         prompt = prompt,
         explanationMarkdown = explanationMarkdown,
         type = StaffQuestionType.MultipleChoice,
-        items = options.map { StaffListItem(it.id, it.label) },
+        items = options.map { StaffListItem(it.id, it.label, it.labelEn) },
         correctMultipleIds = correctIds,
+        promptEn = promptEn,
+        explanationMarkdownEn = explanationMarkdownEn,
     )
 
     is Reorder -> StaffQuestionDraft(
@@ -75,24 +81,33 @@ fun Question.toDraft(): StaffQuestionDraft = when (this) {
         prompt = prompt,
         explanationMarkdown = explanationMarkdown,
         type = StaffQuestionType.Reorder,
-        items = items.map { StaffListItem(it.id, it.label) },
+        items = items.map { StaffListItem(it.id, it.label, it.labelEn) },
+        promptEn = promptEn,
+        explanationMarkdownEn = explanationMarkdownEn,
     )
 }
 
 fun StaffQuestionDraft.toQuestion(): Question {
     require(prompt.isNotBlank()) { "問題文を入力してください" }
-    val trimmedItems = items.map { it.copy(label = it.label.trim()) }.filter { it.label.isNotEmpty() }
+    val trimmedItems = items
+        .map { it.copy(label = it.label.trim(), labelEn = it.labelEn.trim()) }
+        .filter { it.label.isNotEmpty() || it.labelEn.isNotEmpty() }
     require(trimmedItems.size >= 2) { "項目は2つ以上必要です" }
+    require(trimmedItems.all { it.label.isNotEmpty() }) { "日本語の選択肢を入力してください" }
+    val keptIds = trimmedItems.map { it.id }.toSet()
 
     return when (type) {
         StaffQuestionType.MultipleChoice -> {
-            require(correctMultipleIds.isNotEmpty()) { "正解を1つ以上選んでください" }
+            val keptCorrectIds = correctMultipleIds.filter { it in keptIds }.toSet()
+            require(keptCorrectIds.isNotEmpty()) { "正解を1つ以上選んでください" }
             MultipleChoice(
                 id = id.trim(),
                 prompt = prompt.trim(),
                 explanationMarkdown = explanationMarkdown,
-                options = trimmedItems.map { ChoiceOption(it.id, it.label) },
-                correctIds = correctMultipleIds,
+                options = trimmedItems.map { ChoiceOption(it.id, it.label, it.labelEn) },
+                correctIds = keptCorrectIds,
+                promptEn = promptEn.trim(),
+                explanationMarkdownEn = explanationMarkdownEn,
             )
         }
 
@@ -100,20 +115,22 @@ fun StaffQuestionDraft.toQuestion(): Question {
             id = id.trim(),
             prompt = prompt.trim(),
             explanationMarkdown = explanationMarkdown,
-            items = trimmedItems.map { ReorderItem(it.id, it.label) },
+            items = trimmedItems.map { ReorderItem(it.id, it.label, it.labelEn.trim()) },
             correctOrder = trimmedItems.map { it.id },
+            promptEn = promptEn.trim(),
+            explanationMarkdownEn = explanationMarkdownEn,
         )
 
         StaffQuestionType.SingleChoice -> {
-            val correctId = correctSingleId.takeIf { it.isNotEmpty() }
-                ?: trimmedItems.first().id
-            require(trimmedItems.any { it.id == correctId }) { "正解を選んでください" }
+            require(correctSingleId in keptIds) { "正解を選んでください" }
             SingleChoice(
                 id = id.trim(),
                 prompt = prompt.trim(),
                 explanationMarkdown = explanationMarkdown,
-                options = trimmedItems.map { ChoiceOption(it.id, it.label) },
-                correctId = correctId,
+                options = trimmedItems.map { ChoiceOption(it.id, it.label, it.labelEn.trim()) },
+                correctId = correctSingleId,
+                promptEn = promptEn.trim(),
+                explanationMarkdownEn = explanationMarkdownEn,
             )
         }
     }
@@ -154,6 +171,9 @@ fun StaffQuestionDraft.addItem(): StaffQuestionDraft {
 
 fun StaffQuestionDraft.updateItemLabel(itemId: String, label: String): StaffQuestionDraft =
     copy(items = items.map { if (it.id == itemId) it.copy(label = label) else it })
+
+fun StaffQuestionDraft.updateItemLabelEn(itemId: String, label: String): StaffQuestionDraft =
+    copy(items = items.map { if (it.id == itemId) it.copy(labelEn = label) else it })
 
 fun StaffQuestionDraft.removeItem(itemId: String): StaffQuestionDraft {
     val remaining = items.filter { it.id != itemId }

@@ -7,10 +7,12 @@
       "id": "q1",
       "prompt": "次のコードの `Text` は **Compose Multiplatform** のコンポーネントです。\n\n```kotlin\n@Composable\nfun Greeting(name: String) {\n    Text(text = \"Hello, $name!\")\n}\n```\n\nUI を Android / Desktop / Web などで**共通化**できる Jetpack ライブラリはどれ？",
       "explanationMarkdown": "**Compose Multiplatform** は `@Composable` 関数で UI を宣言的に記述し、KMP 経由で複数プラットフォームに共有できます。\n\n- Android: Jetpack Compose\n- Desktop / iOS / Web: Compose Multiplatform",
+      "promptEn": "The `Text` in the following code is a **Compose Multiplatform** component.\n\n```kotlin\n@Composable\nfun Greeting(name: String) {\n    Text(text = \"Hello, $name!\")\n}\n```\n\nWhich Jetpack library lets you **share UI** across Android, Desktop, Web, and other platforms?",
+      "explanationMarkdownEn": "**Compose Multiplatform** lets you write UI declaratively with `@Composable` functions and share it across platforms through KMP.\n\n- Android: Jetpack Compose\n- Desktop / iOS / Web: Compose Multiplatform",
       "options": [
         { "id": "a", "label": "Compose Multiplatform" },
-        { "id": "b", "label": "XML Layout" },
-        { "id": "c", "label": "Flutter" }
+        { "id": "b", "label": "XML Layout", "labelEn": "XML Layout" },
+        { "id": "c", "label": "Flutter", "labelEn": "Flutter" }
       ],
       "correctId": "a"
     },
@@ -19,11 +21,13 @@
       "id": "q2",
       "prompt": "次の **Compose** コードについて、正しい説明を**すべて**選んでください。\n\n```kotlin\nvar count by remember { mutableStateOf(0) }\nButton(onClick = { count++ }) {\n    Text(\"Clicked $count times\")\n}\n```",
       "explanationMarkdown": "`remember { mutableStateOf(...) }` は Composable 内の**状態**を保持します。`count` が変わると **Recomposition** が走り、`Text` の表示が更新されます。\n\n- `onClick` はユーザー操作のコールバック\n- Compose では XML は不要",
+      "promptEn": "Select **all correct statements** about the following **Compose** code.\n\n```kotlin\nvar count by remember { mutableStateOf(0) }\nButton(onClick = { count++ }) {\n    Text(\"Clicked $count times\")\n}\n```",
+      "explanationMarkdownEn": "`remember { mutableStateOf(...) }` retains **state** inside a Composable. Changing `count` triggers **recomposition**, which updates the displayed `Text`.\n\n- `onClick` is a callback for user interaction\n- Compose does not require XML",
       "options": [
-        { "id": "a", "label": "count の変更で UI が再 Composition される" },
-        { "id": "b", "label": "remember は必ず ViewModel で宣言する" },
-        { "id": "c", "label": "Button の onClick はユーザー操作で呼ばれる" },
-        { "id": "d", "label": "Text の内容は状態に連動して更新される" }
+        { "id": "a", "label": "count の変更で UI が再 Composition される", "labelEn": "Changing count causes the UI to recompose" },
+        { "id": "b", "label": "remember は必ず ViewModel で宣言する", "labelEn": "remember must always be declared in a ViewModel" },
+        { "id": "c", "label": "Button の onClick はユーザー操作で呼ばれる", "labelEn": "Button's onClick is invoked by user interaction" },
+        { "id": "d", "label": "Text の内容は状態に連動して更新される", "labelEn": "The Text content updates with the state" }
       ],
       "correctIds": ["a", "c", "d"]
     },
@@ -32,11 +36,13 @@
       "id": "q3",
       "prompt": "## Activity 起動〜描画\n\n**Android + Compose** アプリで、起動から初回描画までの処理を正しい順に並べ替えてください。\n\nヒント: `Activity.onCreate` のなかで `setContent { }` を呼び、その後 **Composition** が走ってからレイアウト & 描画されます。",
       "explanationMarkdown": "典型的な流れ:\n\n1. `Activity.onCreate` — Activity の生成\n2. `setContent { }` — Compose UI ツリーの開始\n3. **Composition** — Composable の実行\n4. **レイアウト & 描画** — 画面への反映",
+      "promptEn": "## From Activity launch to drawing\n\nArrange the steps from launch to the first frame of an **Android + Compose** app in the correct order.\n\nHint: `setContent { }` is called inside `Activity.onCreate`, then **composition** runs before layout and drawing.",
+      "explanationMarkdownEn": "A typical sequence is:\n\n1. `Activity.onCreate` — create the Activity\n2. `setContent { }` — start the Compose UI tree\n3. **Composition** — execute Composable functions\n4. **Layout & drawing** — render the UI on screen",
       "items": [
         { "id": "1", "label": "Activity.onCreate" },
         { "id": "2", "label": "setContent { }" },
         { "id": "3", "label": "Composition" },
-        { "id": "4", "label": "レイアウト & 描画" }
+        { "id": "4", "label": "レイアウト & 描画", "labelEn": "Layout & drawing" }
       ],
       "correctOrder": ["1", "2", "3", "4"]
     }

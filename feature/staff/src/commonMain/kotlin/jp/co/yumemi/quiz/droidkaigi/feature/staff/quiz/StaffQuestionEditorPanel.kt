@@ -30,6 +30,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,12 +46,18 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizMarkdownText
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTokens
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffHorizontalDivider
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.StaffTextButton
 import jp.co.yumemi.quiz.droidkaigi.feature.staff.components.staffDividerColor
+
+private enum class StaffContentLanguage(val label: String) {
+    Japanese("日本語"),
+    English("English"),
+}
 
 /**
  * Right-hand editor panel. A side panel (rather than a dialog) keeps the question list visible
@@ -69,6 +78,7 @@ fun StaffQuestionEditorPanel(
     var typeMenuExpanded by remember { mutableStateOf(false) }
     var showPromptPreview by remember { mutableStateOf(false) }
     var showExplanationPreview by remember { mutableStateOf(false) }
+    var contentLanguage by remember { mutableStateOf(StaffContentLanguage.Japanese) }
 
     val borderColor = staffDividerColor()
     Column(
@@ -156,32 +166,22 @@ fun StaffQuestionEditorPanel(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    StaffFieldLabel(text = "問題文", hint = "(Markdown)")
-                    StaffTextButton(
-                        text = "プレビュー",
-                        icon = Icons.Default.Visibility,
-                        onClick = { showPromptPreview = !showPromptPreview },
-                    )
-                }
-                OutlinedTextField(
-                    value = draft.prompt,
-                    onValueChange = { onDraftChange(draft.copy(prompt = it)) },
-                    shape = RoundedCornerShape(QuizTokens.cornerSmall),
-                    colors = staffFieldColors(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(144.dp),
-                )
-                if (showPromptPreview && draft.prompt.isNotBlank()) {
-                    QuizMarkdownText(draft.prompt)
-                }
-            }
+            StaffContentLanguageSelector(
+                selected = contentLanguage,
+                onSelect = {
+                    contentLanguage = it
+                    showPromptPreview = false
+                    showExplanationPreview = false
+                },
+            )
+            StaffLocalizedMarkdownField(
+                title = "問題文",
+                value = draft.textFor(contentLanguage, markdownKind = StaffMarkdownKind.Prompt),
+                showPreview = showPromptPreview,
+                fieldHeight = 144.dp,
+                onValueChange = { onDraftChange(draft.withText(contentLanguage, StaffMarkdownKind.Prompt, it)) },
+                onTogglePreview = { showPromptPreview = !showPromptPreview },
+            )
 
             Column(
                 modifier = Modifier
@@ -190,35 +190,23 @@ fun StaffQuestionEditorPanel(
                     .border(1.dp, staffDividerColor(0.1f), RoundedCornerShape(QuizTokens.cornerMedium))
                     .padding(QuizTokens.spacingMedium),
             ) {
-                StaffChoiceListEditor(draft = draft, onDraftChange = onDraftChange)
+                StaffChoiceListEditor(
+                    draft = draft,
+                    onDraftChange = onDraftChange,
+                    editingEnglish = contentLanguage == StaffContentLanguage.English,
+                )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    StaffFieldLabel(text = "解説", hint = "(Markdown)")
-                    StaffTextButton(
-                        text = "プレビュー",
-                        icon = Icons.Default.Visibility,
-                        onClick = { showExplanationPreview = !showExplanationPreview },
-                    )
-                }
-                OutlinedTextField(
-                    value = draft.explanationMarkdown,
-                    onValueChange = { onDraftChange(draft.copy(explanationMarkdown = it)) },
-                    shape = RoundedCornerShape(QuizTokens.cornerSmall),
-                    colors = staffFieldColors(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                )
-                if (showExplanationPreview && draft.explanationMarkdown.isNotBlank()) {
-                    QuizMarkdownText(draft.explanationMarkdown)
-                }
-            }
+            StaffLocalizedMarkdownField(
+                title = "解説",
+                value = draft.textFor(contentLanguage, markdownKind = StaffMarkdownKind.Explanation),
+                showPreview = showExplanationPreview,
+                fieldHeight = 120.dp,
+                onValueChange = {
+                    onDraftChange(draft.withText(contentLanguage, StaffMarkdownKind.Explanation, it))
+                },
+                onTogglePreview = { showExplanationPreview = !showExplanationPreview },
+            )
             saveError?.let { message ->
                 Text(
                     text = message,
@@ -260,6 +248,89 @@ fun StaffQuestionEditorPanel(
                     Text("保存", style = MaterialTheme.typography.labelLarge)
                 }
             }
+        }
+    }
+}
+
+private enum class StaffMarkdownKind { Prompt, Explanation }
+
+private fun StaffQuestionDraft.textFor(language: StaffContentLanguage, markdownKind: StaffMarkdownKind): String =
+    when (language to markdownKind) {
+        StaffContentLanguage.English to StaffMarkdownKind.Prompt -> promptEn
+        StaffContentLanguage.English to StaffMarkdownKind.Explanation -> explanationMarkdownEn
+        StaffContentLanguage.Japanese to StaffMarkdownKind.Prompt -> prompt
+        else -> explanationMarkdown
+    }
+
+private fun StaffQuestionDraft.withText(
+    language: StaffContentLanguage,
+    markdownKind: StaffMarkdownKind,
+    value: String,
+): StaffQuestionDraft = when (language to markdownKind) {
+    StaffContentLanguage.English to StaffMarkdownKind.Prompt -> copy(promptEn = value)
+    StaffContentLanguage.English to StaffMarkdownKind.Explanation -> copy(explanationMarkdownEn = value)
+    StaffContentLanguage.Japanese to StaffMarkdownKind.Prompt -> copy(prompt = value)
+    else -> copy(explanationMarkdown = value)
+}
+
+@Composable
+private fun StaffContentLanguageSelector(selected: StaffContentLanguage, onSelect: (StaffContentLanguage) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+        StaffFieldLabel(text = "編集する言語")
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            StaffContentLanguage.entries.forEachIndexed { index, language ->
+                SegmentedButton(
+                    selected = selected == language,
+                    onClick = { onSelect(language) },
+                    shape = SegmentedButtonDefaults.itemShape(index, StaffContentLanguage.entries.size),
+                ) {
+                    Text(language.label)
+                }
+            }
+        }
+        if (selected == StaffContentLanguage.English) {
+            Text(
+                text = "未入力の英語項目は、参加者画面で日本語を表示します。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StaffLocalizedMarkdownField(
+    title: String,
+    value: String,
+    showPreview: Boolean,
+    fieldHeight: Dp,
+    onValueChange: (String) -> Unit,
+    onTogglePreview: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            StaffFieldLabel(text = title, hint = "(Markdown)")
+            StaffTextButton(
+                text = "プレビュー",
+                icon = Icons.Default.Visibility,
+                onClick = onTogglePreview,
+            )
+        }
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            shape = RoundedCornerShape(QuizTokens.cornerSmall),
+            colors = staffFieldColors(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(fieldHeight),
+        )
+        if (showPreview && value.isNotBlank()) {
+            QuizMarkdownText(value)
         }
     }
 }

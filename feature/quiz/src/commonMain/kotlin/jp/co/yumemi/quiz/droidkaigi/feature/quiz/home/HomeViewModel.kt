@@ -3,6 +3,7 @@ package jp.co.yumemi.quiz.droidkaigi.feature.quiz.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,8 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
             combine(
                 deps.siteStatusHolder.sitePublished,
                 deps.siteStatusHolder.observeFailed,
-            ) { published, failed ->
+                deps.siteStatusHolder.publishedFolderIds,
+            ) { published, failed, _ ->
                 published to failed
             }.collect { (published, failed) ->
                 _uiState.update {
@@ -35,13 +37,26 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                         siteStatusCheckFailed = failed && published == null,
                     )
                 }
+                if (published == true) {
+                    loadPublishedFolders()
+                } else if (published == false) {
+                    _uiState.update { it.copy(publishedFolders = emptyList(), error = null) }
+                }
             }
         }
     }
 
     fun onIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.NicknameChanged -> _uiState.update { it.copy(nickname = intent.value, error = null) }
+            is HomeIntent.NicknameChanged -> _uiState.update { state ->
+                state.copy(
+                    nickname = intent.value,
+                    error = state.error.takeIf { it is HomeError.LoadFailed },
+                )
+            }
+
+            is HomeIntent.SelectPublishedFolder ->
+                _uiState.update { it.copy(selectedFolderId = intent.folderId, error = null) }
 
             HomeIntent.StartQuiz -> startQuiz()
 
@@ -49,7 +64,41 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 _uiState.update { it.copy(isLoading = false) }
             }
 
-            HomeIntent.RetrySiteStatus -> deps.siteStatusHolder.requestRetry()
+            HomeIntent.RetrySiteStatus -> {
+                deps.siteStatusHolder.requestRetry()
+                if (deps.siteStatusHolder.sitePublished.value == true) {
+                    viewModelScope.launch { loadPublishedFolders() }
+                }
+            }
+        }
+    }
+
+    private suspend fun loadPublishedFolders() {
+        val folders = try {
+            deps.listPublishedQuizFoldersUseCase()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (@Suppress("TooGenericExceptionCaught") error: Exception) {
+            _uiState.update {
+                it.copy(
+                    publishedFolders = null,
+                    error = HomeError.LoadFailed(error.message),
+                )
+            }
+            return
+        }
+        _uiState.update { state ->
+            val selected = when {
+                folders.isEmpty() -> null
+                folders.any { it.id == state.selectedFolderId } -> state.selectedFolderId
+                folders.size == 1 -> folders.first().id
+                else -> state.selectedFolderId?.takeIf { id -> folders.any { it.id == id } }
+            }
+            state.copy(
+                publishedFolders = folders,
+                selectedFolderId = selected,
+                error = state.error.takeUnless { it is HomeError.LoadFailed },
+            )
         }
     }
 
@@ -68,7 +117,8 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                     _uiState.update { it.copy(isLoading = false, sitePublished = false) }
                     return@launch
                 }
-                val folderId = deps.getActiveQuizFolderIdUseCase()
+                val folders = deps.listPublishedQuizFoldersUseCase()
+                val folderId = resolveStartFolderId(folders) ?: return@launch
                 val quizSet = deps.getQuizSetForFolderUseCase(folderId)
                 val session = deps.quizEngine.startSession(
                     folderId = folderId,
@@ -88,5 +138,29 @@ class HomeViewModel(private val deps: AppDependencies = AppDependencies.shared) 
                 }
             }
         }
+    }
+
+    private fun resolveStartFolderId(folders: List<QuizFolder>): String? {
+        val selected = _uiState.value.selectedFolderId?.takeIf { id -> folders.any { it.id == id } }
+        val folderId = when {
+            folders.isEmpty() -> null
+            folders.size == 1 -> folders.first().id
+            else -> selected
+        }
+        if (folderId == null) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    publishedFolders = folders,
+                    selectedFolderId = if (folders.isEmpty()) null else it.selectedFolderId,
+                    error = if (folders.isEmpty()) {
+                        HomeError.NoPublishedFolders
+                    } else {
+                        HomeError.NoFolderSelected
+                    },
+                )
+            }
+        }
+        return folderId
     }
 }

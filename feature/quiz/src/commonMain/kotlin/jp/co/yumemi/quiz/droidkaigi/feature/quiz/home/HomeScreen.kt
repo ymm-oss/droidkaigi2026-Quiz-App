@@ -20,12 +20,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.LanguageSelector
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizHeroTitle
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizPrimaryButton
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizScreenBackground
+import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSelectableOptionCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizSurfaceCard
 import jp.co.yumemi.quiz.droidkaigi.core.ui.components.QuizTextField
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.Res
@@ -33,8 +36,11 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.app_title
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_badge
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_empty_nickname
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_load_failed
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_no_published_folders
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_error_select_quiz_set
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_nickname
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_player_info
+import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_quiz_set_label
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_site_closed_button
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_site_closed_message
 import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.home_site_status_error_message
@@ -70,6 +76,10 @@ fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { H
 
         HomeError.EmptyNickname -> stringResource(Res.string.home_error_empty_nickname)
 
+        HomeError.NoPublishedFolders -> stringResource(Res.string.home_error_no_published_folders)
+
+        HomeError.NoFolderSelected -> stringResource(Res.string.home_error_select_quiz_set)
+
         is HomeError.LoadFailed -> error.detail?.takeIf { it.isNotBlank() }
             ?: stringResource(Res.string.home_error_load_failed)
     }
@@ -79,10 +89,13 @@ fun HomeScreen(onStartQuiz: () -> Unit, viewModel: HomeViewModel = viewModel { H
         isLoading = state.isLoading,
         sitePublished = state.sitePublished,
         siteStatusCheckFailed = state.siteStatusCheckFailed,
+        publishedFolders = state.publishedFolders,
+        selectedFolderId = state.selectedFolderId,
         errorMessage = errorMessage,
         localePreference = localeController.preference,
         onLocalePreferenceChange = localeController::select,
         onNicknameChange = { viewModel.onIntent(HomeIntent.NicknameChanged(it)) },
+        onSelectFolder = { viewModel.onIntent(HomeIntent.SelectPublishedFolder(it)) },
         onStartClick = { viewModel.onIntent(HomeIntent.StartQuiz) },
         onRetrySiteStatusClick = { viewModel.onIntent(HomeIntent.RetrySiteStatus) },
     )
@@ -98,8 +111,11 @@ fun HomeContent(
     modifier: Modifier = Modifier,
     sitePublished: Boolean? = true,
     siteStatusCheckFailed: Boolean = false,
+    publishedFolders: List<QuizFolder>? = null,
+    selectedFolderId: String? = null,
     localePreference: AppLocalePreference = AppLocalePreference.System,
     onLocalePreferenceChange: (AppLocalePreference) -> Unit = {},
+    onSelectFolder: (String) -> Unit = {},
     onRetrySiteStatusClick: () -> Unit = {},
 ) {
     val siteOpen = sitePublished == true
@@ -172,36 +188,111 @@ fun HomeContent(
                         )
                     }
 
-                    else -> {
-                        QuizSurfaceCard {
-                            Text(
-                                text = stringResource(Res.string.home_player_info),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
-                            QuizTextField(
-                                value = nickname,
-                                onValueChange = onNicknameChange,
-                                label = stringResource(Res.string.home_nickname),
-                            )
-                            errorMessage?.let { msg ->
-                                Text(
-                                    text = msg,
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(top = QuizTokens.spacingSmall),
-                                )
-                            }
-                        }
-                        QuizPrimaryButton(
-                            text = stringResource(Res.string.home_start),
-                            onClick = onStartClick,
-                            loading = isLoading,
-                        )
-                    }
+                    else -> HomeOpenIntake(
+                        nickname = nickname,
+                        isLoading = isLoading,
+                        errorMessage = errorMessage,
+                        publishedFolders = publishedFolders,
+                        selectedFolderId = selectedFolderId,
+                        onNicknameChange = onNicknameChange,
+                        onSelectFolder = onSelectFolder,
+                        onStartClick = onStartClick,
+                        onRetrySiteStatusClick = onRetrySiteStatusClick,
+                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun HomeOpenIntake(
+    nickname: String,
+    isLoading: Boolean,
+    errorMessage: String?,
+    publishedFolders: List<QuizFolder>?,
+    selectedFolderId: String?,
+    onNicknameChange: (String) -> Unit,
+    onSelectFolder: (String) -> Unit,
+    onStartClick: () -> Unit,
+    onRetrySiteStatusClick: () -> Unit,
+) {
+    QuizSurfaceCard {
+        Text(
+            text = stringResource(Res.string.home_player_info),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+        QuizTextField(
+            value = nickname,
+            onValueChange = onNicknameChange,
+            label = stringResource(Res.string.home_nickname),
+        )
+        errorMessage?.let { msg ->
+            Text(
+                text = msg,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = QuizTokens.spacingSmall),
+            )
+        }
+    }
+    if (publishedFolders != null && publishedFolders.size > 1) {
+        QuizSurfaceCard {
+            Text(
+                text = stringResource(Res.string.home_quiz_set_label),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(QuizTokens.spacingMedium))
+            Column(verticalArrangement = Arrangement.spacedBy(QuizTokens.spacingSmall)) {
+                publishedFolders.forEach { folder ->
+                    QuizSelectableOptionCard(
+                        title = folder.displayName,
+                        subtitle = folder.description.takeIf { it.isNotBlank() },
+                        selected = folder.id == selectedFolderId,
+                        onClick = { onSelectFolder(folder.id) },
+                        modifier = Modifier.testTag("published-folder:${folder.id}"),
+                    )
+                }
+            }
+        }
+    }
+    if (publishedFolders != null && publishedFolders.isEmpty()) {
+        QuizSurfaceCard {
+            Text(
+                text = stringResource(Res.string.home_error_no_published_folders),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+    HomeStartOrRetryButton(
+        foldersLoadFailed = publishedFolders == null && errorMessage != null,
+        publishedFolders = publishedFolders,
+        isLoading = isLoading,
+        onRetrySiteStatusClick = onRetrySiteStatusClick,
+        onStartClick = onStartClick,
+    )
+}
+
+@Composable
+private fun HomeStartOrRetryButton(
+    foldersLoadFailed: Boolean,
+    publishedFolders: List<QuizFolder>?,
+    isLoading: Boolean,
+    onRetrySiteStatusClick: () -> Unit,
+    onStartClick: () -> Unit,
+) {
+    QuizPrimaryButton(
+        text = if (foldersLoadFailed) {
+            stringResource(Res.string.home_site_status_retry)
+        } else {
+            stringResource(Res.string.home_start)
+        },
+        onClick = if (foldersLoadFailed) onRetrySiteStatusClick else onStartClick,
+        loading = isLoading,
+        enabled = foldersLoadFailed || (publishedFolders != null && publishedFolders.isNotEmpty()),
+    )
 }
