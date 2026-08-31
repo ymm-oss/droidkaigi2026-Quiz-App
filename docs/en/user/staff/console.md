@@ -4,7 +4,10 @@ Main screen after sign-in: quiz editing and ranking.
 
 ## Quiz management
 
-Select a folder (quiz set), edit questions, and **publish folders independently**. Several folders can be published at once; participants pick them by name. The top bar toggles site-wide intake (`sitePublished`); **Preview** on the question list plays the participant UI.
+Select a folder (quiz set), edit questions, and **publish folders independently**. Several folders can be published at once; participants pick them by name. The top bar toggles site-wide intake (`sitePublished`); **Preview** on the question list plays the participant UI. In preview you can switch **日本語 / English** to see the same question copy and chrome a participant would get from Home. Missing English fields fall back to Japanese.
+
+<img src="/screenshots/staff/staff-participant-preview.png" alt="Participant preview (Japanese)" width="480" />
+<img src="/screenshots/staff/staff-participant-preview-english.png" alt="Participant preview (English)" width="480" />
 
 <img src="/screenshots/staff/02-console-quiz.png" alt="Quiz console" width="640" />
 

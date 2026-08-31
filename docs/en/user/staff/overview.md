@@ -6,7 +6,7 @@ Console for venue staff. Use the Desktop app (`:staffDesktopApp`) on a venue PC,
 
 | Feature | Description |
 |---------|-------------|
-| **Quiz management** | Add/edit questions, explanations, per-type settings. Participant preview (phone frame) |
+| **Quiz management** | Add/edit questions, explanations, per-type settings. Participant preview (phone frame, Japanese / English) |
 | **Folder management** | Split sets by date/level; publish multiple folders at once for participants to choose |
 | **Site publish** | Open/close participant intake (`sitePublished`; separate from folder publish) |
 | **Ranking** | View today's ranking per folder |
