@@ -63,6 +63,7 @@ class RankingScreenshotJvmUiTest {
         }
         onNodeWithText("今日のランキング").assertIsDisplayed()
         onNodeWithText("Compose 太郎").assertIsDisplayed()
+        onNodeWithText("100%").assertIsDisplayed()
         captureAndroidSurfacePng("android-ranking.png")
     }
 }
