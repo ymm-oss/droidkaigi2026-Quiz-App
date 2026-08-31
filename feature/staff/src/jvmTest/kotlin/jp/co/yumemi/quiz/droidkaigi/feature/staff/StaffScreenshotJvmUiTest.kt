@@ -548,6 +548,37 @@ class StaffScreenshotJvmUiTest {
         onNodeWithText("本日のランキングをすべて削除").assertIsDisplayed()
         captureSurfacePng("11-ranking-clear-confirm.png")
     }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun captureParticipantLinksDialog() = runDesktopComposeUiTest(width = 1440, height = 900) {
+        setContent {
+            QuizStaffTheme {
+                StaffConsolePreview(selectedTab = StaffTab.Quiz) {
+                    StaffQuizContent(
+                        quizTitle = "Day 1 · Easy",
+                        quizSubtitle = "会場向け初級",
+                        questions = sampleQuestions,
+                        isLoading = false,
+                        errorMessage = null,
+                        onRefresh = {},
+                        onAddQuestion = {},
+                        onEditQuestion = {},
+                        onRequestDeleteQuestion = {},
+                        onReorderQuestions = { _, _ -> },
+                    )
+                }
+                StaffParticipantLinksDialog(
+                    webAppUrl = ParticipantAppLinks.PRODUCTION_WEB_URL,
+                    androidDesktopReleasesUrl = ParticipantAppLinks.GITHUB_RELEASES_URL,
+                    onDismiss = {},
+                )
+            }
+        }
+        onNodeWithText("Web（ブラウザ）").assertIsDisplayed()
+        onNodeWithText(ParticipantAppLinks.PRODUCTION_WEB_URL).assertIsDisplayed()
+        captureSurfacePng("12-participant-links.png")
+    }
 }
 
 @Composable
@@ -564,6 +595,7 @@ private fun StaffConsolePreview(
             StaffTopBar(
                 sitePublished = shellState.sitePublished,
                 onToggleSitePublished = {},
+                onOpenParticipantLinks = {},
                 onSignOut = {},
             )
             Row(modifier = Modifier.fillMaxSize()) {

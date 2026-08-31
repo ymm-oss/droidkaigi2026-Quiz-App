@@ -40,7 +40,7 @@ In prod, after sign-in the app checks for a newer staff Desktop build and can do
 ./gradlew :wasmApp:wasmJsBrowserDevelopmentRun
 ```
 
-`/` is the participant app; `/staff` is the staff console (sign-in required). fake verified in CI. Production is Firebase Hosting.
+`/` is the participant app; `/staff` is the staff console (sign-in required). fake verified in CI. Production is Firebase Hosting (`https://ymm-droidkaigi26.web.app/`).
 
 ## Tests
 

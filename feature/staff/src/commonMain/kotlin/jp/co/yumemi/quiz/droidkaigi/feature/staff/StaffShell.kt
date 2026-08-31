@@ -42,6 +42,7 @@ fun StaffShell(
     val shellState by shellViewModel.uiState.collectAsState()
     val updateState by updateViewModel.uiState.collectAsState()
     var selectedTab by rememberSaveable { mutableStateOf(StaffTab.Quiz) }
+    var showParticipantLinks by rememberSaveable { mutableStateOf(false) }
     var newFolderName by rememberSaveable { mutableStateOf("") }
     var newFolderDescription by rememberSaveable { mutableStateOf("") }
     val selectedFolder = shellState.folders.find { it.id == shellState.selectedFolderId }
@@ -53,6 +54,7 @@ fun StaffShell(
                 onToggleSitePublished = {
                     shellViewModel.onIntent(StaffShellIntent.RequestToggleSitePublished)
                 },
+                onOpenParticipantLinks = { showParticipantLinks = true },
                 onSignOut = onSignOut,
             )
             Row(modifier = Modifier.fillMaxSize()) {
@@ -106,6 +108,14 @@ fun StaffShell(
             errorMessage = if (shellState.isTogglingSitePublished) null else shellState.errorMessage,
             onConfirm = { shellViewModel.onIntent(StaffShellIntent.ConfirmToggleSitePublished) },
             onDismiss = { shellViewModel.onIntent(StaffShellIntent.DismissSitePublishConfirm) },
+        )
+    }
+
+    if (showParticipantLinks) {
+        StaffParticipantLinksDialog(
+            webAppUrl = resolveParticipantWebAppUrl(),
+            androidDesktopReleasesUrl = ParticipantAppLinks.GITHUB_RELEASES_URL,
+            onDismiss = { showParticipantLinks = false },
         )
     }
 
