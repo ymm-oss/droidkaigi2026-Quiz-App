@@ -12,6 +12,16 @@ import kotlin.test.assertTrue
 
 class InMemoryQuizCatalogSitePublishedTest {
     @Test
+    fun createFolder_doesNotPublishBeforePublicInformationIsConfirmed() = runBlocking {
+        val catalog = InMemoryQuizCatalog()
+        catalog.withLock {
+            createFolder("Day 1", "運営用")
+
+            assertEquals(emptyList(), getPublishedFolderIds())
+        }
+    }
+
+    @Test
     fun sitePublished_defaultsFalse_andSurvivesActiveFolderChange() = runBlocking {
         val catalog = InMemoryQuizCatalog()
         catalog.withLock {

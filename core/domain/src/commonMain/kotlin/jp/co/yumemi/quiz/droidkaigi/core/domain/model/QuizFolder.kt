@@ -23,5 +23,9 @@ data class QuizFolder(
 
     /** 参加者向け説明。管理情報を使う場合のみ、管理用の説明へ追従する。 */
     val listingDescription: String
-        get() = if (useInternalAsPublic) description else publicDescription
+        get() = when {
+            useInternalAsPublic -> description
+            publicName.isBlank() -> description
+            else -> publicDescription
+        }
 }

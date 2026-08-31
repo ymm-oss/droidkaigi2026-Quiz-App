@@ -40,6 +40,6 @@ class QuizFolderTest {
         val folder = QuizFolder(id = "legacy", name = "既存フォルダ", description = "内部説明")
 
         assertEquals("既存フォルダ", folder.listingName)
-        assertEquals("", folder.listingDescription)
+        assertEquals("内部説明", folder.listingDescription)
     }
 }
