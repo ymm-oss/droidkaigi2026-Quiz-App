@@ -1,12 +1,42 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isStaff() {
+      return request.auth != null;
+    }
+
+    function appConfigExists() {
+      return exists(/databases/$(database)/documents/appConfig/default);
+    }
+
+    function appConfig() {
+      return get(/databases/$(database)/documents/appConfig/default).data;
+    }
+
+    // Same priority as PublishedFolderIds.resolve: non-empty publishedFolderIds wins;
+    // otherwise fall back to legacy activeFolderId.
+    function publishedFolderIds() {
+      let ids = appConfig().get('publishedFolderIds', []);
+      return ids.size() > 0 ? ids : [appConfig().get('activeFolderId', '')];
+    }
+
+    function isPublishedFolder(folderId) {
+      return appConfigExists() && folderId in publishedFolderIds();
+    }
+
+    function folderExists(folderId) {
+      return exists(/databases/$(database)/documents/folders/$(folderId));
+    }
+
     match /folders/{folderId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read: if isStaff() || isPublishedFolder(folderId);
+      allow write: if isStaff();
       match /rankings/{entryId} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasAll(
+        // Questions stay published-only. Rankings remain readable/writable for an existing
+        // folder so in-progress players can submit and view the set they started after unpublish.
+        allow read: if isStaff() || isPublishedFolder(folderId) || folderExists(folderId);
+        allow create: if (isStaff() || isPublishedFolder(folderId) || folderExists(folderId))
+          && request.resource.data.keys().hasAll(
             ['nickname', 'score', 'completedAtEpochMillis', 'dateKey'])
           && request.resource.data.nickname is string
           && request.resource.data.nickname.size() > 0
@@ -14,17 +44,17 @@ service cloud.firestore {
           && request.resource.data.score is int
           && request.resource.data.score >= 0;
         allow update: if false;
-        allow delete: if request.auth != null;
+        allow delete: if isStaff();
       }
     }
     match /appConfig/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isStaff();
     }
     // Staff Desktop release metadata — authenticated staff only.
     // Writes are via Admin SDK / CI service account (bypasses these rules).
     match /staffAppRelease/{docId} {
-      allow read: if request.auth != null;
+      allow read: if isStaff();
       allow write: if false;
     }
   }

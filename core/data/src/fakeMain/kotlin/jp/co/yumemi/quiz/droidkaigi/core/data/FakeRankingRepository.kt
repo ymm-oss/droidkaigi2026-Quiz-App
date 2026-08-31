@@ -1,5 +1,7 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data
 
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
 import jp.co.yumemi.quiz.droidkaigi.core.data.di.AppScope
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizResult
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
@@ -7,8 +9,6 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.repository.RankingRepository
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.InstantProvider
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.isSameDay
 import jp.co.yumemi.quiz.droidkaigi.core.domain.time.todayLocalDate
-import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow

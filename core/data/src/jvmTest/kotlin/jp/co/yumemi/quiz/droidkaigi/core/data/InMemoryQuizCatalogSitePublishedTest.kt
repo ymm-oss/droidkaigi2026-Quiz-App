@@ -27,6 +27,28 @@ class InMemoryQuizCatalogSitePublishedTest {
     }
 
     @Test
+    fun repository_setPublishedFolderIds_preservesSitePublishedAndAllowsMultiple() = runBlocking {
+        val catalog = InMemoryQuizCatalog()
+        val repo = InMemoryQuizCatalogRepository(catalog, SystemInstantProvider())
+        catalog.withLock {
+            seedFolder(
+                folder = QuizFolder(id = "a", name = "A", sortOrder = 0),
+                quizSet = QuizSet(id = "a", title = "A", questions = emptyList()),
+            )
+            seedFolder(
+                folder = QuizFolder(id = "b", name = "B", sortOrder = 1),
+                quizSet = QuizSet(id = "b", title = "B", questions = emptyList()),
+            )
+            setSitePublished(true)
+        }
+        repo.setPublishedFolderIds(listOf("a", "b"))
+        assertTrue(repo.getSitePublished())
+        assertEquals(listOf("a", "b"), repo.getPublishedFolderIds())
+        assertEquals("a", repo.getActiveFolderId())
+        assertEquals(listOf("A", "B"), repo.listPublishedFolders().map { it.name })
+    }
+
+    @Test
     fun repository_setActiveFolderId_preservesSitePublished() = runBlocking {
         val catalog = InMemoryQuizCatalog()
         val repo = InMemoryQuizCatalogRepository(catalog, SystemInstantProvider())

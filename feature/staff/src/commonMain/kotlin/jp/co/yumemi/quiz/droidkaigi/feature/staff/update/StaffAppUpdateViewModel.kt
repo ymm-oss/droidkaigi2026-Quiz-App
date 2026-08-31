@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class StaffAppUpdateViewModel(
-    private val deps: AppDependencies = AppDependencies.shared,
-) : ViewModel() {
+class StaffAppUpdateViewModel(private val deps: AppDependencies = AppDependencies.shared) : ViewModel() {
     private val _uiState = MutableStateFlow(StaffAppUpdateUiState())
     val uiState: StateFlow<StaffAppUpdateUiState> = _uiState.asStateFlow()
 
@@ -26,6 +24,7 @@ class StaffAppUpdateViewModel(
                 _uiState.update {
                     it.copy(showDialog = false, errorMessage = null)
                 }
+
             StaffAppUpdateIntent.Download -> download()
         }
     }
@@ -43,6 +42,7 @@ class StaffAppUpdateViewModel(
                                     errorMessage = null,
                                 )
                             }
+
                         StaffAppUpdateStatus.UpToDate,
                         StaffAppUpdateStatus.Unavailable,
                         -> Unit

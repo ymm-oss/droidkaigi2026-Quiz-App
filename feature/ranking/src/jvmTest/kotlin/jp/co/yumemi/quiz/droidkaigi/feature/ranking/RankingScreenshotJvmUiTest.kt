@@ -39,6 +39,21 @@ class RankingScreenshotJvmUiTest {
                         RankingContent(
                             entries = entries,
                             highlightNickname = "Compose 太郎",
+                            publishedFolders = listOf(
+                                jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder(
+                                    id = "easy",
+                                    name = "一般向け",
+                                    description = "会場向け初級",
+                                    sortOrder = 0,
+                                ),
+                                jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder(
+                                    id = "hard",
+                                    name = "高難易度",
+                                    description = "上級者向け",
+                                    sortOrder = 1,
+                                ),
+                            ),
+                            selectedFolderId = "easy",
                             isLoading = false,
                             onGoHomeClick = {},
                         )

@@ -66,7 +66,7 @@ class StaffShellViewModelFolderEditTest {
         )
         val state = viewModel.uiState.value
         assertEquals(true, state.sitePublished)
-        assertEquals("day2", state.activeFolderId)
+        assertEquals("day2", state.publishedFolderIds.single())
         assertEquals("day1", state.selectedFolderId)
     }
 

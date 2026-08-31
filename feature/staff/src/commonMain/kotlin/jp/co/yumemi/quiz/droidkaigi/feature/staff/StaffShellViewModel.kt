@@ -8,6 +8,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
@@ -17,7 +18,7 @@ private const val STAFF_SHELL_REFRESH_TIMEOUT_MS = 30_000L
 data class StaffShellUiState(
     val folders: List<QuizFolder> = emptyList(),
     val selectedFolderId: String? = null,
-    val activeFolderId: String? = null,
+    val publishedFolderIds: List<String> = emptyList(),
     val sitePublished: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
@@ -37,6 +38,8 @@ data class StaffShellUiState(
 
     val deletingFolder: QuizFolder?
         get() = folders.find { it.id == deletingFolderId }
+
+    fun isFolderPublished(folderId: String): Boolean = folderId in publishedFolderIds
 }
 
 sealed interface StaffShellIntent {
@@ -66,16 +69,19 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
     init {
         refresh()
         viewModelScope.launch {
-            deps.siteStatusHolder.sitePublished.collect { published ->
+            combine(
+                deps.siteStatusHolder.sitePublished,
+                deps.siteStatusHolder.publishedFolderIds,
+            ) { published, ids ->
+                published to ids
+            }.collect { (published, ids) ->
                 if (published != null) {
-                    _uiState.update { it.copy(sitePublished = published) }
-                }
-            }
-        }
-        viewModelScope.launch {
-            deps.siteStatusHolder.activeFolderId.collect { folderId ->
-                if (!folderId.isNullOrBlank()) {
-                    _uiState.update { it.copy(activeFolderId = folderId) }
+                    _uiState.update {
+                        it.copy(
+                            sitePublished = published,
+                            publishedFolderIds = ids,
+                        )
+                    }
                 }
             }
         }
@@ -190,31 +196,36 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             runCatching {
                 withTimeout(STAFF_SHELL_REFRESH_TIMEOUT_MS) {
                     val folders = deps.listQuizFoldersUseCase()
-                    val activeId = deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
-                        ?: runCatching { deps.getActiveQuizFolderIdUseCase() }
-                            .onFailure { staffLog("getActiveQuizFolderId failed: ${it.message}") }
-                            .getOrNull()
+                    val publishedIds = runCatching { deps.listPublishedQuizFoldersUseCase() }
+                        .onFailure { staffLog("listPublishedQuizFolders failed: ${it.message}") }
+                        .getOrNull()
+                        ?.map { it.id }
+                        ?: deps.siteStatusHolder.publishedFolderIds.value
                     val sitePublished = deps.siteStatusHolder.sitePublished.value
                         ?: runCatching { deps.getSitePublishedUseCase() }
                             .onFailure { staffLog("getSitePublished failed: ${it.message}") }
                             .getOrDefault(false)
                     val selected = _uiState.value.selectedFolderId
-                        ?: activeId?.takeIf { id -> folders.any { it.id == id } }
+                        ?.takeIf { id -> folders.any { it.id == id } }
+                        ?: publishedIds.firstOrNull { id -> folders.any { it.id == id } }
                         ?: folders.firstOrNull()?.id
                     staffLog(
-                        "refresh ok folders=${folders.size} activeId=$activeId sitePublished=$sitePublished " +
+                        "refresh ok folders=${folders.size} publishedIds=$publishedIds sitePublished=$sitePublished " +
                             "selected=$selected " +
                             folders.joinToString { "${it.id}:${it.displayName}" },
                     )
-                    RefreshPayload(folders, activeId, selected, sitePublished)
+                    RefreshPayload(folders, publishedIds, selected, sitePublished)
                 }
             }.onSuccess { payload ->
-                val liveActiveId = deps.siteStatusHolder.activeFolderId.value?.takeIf { it.isNotBlank() }
                 val livePublished = deps.siteStatusHolder.sitePublished.value
                 _uiState.update {
                     it.copy(
                         folders = payload.folders,
-                        activeFolderId = liveActiveId ?: payload.activeId,
+                        publishedFolderIds = if (livePublished != null) {
+                            deps.siteStatusHolder.publishedFolderIds.value
+                        } else {
+                            payload.publishedIds
+                        },
                         selectedFolderId = payload.selected,
                         sitePublished = livePublished ?: payload.sitePublished,
                         isLoading = false,
@@ -300,7 +311,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
             current.folders.none { it.id == folderId } ->
                 _uiState.update { it.copy(deletingFolderId = null) }
 
-            // Keep at least one folder so activeFolderId / participant start stay valid.
+            // Keep at least one folder so the catalog is never empty.
             current.folders.size <= 1 ->
                 _uiState.update {
                     it.copy(
@@ -324,9 +335,7 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
                                         ?.takeUnless { it == folderId }
                                         ?: remaining.firstOrNull()?.id,
                                     editingFolderId = state.editingFolderId?.takeUnless { it == folderId },
-                                    activeFolderId = state.activeFolderId
-                                        ?.takeUnless { it == folderId }
-                                        ?: remaining.firstOrNull()?.id,
+                                    publishedFolderIds = state.publishedFolderIds.filter { it != folderId },
                                     errorMessage = null,
                                 )
                             }
@@ -373,31 +382,28 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
         }
     }
 
-    private companion object {
-        fun staffLog(message: String) {
-            println("[StaffShell] $message")
-        }
-
-        fun firestoreErrorMessage(error: Throwable, fallback: String): String =
-            FirestoreErrorMessages.from(error, fallback)
-    }
-
     private fun publishSelected() {
         if (_uiState.value.isPublishingFolder) return
         val folderId = _uiState.value.selectedFolderId ?: return
+        val current = _uiState.value.publishedFolderIds
+        val next = if (folderId in current) {
+            current.filter { it != folderId }
+        } else {
+            current + folderId
+        }
         viewModelScope.launch {
-            staffLog("publishFolder start id=$folderId")
+            staffLog("publishFolder start id=$folderId next=$next")
             _uiState.update { it.copy(isPublishingFolder = true, errorMessage = null) }
             try {
-                runCatching { deps.setActiveQuizFolderUseCase(folderId) }
+                runCatching { deps.setPublishedQuizFoldersUseCase(next) }
                     .onSuccess {
                         _uiState.update { state -> state.copy(showPublishFolderConfirm = false) }
                         refresh()
                     }
                     .onFailure { error ->
-                        staffLog("publishFolder failed: ${error.message}")
+                        staffLog("setPublishedFolderIds failed: ${error.message}")
                         _uiState.update {
-                            it.copy(errorMessage = firestoreErrorMessage(error, "フォルダの公開に失敗しました"))
+                            it.copy(errorMessage = firestoreErrorMessage(error, "公開フォルダの更新に失敗しました"))
                         }
                     }
             } finally {
@@ -408,8 +414,17 @@ class StaffShellViewModel(private val deps: AppDependencies = AppDependencies.sh
 
     private data class RefreshPayload(
         val folders: List<QuizFolder>,
-        val activeId: String?,
+        val publishedIds: List<String>,
         val selected: String?,
         val sitePublished: Boolean,
     )
+
+    private companion object {
+        fun staffLog(message: String) {
+            println("[StaffShell] $message")
+        }
+
+        fun firestoreErrorMessage(error: Throwable, fallback: String): String =
+            FirestoreErrorMessages.from(error, fallback)
+    }
 }

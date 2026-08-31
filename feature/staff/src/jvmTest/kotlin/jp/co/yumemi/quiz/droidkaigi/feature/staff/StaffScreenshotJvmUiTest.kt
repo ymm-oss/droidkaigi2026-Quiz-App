@@ -390,7 +390,7 @@ class StaffScreenshotJvmUiTest {
                 }
                 StaffConfirmDialog(
                     title = "参加者向けに公開",
-                    message = "「Day 1 · Easy」を参加者アプリに公開しますか？\n公開中のフォルダは切り替わります。",
+                    message = "「Day 1 · Easy」を参加者アプリで選べるようにしますか？",
                     confirmLabel = "公開",
                     onConfirm = {},
                     onDismiss = {},
@@ -580,7 +580,7 @@ private val sampleShellState = StaffShellUiState(
         QuizFolder(id = "day2", name = "Day 2", description = "", sortOrder = 2),
     ),
     selectedFolderId = "day1-easy",
-    activeFolderId = "day1-easy",
+    publishedFolderIds = listOf("day1-easy", "day1-hard"),
     sitePublished = false,
     isLoading = false,
 )

@@ -1,6 +1,7 @@
 package jp.co.yumemi.quiz.droidkaigi.core.data
 
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.AppConfigStatus
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.PublishedFolderIds
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizSet
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
@@ -18,12 +19,14 @@ class InMemoryQuizCatalog {
     private val folders = mutableListOf<QuizFolder>()
     private val quizSets = mutableMapOf<String, QuizSet>()
     private val rankingsByFolder = mutableMapOf<String, MutableList<RankingEntry>>()
-    private var activeFolderId: String = ""
+    private val publishedFolderIds = mutableListOf<String>()
 
     /** Fake default after seed is true for easier local play-through; unset catalog stays false. */
     private var sitePublished: Boolean = false
 
-    private val _appConfig = MutableStateFlow(AppConfigStatus(sitePublished = false, activeFolderId = ""))
+    private val _appConfig = MutableStateFlow(
+        AppConfigStatus(sitePublished = false, activeFolderId = "", publishedFolderIds = emptyList()),
+    )
     val appConfig: StateFlow<AppConfigStatus> = _appConfig.asStateFlow()
 
     suspend fun <T> withLock(block: suspend InMemoryQuizCatalog.() -> T): T = mutex.withLock { block() }
@@ -41,7 +44,7 @@ class InMemoryQuizCatalog {
         folders += folder
         quizSets[id] = QuizSet(id = id, title = name.trim(), questions = emptyList())
         rankingsByFolder[id] = mutableListOf()
-        if (activeFolderId.isEmpty()) activeFolderId = id
+        if (publishedFolderIds.isEmpty()) publishedFolderIds += id
         emitAppConfig()
         return folder
     }
@@ -55,9 +58,7 @@ class InMemoryQuizCatalog {
         folders.removeAll { it.id == folderId }
         quizSets.remove(folderId)
         rankingsByFolder.remove(folderId)
-        if (activeFolderId == folderId) {
-            activeFolderId = folders.minByOrNull { it.sortOrder }?.id.orEmpty()
-        }
+        publishedFolderIds.removeAll { it == folderId }
         emitAppConfig()
     }
 
@@ -68,14 +69,21 @@ class InMemoryQuizCatalog {
         quizSets[quizSet.id] = quizSet
     }
 
-    fun getActiveFolderId(): String = activeFolderId.ifEmpty {
-        folders.firstOrNull()?.id.orEmpty()
+    fun getPublishedFolderIds(): List<String> = PublishedFolderIds.resolve(publishedFolderIds, activeFolderId = "")
+        .filter { id -> folders.any { it.id == id } }
+
+    fun setPublishedFolderIds(folderIds: List<String>) {
+        val cleaned = PublishedFolderIds.resolve(folderIds, activeFolderId = "")
+        cleaned.forEach { id -> require(folders.any { it.id == id }) { "Unknown folder: $id" } }
+        publishedFolderIds.clear()
+        publishedFolderIds += cleaned
+        emitAppConfig()
     }
 
+    fun getActiveFolderId(): String = getPublishedFolderIds().firstOrNull().orEmpty()
+
     fun setActiveFolderId(folderId: String) {
-        require(folders.any { it.id == folderId }) { "Unknown folder: $folderId" }
-        activeFolderId = folderId
-        emitAppConfig()
+        setPublishedFolderIds(listOf(folderId))
     }
 
     fun getSitePublished(): Boolean = sitePublished
@@ -91,7 +99,7 @@ class InMemoryQuizCatalog {
         rankingsByFolder.getOrPut(folder.id) { mutableListOf() }.apply {
             if (isEmpty() && demoRankings.isNotEmpty()) addAll(demoRankings)
         }
-        if (activeFolderId.isEmpty()) activeFolderId = folder.id
+        if (publishedFolderIds.isEmpty()) publishedFolderIds += folder.id
         emitAppConfig()
     }
 
@@ -99,9 +107,11 @@ class InMemoryQuizCatalog {
         rankingsByFolder.getOrPut(folderId) { mutableListOf() }
 
     private fun emitAppConfig() {
+        val ids = getPublishedFolderIds()
         _appConfig.value = AppConfigStatus(
             sitePublished = sitePublished,
-            activeFolderId = getActiveFolderId(),
+            activeFolderId = ids.firstOrNull().orEmpty(),
+            publishedFolderIds = ids,
         )
     }
 }

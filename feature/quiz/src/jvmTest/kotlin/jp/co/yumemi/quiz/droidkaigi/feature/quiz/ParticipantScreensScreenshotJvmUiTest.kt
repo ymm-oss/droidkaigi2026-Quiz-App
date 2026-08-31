@@ -6,6 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import jp.co.yumemi.quiz.droidkaigi.core.domain.model.QuizFolder
 import jp.co.yumemi.quiz.droidkaigi.core.ui.locale.LocalAppLocale
 import jp.co.yumemi.quiz.droidkaigi.core.ui.theme.QuizTheme
 import jp.co.yumemi.quiz.droidkaigi.feature.quiz.home.HomeContent
@@ -28,6 +29,8 @@ class ParticipantScreensScreenshotJvmUiTest {
                             nickname = "Compose 太郎",
                             isLoading = false,
                             errorMessage = null,
+                            publishedFolders = sampleHomeFolders,
+                            selectedFolderId = "easy",
                             onNicknameChange = {},
                             onStartClick = {},
                         )
@@ -37,6 +40,7 @@ class ParticipantScreensScreenshotJvmUiTest {
         }
         onNodeWithText("DroidKaigi 2026 Quiz").assertIsDisplayed()
         onNodeWithText("クイズを始める").assertIsDisplayed()
+        onNodeWithText("一般向け").assertIsDisplayed()
         captureAndroidSurfacePng("android-home.png")
     }
 
@@ -64,3 +68,8 @@ class ParticipantScreensScreenshotJvmUiTest {
         captureAndroidSurfacePng("android-result.png")
     }
 }
+
+private val sampleHomeFolders = listOf(
+    QuizFolder(id = "easy", name = "一般向け", description = "会場向け初級", sortOrder = 0),
+    QuizFolder(id = "hard", name = "高難易度", description = "上級者向け", sortOrder = 1),
+)

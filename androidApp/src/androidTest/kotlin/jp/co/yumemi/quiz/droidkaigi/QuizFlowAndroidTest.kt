@@ -29,7 +29,7 @@ class QuizFlowAndroidTest {
         composeRule.onNodeWithText("ホームに戻る").performClick()
 
         composeRule.waitUntilText("クイズを始める")
-        composeRule.onNodeWithText("クイズを始める").performClick()
+        composeRule.clickStartAfterSelectingGeneralFolder()
         composeRule.waitUntilText("1 / 3")
 
         composeRule.waitUntilText(firstQuestionSnippet, substring = true)
