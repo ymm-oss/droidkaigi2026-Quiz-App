@@ -16,6 +16,7 @@ import jp.co.yumemi.quiz.droidkaigi.core.ui.generated.resources.noto_sans_jp
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
+import kotlin.time.Clock
 
 private val themeWeights = listOf(
     FontWeight.Normal,
@@ -31,8 +32,10 @@ private val themeWeights = listOf(
 private const val FONT_LOAD_TIMEOUT_MILLIS = 10_000L
 
 // AppLocaleEnvironment remounts its content when the locale changes. Keep the decoded family
-// outside that composition so changing language never reopens the font gate.
+// and the 10s fallback outside that composition so changing language never reopens the font gate.
 private var cachedFontFamily: FontFamily? = null
+private var fontLoadTimedOut: Boolean = false
+private var fontLoadStartedAtMillis: Long? = null
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -47,9 +50,15 @@ actual fun rememberQuizFonts(): QuizFonts {
             variationSettings = FontVariation.Settings(weight, FontStyle.Normal),
         ).value
     }
-    var timedOut by remember { mutableStateOf(false) }
+    var timedOut by remember { mutableStateOf(fontLoadTimedOut) }
     LaunchedEffect(Unit) {
-        delay(FONT_LOAD_TIMEOUT_MILLIS)
+        if (fontLoadTimedOut) return@LaunchedEffect
+        val startedAt = fontLoadStartedAtMillis
+            ?: Clock.System.now().toEpochMilliseconds().also { fontLoadStartedAtMillis = it }
+        val remainingMillis = FONT_LOAD_TIMEOUT_MILLIS -
+            (Clock.System.now().toEpochMilliseconds() - startedAt)
+        if (remainingMillis > 0L) delay(remainingMillis)
+        fontLoadTimedOut = true
         timedOut = true
     }
     val loadedFontFamily = remember(fonts) {
