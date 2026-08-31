@@ -64,6 +64,7 @@ class ParticipantScreensScreenshotJvmUiTest {
             }
         }
         onNodeWithText("クイズ完了").assertIsDisplayed()
+        onNodeWithText("100%").assertIsDisplayed()
         onNodeWithText("ランキングを見る").assertIsDisplayed()
         captureAndroidSurfacePng("android-result.png")
     }
