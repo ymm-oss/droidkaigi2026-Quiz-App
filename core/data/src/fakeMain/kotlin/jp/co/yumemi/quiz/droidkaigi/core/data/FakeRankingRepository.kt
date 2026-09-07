@@ -20,6 +20,16 @@ class FakeRankingRepository(private val instantProvider: InstantProvider, privat
     private val submittedEntryKeys = mutableSetOf<String>()
     private val rankingsRevision = MutableStateFlow(0)
 
+    override suspend fun getRankings(folderId: String): List<RankingEntry> = catalog.withLock {
+        allRankingsLocked(folderId)
+    }
+
+    override fun observeRankings(folderId: String): Flow<List<RankingEntry>> = flow {
+        rankingsRevision.collect {
+            emit(getRankings(folderId))
+        }
+    }
+
     override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = catalog.withLock {
         todayRankingsLocked(folderId)
     }
@@ -81,6 +91,10 @@ class FakeRankingRepository(private val instantProvider: InstantProvider, privat
             .filter { isSameDay(it.completedAtEpochMillis, today) }
             .sortedWith(compareByDescending<RankingEntry> { it.score }.thenBy { it.completedAtEpochMillis })
     }
+
+    private fun InMemoryQuizCatalog.allRankingsLocked(folderId: String): List<RankingEntry> =
+        rankingsFor(folderId)
+            .sortedWith(compareByDescending<RankingEntry> { it.score }.thenBy { it.completedAtEpochMillis })
 
     private fun bumpRankings() {
         rankingsRevision.value += 1

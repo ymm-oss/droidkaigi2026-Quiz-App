@@ -237,7 +237,7 @@ fun StaffRankingContent(
 ) {
     val actionsEnabled = !isLoading && !isMutating
     StaffContentPane(modifier = modifier.fillMaxSize()) {
-        StaffSectionHeader(title = "本日のランキング", subtitle = null) {
+        StaffSectionHeader(title = "ランキング", subtitle = null) {
             StaffOutlinedButton(
                 text = "すべて削除",
                 icon = Icons.Default.DeleteSweep,
@@ -287,7 +287,7 @@ fun StaffRankingContent(
                 entries.isEmpty() && loadError != null ->
                     StaffRankingLoadError(message = loadError, onRetry = onRetryLoad)
 
-                entries.isEmpty() -> StaffRankingNote(text = "本日のスコアはまだありません")
+                entries.isEmpty() -> StaffRankingNote(text = "スコアはまだありません")
 
                 else -> {
                     if (loadError != null) {

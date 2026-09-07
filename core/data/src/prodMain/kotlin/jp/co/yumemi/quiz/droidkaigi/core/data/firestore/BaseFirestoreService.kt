@@ -31,6 +31,15 @@ internal abstract class BaseFirestoreService : FirestoreService {
         orderByScoreDescending: Boolean,
     ): List<Pair<String, RankingFirestoreDocument>>
 
+    /**
+     * フォルダ内の全ランキングを取得する。
+     * [orderByScoreDescending] が true の場合は `score` 降順を付ける。
+     */
+    protected abstract suspend fun queryAllRankings(
+        folderId: String,
+        orderByScoreDescending: Boolean,
+    ): List<Pair<String, RankingFirestoreDocument>>
+
     /** SDK 固有の例外から複合インデックス不足エラーかどうかを判定する。 */
     protected abstract fun isMissingCompositeIndexError(error: Throwable): Boolean
 
@@ -41,6 +50,13 @@ internal abstract class BaseFirestoreService : FirestoreService {
     protected abstract fun observeQueryRankings(
         folderId: String,
         dateKey: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>>
+
+    /**
+     * Live query of all rankings in [folderId] (no server orderBy — sort client-side).
+     */
+    protected abstract fun observeAllRankings(
+        folderId: String,
     ): Flow<List<Pair<String, RankingFirestoreDocument>>>
 
     // wasm の JsException は Exception ではなく Throwable 直下のため Throwable で捕捉する
@@ -66,6 +82,33 @@ internal abstract class BaseFirestoreService : FirestoreService {
             throw e
         }
     }
+
+    // wasm の JsException は Exception ではなく Throwable 直下のため Throwable で捕捉する
+    @Suppress("TooGenericExceptionCaught")
+    final override suspend fun listRankings(
+        folderId: String,
+    ): List<Pair<String, RankingFirestoreDocument>> {
+        val entries = try {
+            queryAllRankings(folderId, orderByScoreDescending = true)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (error: Throwable) {
+            if (!isMissingCompositeIndexError(error)) throw error
+            queryAllRankings(folderId, orderByScoreDescending = false)
+        }
+        return entries
+            .filter { (_, document) -> document.isComplete() }
+            .sortedByDescending { it.second.score }
+    }
+
+    final override fun observeRankings(
+        folderId: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>> =
+        observeAllRankings(folderId).map { entries ->
+            entries
+                .filter { (_, document) -> document.isComplete() }
+                .sortedByDescending { it.second.score }
+        }
 
     // wasm の JsException は Exception ではなく Throwable 直下のため Throwable で捕捉する
     @Suppress("TooGenericExceptionCaught")

@@ -114,12 +114,45 @@ internal class GitLiveFirestoreService : BaseFirestoreService() {
             }
     }
 
+    override suspend fun queryAllRankings(
+        folderId: String,
+        orderByScoreDescending: Boolean,
+    ): List<Pair<String, RankingFirestoreDocument>> {
+        val rankings = rankingsCollection(folderId)
+        val query = if (orderByScoreDescending) {
+            rankings.orderBy("score", Direction.DESCENDING)
+        } else {
+            rankings
+        }
+        return query
+            .get(Source.SERVER)
+            .documents
+            .mapNotNull { snapshot ->
+                runCatching { snapshot.data(RankingFirestoreDocument.serializer()) }
+                    .getOrNull()
+                    ?.let { snapshot.id to it }
+            }
+    }
+
     override fun observeQueryRankings(
         folderId: String,
         dateKey: String,
     ): Flow<List<Pair<String, RankingFirestoreDocument>>> =
         rankingsCollection(folderId)
             .where { "dateKey" equalTo dateKey }
+            .snapshots
+            .map { querySnapshot ->
+                querySnapshot.documents.mapNotNull { snapshot ->
+                    runCatching { snapshot.data(RankingFirestoreDocument.serializer()) }
+                        .getOrNull()
+                        ?.let { snapshot.id to it }
+                }
+            }
+
+    override fun observeAllRankings(
+        folderId: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>> =
+        rankingsCollection(folderId)
             .snapshots
             .map { querySnapshot ->
                 querySnapshot.documents.mapNotNull { snapshot ->

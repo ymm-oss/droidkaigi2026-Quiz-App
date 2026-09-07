@@ -209,6 +209,8 @@ class QuizPlayUseCaseTest {
         val completedAts = mutableListOf<Long>()
         val scores = mutableListOf<Int>()
 
+        override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
 
         override suspend fun submitScore(

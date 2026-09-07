@@ -106,7 +106,7 @@ class StaffScreenshotJvmUiTest {
                 }
             }
         }
-        onNodeWithText("本日のランキング").assertIsDisplayed()
+        onNodeWithText("ランキング").assertIsDisplayed()
         onNodeWithText("すべて削除").assertIsDisplayed()
         captureSurfacePng("03-console-ranking.png")
     }

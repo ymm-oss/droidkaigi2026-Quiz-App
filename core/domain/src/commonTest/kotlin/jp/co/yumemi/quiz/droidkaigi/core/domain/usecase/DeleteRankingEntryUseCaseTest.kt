@@ -14,6 +14,8 @@ class DeleteRankingEntryUseCaseTest {
         val deleted = mutableListOf<Pair<String, String>>()
         val useCase = DeleteRankingEntryUseCase(
             rankingRepository = object : RankingRepository {
+                override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
                 override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
                 override suspend fun submitScore(
                     result: QuizResult,
@@ -38,7 +40,9 @@ class DeleteRankingEntryUseCaseTest {
         runBlocking {
             val useCase = DeleteRankingEntryUseCase(
                 rankingRepository = object : RankingRepository {
-                    override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
+                    override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
+                override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
                     override suspend fun submitScore(
                         result: QuizResult,
                         completedAtEpochMillis: Long,

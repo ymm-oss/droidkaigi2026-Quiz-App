@@ -14,6 +14,8 @@ class SubmitScoreUseCaseTest {
         val calls = mutableListOf<SubmitCall>()
         val useCase = SubmitScoreUseCase(
             rankingRepository = object : RankingRepository {
+                override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
                 override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
 
                 override suspend fun submitScore(

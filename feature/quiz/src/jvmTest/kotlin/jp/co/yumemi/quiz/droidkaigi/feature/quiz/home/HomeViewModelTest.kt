@@ -326,6 +326,8 @@ class HomeViewModelTest {
     }
 
     private fun unusedRanking(): RankingRepository = object : RankingRepository {
+        override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
         override suspend fun submitScore(
             result: QuizResult,

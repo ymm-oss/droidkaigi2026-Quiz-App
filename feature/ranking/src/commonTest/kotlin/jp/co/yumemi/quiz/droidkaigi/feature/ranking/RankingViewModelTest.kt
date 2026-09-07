@@ -366,6 +366,11 @@ private fun rankingTestDeps(
     catalogFolders: suspend () -> List<QuizFolder> = { emptyList() },
 ): AppDependencies {
     val rankingRepository = object : RankingRepository {
+        override suspend fun getRankings(folderId: String): List<RankingEntry> = rankings(folderId)
+
+        override fun observeRankings(folderId: String): kotlinx.coroutines.flow.Flow<List<RankingEntry>> =
+            observeRankings?.invoke(folderId) ?: super.observeRankings(folderId)
+
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = rankings(folderId)
 
         override fun observeTodayRankings(folderId: String): kotlinx.coroutines.flow.Flow<List<RankingEntry>> =

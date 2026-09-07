@@ -26,3 +26,6 @@ fun localDateOfEpochMillis(
 fun isSameDay(epochMillis: Long, today: LocalDate, timeZone: TimeZone = TimeZone.currentSystemDefault()): Boolean {
     return localDateOfEpochMillis(epochMillis, timeZone) == today
 }
+
+fun InstantProvider.isToday(epochMillis: Long, timeZone: TimeZone = TimeZone.currentSystemDefault()): Boolean =
+    isSameDay(epochMillis, todayLocalDate(timeZone), timeZone)

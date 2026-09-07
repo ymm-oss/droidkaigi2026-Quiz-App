@@ -133,6 +133,28 @@ class FakeRankingRepositoryTest {
     }
 
     @Test
+    fun getRankings_returnsAllEntriesSortedByScore() = runTest {
+        val clock = FixedInstantProvider(1_700_000_000_000)
+        val catalog = InMemoryQuizCatalog()
+        catalog.withLock { createFolder("Test", "") }
+        val folderId = catalog.withLock { getActiveFolderId() }
+        val repo = FakeRankingRepository(clock, catalog)
+        val yesterdayMillis = 1_700_000_000_000 - 86_400_000
+        catalog.withLock {
+            rankingsFor(folderId) += listOf(
+                RankingEntry("Yesterday", 50, yesterdayMillis, id = "yesterday-entry"),
+                RankingEntry("Today", 72, clock.nowEpochMillis(), id = "today-entry"),
+            )
+        }
+
+        val rankings = repo.getRankings(folderId)
+
+        assertEquals(2, rankings.size)
+        assertEquals("Today", rankings[0].nickname)
+        assertEquals("Yesterday", rankings[1].nickname)
+    }
+
+    @Test
     fun clearTodayRankings_removesOnlyTodayEntries() = runTest {
         val clock = FixedInstantProvider(1_700_000_000_000)
         val catalog = InMemoryQuizCatalog()

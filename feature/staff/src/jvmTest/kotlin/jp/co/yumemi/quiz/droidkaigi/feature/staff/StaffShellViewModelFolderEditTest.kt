@@ -132,6 +132,8 @@ class StaffShellViewModelFolderEditTest {
     }
 
     private object NoopRankingRepository : RankingRepository {
+        override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
 
         override suspend fun submitScore(

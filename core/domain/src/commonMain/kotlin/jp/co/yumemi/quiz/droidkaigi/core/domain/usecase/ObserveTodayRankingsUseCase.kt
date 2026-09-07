@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 class ObserveTodayRankingsUseCase(private val rankingRepository: RankingRepository) {
     operator fun invoke(folderId: String): Flow<List<RankingEntry>> =
-        rankingRepository.observeTodayRankings(folderId)
+        rankingRepository.observeRankings(folderId)
 }

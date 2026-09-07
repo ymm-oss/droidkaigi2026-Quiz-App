@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import jp.co.yumemi.quiz.droidkaigi.core.data.AppDependencies
 import jp.co.yumemi.quiz.droidkaigi.core.domain.model.RankingEntry
+import jp.co.yumemi.quiz.droidkaigi.core.domain.time.isToday
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,7 +102,9 @@ class StaffRankingViewModel(private val folderId: String, private val deps: AppD
                 val generation = ++dataGeneration
                 reloadEntriesAfterMutation(
                     generation = generation,
-                    optimisticEntries = { emptyList() },
+                    optimisticEntries = { current ->
+                        current.filterNot { deps.instantProvider.isToday(it.completedAtEpochMillis) }
+                    },
                 )
                 if (generation == dataGeneration) listen()
             } catch (e: CancellationException) {

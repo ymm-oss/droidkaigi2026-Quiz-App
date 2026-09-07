@@ -133,6 +133,10 @@ class BaseFirestoreServiceTest {
             dateKey: String,
             orderByScoreDescending: Boolean,
         ) -> List<Pair<String, RankingFirestoreDocument>> = { _, _, _ -> emptyList() },
+        private val onQueryAllRankings: suspend (
+            folderId: String,
+            orderByScoreDescending: Boolean,
+        ) -> List<Pair<String, RankingFirestoreDocument>> = { _, _ -> emptyList() },
         private val isMissingIndex: (Throwable) -> Boolean = { false },
     ) : BaseFirestoreService() {
         var onDeleteRanking: suspend (entryId: String) -> Unit = {}
@@ -152,12 +156,20 @@ class BaseFirestoreServiceTest {
         ): List<Pair<String, RankingFirestoreDocument>> =
             onQueryRankings(folderId, dateKey, orderByScoreDescending)
 
+        override suspend fun queryAllRankings(
+            folderId: String,
+            orderByScoreDescending: Boolean,
+        ): List<Pair<String, RankingFirestoreDocument>> =
+            onQueryAllRankings(folderId, orderByScoreDescending)
+
         override fun isMissingCompositeIndexError(error: Throwable): Boolean = isMissingIndex(error)
 
         override fun observeQueryRankings(
             folderId: String,
             dateKey: String,
         ) = unused()
+
+        override fun observeAllRankings(folderId: String) = unused()
 
         override suspend fun deleteRanking(folderId: String, entryId: String) {
             deletedEntryIds += entryId

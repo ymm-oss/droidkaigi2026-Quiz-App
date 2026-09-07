@@ -130,6 +130,24 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
             }
     }
 
+    override suspend fun queryAllRankings(
+        folderId: String,
+        orderByScoreDescending: Boolean,
+    ): List<Pair<String, RankingFirestoreDocument>> {
+        val rankings = collection(db, rankingsPath(folderId))
+        val rankingsQuery = if (orderByScoreDescending) {
+            query(rankings, orderBy("score", "desc"))
+        } else {
+            rankings
+        }
+        return getDocs(rankingsQuery).await<QuerySnapshotJs>().docs.toKotlinList()
+            .mapNotNull { snapshot ->
+                runCatching { decode(RankingFirestoreDocument.serializer(), snapshot) }
+                    .getOrNull()
+                    ?.let { snapshot.id to it }
+            }
+    }
+
     override fun observeQueryRankings(
         folderId: String,
         dateKey: String,
@@ -138,6 +156,27 @@ internal class FirebaseJsFirestoreService : BaseFirestoreService() {
         val rankingsQuery = query(rankings, where("dateKey", "==", dateKey.toJsString()))
         val unsubscribe = onSnapshot(
             rankingsQuery,
+            onNext = { querySnapshot ->
+                val entries = querySnapshot.docs.toKotlinList().mapNotNull { snapshot ->
+                    runCatching { decode(RankingFirestoreDocument.serializer(), snapshot) }
+                        .getOrNull()
+                        ?.let { snapshot.id to it }
+                }
+                trySend(entries)
+            },
+            onError = { error ->
+                close(IllegalStateException(jsErrorMessageOrNull(error) ?: "rankings listen failed"))
+            },
+        )
+        awaitClose { invokeJsFunction(unsubscribe) }
+    }
+
+    override fun observeAllRankings(
+        folderId: String,
+    ): Flow<List<Pair<String, RankingFirestoreDocument>>> = callbackFlow {
+        val rankings = collection(db, rankingsPath(folderId))
+        val unsubscribe = onSnapshot(
+            rankings,
             onNext = { querySnapshot ->
                 val entries = querySnapshot.docs.toKotlinList().mapNotNull { snapshot ->
                     runCatching { decode(RankingFirestoreDocument.serializer(), snapshot) }

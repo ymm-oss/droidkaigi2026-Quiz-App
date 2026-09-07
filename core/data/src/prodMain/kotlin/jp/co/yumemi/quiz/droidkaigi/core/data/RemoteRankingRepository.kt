@@ -26,6 +26,17 @@ class RemoteRankingRepository(
     private val firestore: FirestoreService,
     private val instantProvider: InstantProvider,
 ) : RankingRepository {
+    override suspend fun getRankings(folderId: String): List<RankingEntry> =
+        firestore.listRankings(folderId)
+            .map { (entryId, document) -> document.toDomain(entryId) }
+            .sortedWith(compareByDescending<RankingEntry> { it.score }.thenBy { it.completedAtEpochMillis })
+
+    override fun observeRankings(folderId: String): Flow<List<RankingEntry>> =
+        firestore.observeRankings(folderId).map { entries ->
+            entries.map { (entryId, document) -> document.toDomain(entryId) }
+                .sortedWith(compareByDescending<RankingEntry> { it.score }.thenBy { it.completedAtEpochMillis })
+        }
+
     override suspend fun getTodayRankings(folderId: String): List<RankingEntry> {
         val dateKey = instantProvider.todayLocalDate().toString()
         return firestore.listRankingsForDate(folderId, dateKey)

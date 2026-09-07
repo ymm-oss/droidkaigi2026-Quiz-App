@@ -240,6 +240,8 @@ class QuizViewModelSubmitScoreTest {
             releaseCont = null
         }
 
+        override suspend fun getRankings(folderId: String): List<RankingEntry> = emptyList()
+
         override suspend fun getTodayRankings(folderId: String): List<RankingEntry> = emptyList()
 
         override suspend fun submitScore(

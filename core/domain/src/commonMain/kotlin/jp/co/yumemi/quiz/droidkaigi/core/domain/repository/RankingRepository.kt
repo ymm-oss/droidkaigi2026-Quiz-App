@@ -6,6 +6,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 interface RankingRepository {
+    suspend fun getRankings(folderId: String): List<RankingEntry>
+
+    /** All ranking rows for [folderId], emitting again when the set changes. */
+    fun observeRankings(folderId: String): Flow<List<RankingEntry>> = flow {
+        emit(getRankings(folderId))
+    }
+
     suspend fun getTodayRankings(folderId: String): List<RankingEntry>
 
     /** Today's ranking rows for [folderId], emitting again when the set changes. */
